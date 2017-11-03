@@ -1,0 +1,12 @@
+{
+  "db": {
+    "database": "biblio",
+    "username": "biblio",
+    "hostname": "127.0.0.1",
+    "password": "password",
+    "port": 3306
+  },
+  "typo3": {
+    "directory": "/srv/http/typo3.localhost"
+  }
+}
