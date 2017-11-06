@@ -12,31 +12,25 @@
 
 /**
  * This is a project-specific implementation of the PSR-4 autoloader.
- * See: http://www.php-fig.org/psr/psr-4/examples/
+ * Based on: http://www.php-fig.org/psr/psr-4/examples/
  *
  * @param string $class The fully-qualified class name.
  * @return void
  */
 spl_autoload_register(function ($class) {
-
-    // project-specific namespace prefix
-    $prefix = 'BS\\';
-
-    // does the class use the namespace prefix?
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        // no, move to the next registered autoloader
+    // If class starts with "TYPO3\", move to the TYPO3 autoloader.
+    if (strncmp('TYPO3\\', $class, strlen('TYPO3\\')) === 0) {
         return;
     }
 
-    // get the relative class name
-    $relative_class = substr($class, $len);
+    // Get the relative class name (remove "BS\" if necessary)
+    $relativeClass = str_replace('BS\\', '', $class);
 
     // replace the namespace prefix with the base directory, replace namespace
     // separators with directory separators in the relative class name, append
     // with .php
     $file = __DIR__ . DIRECTORY_SEPARATOR
-        . str_replace('\\', '/', $relative_class) . '.php';
+        . str_replace('\\', '/', $relativeClass) . '.php';
 
     // if the file exists, require it
     if (file_exists($file)) {

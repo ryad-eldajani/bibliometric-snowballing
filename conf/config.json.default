@@ -8,5 +8,27 @@
   },
   "typo3": {
     "directory": "/srv/http/typo3.localhost"
+  },
+  "urls": {
+    "/": {
+      "controller": "Index/index",
+      "methods": ["get"]
+    },
+    "/404": {
+      "controller": "Index/notFound",
+      "methods": ["get"]
+    },
+    "/login": {
+      "controller": "Login/login",
+      "methods": ["get", "post"]
+    },
+    "/logout": {
+      "controller": "Login/logout",
+      "methods": ["get"]
+    },
+    "/profile": {
+      "controller": "User/viewProfile",
+      "methods": ["get"]
+    }
   }
 }
