@@ -1,0 +1,9 @@
+DROP TABLE `work_author`;
+DROP TABLE `work_journal`;
+DROP TABLE `work_project`;
+DROP TABLE `author`;
+DROP TABLE `miscellany`;
+DROP TABLE `journal`;
+DROP TABLE `quote`;
+DROP TABLE `work`;
+DROP TABLE `project`;
