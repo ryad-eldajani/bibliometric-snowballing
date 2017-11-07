@@ -13,19 +13,12 @@
 namespace BS\Controller;
 
 
-use BS\Model\Http\Http;
-use BS\Model\User\UserManager;
+use BS\Model\App;
 
-abstract class AbstractController
+class UserController
 {
-    /**
-     * Checks, if the user is logged in. If the user is not logged in
-     * he will be redirected to the login page.
-     */
-    protected function redirectIfNotLoggedIn()
+    public function viewProfileAction()
     {
-        if (!UserManager::instance()->isLoggedIn()) {
-            Http::instance()->redirect('/login');
-        }
+        return App::instance()->renderTemplate('profile');
     }
 }

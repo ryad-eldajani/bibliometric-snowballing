@@ -13,12 +13,12 @@
     <script src="/static/js/source-code-pro.js"></script>
 </head>
 <body>
-<?=$this->fetch('partials/navbar')?>
-<?=$this->fetch('partials/header', ['title' => $title, 'subTitle' => isset($subTitle) ? $subTitle : null])?>
+<?=$this->fetch('parts/navbar')?>
+<?=$this->fetch('parts/header', ['title' => $title, 'subTitle' => isset($subTitle) ? $subTitle : null])?>
 <?php if (isset($message)): ?>
-    <?php $this->insert('partials/message') ?>
+    <?php $this->insert('parts/message') ?>
 <?php endif ?>
 <?=$this->section('content')?>
-<?=$this->fetch('partials/footer')?>
+<?=$this->fetch('parts/footer')?>
 </body>
 </html>

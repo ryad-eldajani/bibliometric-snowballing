@@ -11,6 +11,18 @@ body {
     margin-right: 5px;
     content: "";
 }
+.navbar {
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+.navbar-user {
+    padding-right: 15px;
+}
+.jumbotron {
+    padding-bottom: 10px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
 .panel-footer {
     position: absolute;
     bottom: 0;

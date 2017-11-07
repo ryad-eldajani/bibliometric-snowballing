@@ -1,1 +1,1 @@
-<?php $this->layout('layout', ['title' => 'My Projects', 'subTitle' => 'Please manage your projects.']) ?>
+<?php $this->layout('layout', ['title' => 'Manage Projects', 'subTitle' => 'Please manage your projects.']) ?>

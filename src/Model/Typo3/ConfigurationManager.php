@@ -20,7 +20,7 @@ class ConfigurationManager extends \TYPO3\CMS\Core\Configuration\ConfigurationMa
      */
     public function __construct()
     {
-        $typo3Dir = App::instance()->getConfig('typo3/directory');
+        $typo3Dir = App::instance(true)->getConfig('typo3/directory');
         $this->localConfigurationFile = $typo3Dir. '/typo3conf/LocalConfiguration.php';
         $this->defaultConfigurationFile = $typo3Dir . '/typo3/sysext/core/Configuration/DefaultConfiguration.php';
     }

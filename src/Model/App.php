@@ -12,8 +12,12 @@
 
 namespace BS\Model;
 
+use BS\Helper\ArrayHelper;
+use BS\Helper\TemplateHelper;
 use BS\Model\Exceptions\AppException;
+use BS\Model\Http\Http;
 use BS\Model\Typo3\Typo3System;
+use BS\Model\User\UserManager;
 use League\Plates\Engine;
 
 class App
@@ -39,11 +43,6 @@ class App
     protected $templateEngine = null;
 
     /**
-     * @var array|bool $urlComponents parsed URL components
-     */
-    protected $urlComponents = null;
-
-    /**
      * @var array $urlInfo URL information about controllers etc.
      */
     protected $urlInfo = null;
@@ -55,18 +54,23 @@ class App
     {
         set_exception_handler(array($this, 'handleException'));
         $this->templateEngine = new Engine('templates');
+        $this->templateEngine->loadExtension(new TemplateHelper());
     }
 
     /**
      * Returns the singleton.
+     *
+     * @param bool $typo3SetupInProgress If true, the Typo3 system will not setup
      * @return App instance
      */
-    public static function instance()
+    public static function instance($typo3SetupInProgress = false)
     {
         if (!isset(App::$instance)) {
-            $app = new App();
-            App::$instance = $app;
-            $app->typo3System = new Typo3System($app);
+            App::$instance = new App();
+        }
+
+        if (!$typo3SetupInProgress && !isset(App::$instance->typo3System)) {
+            App::$instance->typo3System = new Typo3System(App::$instance);
         }
 
         return App::$instance;
@@ -80,51 +84,6 @@ class App
     {
         echo $this->renderTemplate('exception', array('exception' => $exception));
         exit(1);
-    }
-
-    /**
-     * Handles the request, calls controllers etc.
-     */
-    public function handleRequest()
-    {
-        $availableUrls = $this->getConfig('urls');
-        $requestBasePath = 'http' . ($_SERVER['SERVER_PORT'] == 443 ? 's' : '')
-            . '://' . $_SERVER['HTTP_HOST'];
-        $requestFullPath =  $requestBasePath . $_SERVER['REQUEST_URI'];
-        $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
-        $this->urlComponents = parse_url($requestFullPath);
-        $this->urlComponents['base_path'] = $requestBasePath;
-        $requestPath = $this->urlComponents['path'];
-
-        // Redirect to 404 if URL path is not registered.
-        if (!isset($availableUrls[$requestPath])) {
-            $this->redirect('/404');
-        }
-
-        $urlInfo = $availableUrls[$requestPath];
-        $this->urlInfo = $urlInfo;
-
-        // Redirect to 404, if the request method is invalid.
-        if (!in_array($requestMethod, $urlInfo['methods'])) {
-            $this->redirect('/404');
-        }
-
-        // Instantiate controller and call action.
-        $controllerInfo = explode('/', $urlInfo['controller']);
-        $controllerName = 'BS\\Controller\\' . $controllerInfo[0] . 'Controller';
-        $actionName = $controllerInfo[1] . 'Action';
-        echo (new $controllerName)->$actionName();
-    }
-
-    /**
-     * Sends a HTTP redirect.
-     *
-     * @param string $path URL path to redirect to
-     */
-    public function redirect($path)
-    {
-        header("Location: " . $this->urlComponents['base_path'] . $path);
-        exit();
     }
 
     /**
@@ -148,7 +107,7 @@ class App
      * E.g. $path = 'db/hostname' returns the database hostname.
      *
      * @param string $path configuration path
-     * @return null|string|integer Configuration value
+     * @return mixed Configuration value
      */
     public function getConfig($path)
     {
@@ -156,14 +115,7 @@ class App
             $this->loadConfiguration();
         }
 
-        $explodedPath = explode('/', $path);
-        $value = $this->config;
-
-        foreach ($explodedPath as $key) {
-            $value = $value[$key];
-        }
-
-        return $value;
+        return ArrayHelper::instance()->getValueByPath($this->config, $path);
     }
 
     /**
@@ -179,11 +131,19 @@ class App
      * Renders a template using the template Engine.
      *
      * @param string $templateName template name
-     * @param array $templateParameters parameters for the template
+     * @param array|null $templateParameters parameters for the template
      * @return string rendered template
      */
-    public function renderTemplate($templateName, array $templateParameters = array())
+    public function renderTemplate($templateName, array $templateParameters = null)
     {
-        return $this->templateEngine->render($templateName, $templateParameters);
+        if (UserManager::instance()->isLoggedIn()) {
+            $templateParameters['user'] = UserManager::instance()
+                ->getUserInformation();
+        }
+
+        $templateParameters['request'] = Http::instance()->getRequestInfo();
+        $this->templateEngine->addData($templateParameters);
+
+        return $this->templateEngine->render($templateName);
     }
 }

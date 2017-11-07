@@ -1,3 +1,3 @@
 <?php
 require 'src/autoload.php';
-\BS\Model\App::instance()->handleRequest();
+\BS\Model\Http\Http::instance()->handleRequest();

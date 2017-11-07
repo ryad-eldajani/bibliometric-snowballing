@@ -10,9 +10,11 @@
  * LICENSE.txt file that was distributed with this source code.
  */
 
-namespace BS\User;
+namespace BS\Model\User;
 
+use BS\Model\App;
 use BS\Model\Db\Database;
+use BS\Model\Http\Session;
 
 class UserManager
 {
@@ -22,15 +24,22 @@ class UserManager
     protected static $instance = null;
 
     /**
-     * @var array User information cache.
+     * @var array|null User information cache.
      */
-    protected $userInformation = array();
+    protected $userInformation = null;
+
+    /**
+     * @var Session|null $session Session
+     */
+    protected $session = null;
 
     /**
      * UserManager constructor.
      */
     private function __construct()
     {
+        $this->session = new Session();
+        $this->session->start();
     }
 
     /**
@@ -47,15 +56,62 @@ class UserManager
     }
 
     /**
+     * @return bool
+     */
+    public function isLoggedIn()
+    {
+        return $this->session->hasValue('user.username');
+    }
+
+    /**
+     * Logs in a user by username.
+     *
+     * @param string $username Username
+     * @param string $password Password
+     * @return bool True, if login succeeded
+     */
+    public function login($username, $password)
+    {
+        // If session is already available or credential check failed, abort.
+        if (!$this->checkCredentials($username, $password)) {
+            return false;
+        }
+
+        if (!$this->session->isValid(App::instance()->getConfig('session_ttl'))) {
+            $this->session->forget();
+        }
+
+        $this->session->setValue('user.username', $username);
+        return true;
+    }
+
+    /**
+     * Logs out a user.
+     */
+    public function logout()
+    {
+        if (!($this->session instanceof Session)) {
+            return;
+        }
+
+        $this->session->forget();
+        $this->session = null;
+    }
+
+    /**
      * Returns user information for a specific username or null.
      *
      * @param string $username username
      * @return array|null User information from database or null.
      */
-    public function getUserInformation($username)
+    public function getUserInformation($username = null)
     {
-        if (isset($this->userInformation[$username])) {
-            return $this->userInformation[$username];
+        if ($username === null && $this->isLoggedIn()) {
+            $username = $this->session->getValue('user.username');
+        }
+
+        if (is_array($this->userInformation)) {
+            return $this->userInformation;
         }
 
         $result = Database::instance()->select(
@@ -69,8 +125,8 @@ class UserManager
             return null;
         }
 
-        $this->userInformation[$username] = $result[0];
-        return $result[0];
+        $this->userInformation = $result[0];
+        return $this->userInformation;
     }
 
     /**

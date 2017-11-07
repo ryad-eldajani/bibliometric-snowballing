@@ -131,9 +131,9 @@ class Database
 
         // Build $bindParameters array (first element has to be the parameter
         // types, rest the parameter values).
-        $bindParameters[] = $parameterTypes;
+        $bindParameters[] = & $parameterTypes;
         for ($i = 0; $i < count($parameters); $i++) {
-            $bindParameters[] = $connection->real_escape_string($parameters[$i]);
+            $bindParameters[] = & $connection->real_escape_string($parameters[$i]);
         }
 
         // Call $statement->bind_param() with $bindParameters.

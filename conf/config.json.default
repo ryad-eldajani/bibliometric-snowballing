@@ -6,6 +6,7 @@
     "password": "password",
     "port": 3306
   },
+  "session_ttl": 60,
   "typo3": {
     "directory": "/srv/http/typo3.localhost"
   },
