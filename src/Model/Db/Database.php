@@ -133,7 +133,7 @@ class Database
         // types, rest the parameter values).
         $bindParameters[] = & $parameterTypes;
         for ($i = 0; $i < count($parameters); $i++) {
-            $bindParameters[] = & $connection->real_escape_string($parameters[$i]);
+            $bindParameters[] = & $parameters[$i];
         }
 
         // Call $statement->bind_param() with $bindParameters.

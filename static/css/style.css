@@ -49,9 +49,13 @@ legend.legend {
     width: inherit!important;
     padding: inherit;
 }
-.form-group input {
-    border-radius: 4px!important;
-}
 .form-actions {
     text-align: center;
+}
+.input-group[class*="col-"] {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.dataTables_filter input {
+
 }

@@ -8,10 +8,10 @@ Following open-source components are used:
 * [jQuery 3][jquery]
 * [popper.js][popperjs]
 * [Glyphicons][glyphicons]
-* [Source Code Pro][sourcecodepro]
+* [DataTables][datatables]
 
 [bootstrap]: https://github.com/twbs/bootstrap
 [jquery]: https://github.com/jquery/jquery
 [popperjs]: https://github.com/FezVrasta/popper.js
 [glyphicons]: https://glyphicons.com/
-[sourcecodepro]: https://github.com/adobe-fonts/source-code-pro
+[datatables]: https://github.com/DataTables/DataTables
