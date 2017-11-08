@@ -13,18 +13,16 @@
 namespace BS\Controller;
 
 
-use BS\Model\App;
-
 class IndexController extends AbstractController
 {
     public function indexAction()
     {
         $this->redirectIfNotLoggedIn();
-        return App::instance()->renderTemplate('projects');
+        $this->http->redirect('/projects');
     }
 
     public function notFoundAction()
     {
-        return App::instance()->renderTemplate('404');
+        return $this->app->renderTemplate('404');
     }
 }

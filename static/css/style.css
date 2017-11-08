@@ -27,6 +27,8 @@ body {
     position: absolute;
     bottom: 0;
     width: 100%;
+    -webkit-box-shadow: 0 -3px 3px rgba(0,0,0,.175);
+    box-shadow: 0 -3px 3px rgba(0,0,0,.175);
 }
 .exception {
     font-family: source-code-pro, Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;

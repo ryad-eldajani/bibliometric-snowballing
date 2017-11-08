@@ -13,19 +13,45 @@
 namespace BS\Controller;
 
 
+use BS\Model\App;
 use BS\Model\Http\Http;
 use BS\Model\User\UserManager;
 
 abstract class AbstractController
 {
     /**
+     * @var App app instance
+     */
+    protected $app = null;
+
+    /**
+     * @var Http instance
+     */
+    protected $http = null;
+
+    /**
+     * @var UserManager user manager instance
+     */
+    protected $userManager = null;
+
+    /**
+     * AbstractController constructor.
+     */
+    public function __construct()
+    {
+        $this->app = App::instance();
+        $this->http = Http::instance();
+        $this->userManager = UserManager::instance();
+    }
+
+    /**
      * Checks, if the user is logged in. If the user is not logged in
      * he will be redirected to the login page.
      */
     protected function redirectIfNotLoggedIn()
     {
-        if (!UserManager::instance()->isLoggedIn()) {
-            Http::instance()->redirect('/login');
+        if (!$this->userManager->isLoggedIn()) {
+            $this->http->redirect('/login');
         }
     }
 }

@@ -7,13 +7,25 @@
     <link rel="shortcut icon" type="image/png" href="/static/gfx/favicon.png">
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/buttons.bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
 
     <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="/static/js/popper.min.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/static/js/datatables.min.js"></script>
+    <script type="text/javascript" src="/static/js/popper.min.js"></script>
+    <script type="text/javascript" src="/static/js/validator.js"></script>
+    <?php if (isset($dataTable) && $dataTable === true): ?>
+    <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="/static/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="/static/js/buttons.bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/jszip.min.js"></script>
+    <script type="text/javascript" src="/static/js/pdfmake.min.js"></script>
+    <script type="text/javascript" src="/static/js/vfs_fonts.js"></script>
+    <script type="text/javascript" src="/static/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="/static/js/buttons.print.min.js"></script>
+    <script type="text/javascript" src="/static/js/buttons.colVis.min.js"></script>
+    <?php endif ?>
     <script type="text/javascript" src="/static/js/script.js"></script>
 </head>
 <body>

@@ -22,13 +22,13 @@ class LoginController extends AbstractController
     public function loginAction()
     {
         $message = null;
-        if (Http::instance()->getRequestInfo('request_method') == 'post') {
-            if (UserManager::instance()->login(
-                    Http::instance()->getRequestInfo('post_params/username'),
-                    Http::instance()->getRequestInfo('post_params/password')
+        if ($this->http->getRequestInfo('request_method') == 'post') {
+            if ($this->userManager->login(
+                    $this->http->getRequestInfo('post_params/username'),
+                    $this->http->getRequestInfo('post_params/password')
                 )
             ) {
-                Http::instance()->redirect('/');
+                $this->http->redirect('/');
             } else {
                 $message = array(
                     'message' => 'Username and password did not match, please retry.',
@@ -37,12 +37,12 @@ class LoginController extends AbstractController
             }
         }
 
-        return App::instance()->renderTemplate('login', $message);
+        return $this->app->renderTemplate('login', $message);
     }
 
     public function logoutAction()
     {
-        UserManager::instance()->logout();
-        Http::instance()->redirect('/');
+        $this->userManager->logout();
+        $this->http->redirect('/');
     }
 }
