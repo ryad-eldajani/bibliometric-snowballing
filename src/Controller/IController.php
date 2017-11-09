@@ -13,19 +13,6 @@
 namespace BS\Controller;
 
 
-use BS\Model\Http\Response;
-
-class UserController extends AbstractController
+interface IController
 {
-    /**
-     * URL: /profile
-     * Methods: GET
-     * @return Response instance
-     */
-    public function viewProfileAction()
-    {
-        return new Response(
-            $this->app->renderTemplate('profile')
-        );
-    }
 }

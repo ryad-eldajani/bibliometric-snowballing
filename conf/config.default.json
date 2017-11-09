@@ -15,6 +15,14 @@
       "controller": "Index/index",
       "methods": ["get"]
     },
+    "/projects": {
+      "controller": "Project/viewProjects",
+      "methods": ["get"]
+    },
+    "/projects/new": {
+      "controller": "Project/newProject",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

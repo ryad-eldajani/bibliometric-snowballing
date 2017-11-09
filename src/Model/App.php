@@ -92,13 +92,21 @@ class App
      */
     protected function loadConfiguration()
     {
-        if (!$this->config) {
-            if (!file_exists('conf/config.json')) {
-                throw new AppException('Missing config.json file in conf directory');
-            }
+        if (is_array($this->config)) {
+            return;
+        }
 
-            $json = file_get_contents('conf/config.json');
-            $this->config = \json_decode($json, true);
+        // load default configuration
+        $jsonDefault = file_get_contents('conf/config.default.json');
+        $this->config = \json_decode($jsonDefault, true);
+
+        // load custom configuration, if existing
+        if (file_exists('conf/config.json')) {
+            $jsonCustom = file_get_contents('conf/config.json');
+            $this->config = array_merge(
+                $this->config,
+                \json_decode($jsonCustom, true)
+            );
         }
     }
 

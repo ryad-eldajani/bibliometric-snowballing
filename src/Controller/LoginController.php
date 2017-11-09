@@ -13,22 +13,35 @@
 namespace BS\Controller;
 
 
-use BS\Model\App;
-use BS\Model\Http\Http;
-use BS\Model\User\UserManager;
+use BS\Model\Http\RedirectResponse;
+use BS\Model\Http\Response;
 
 class LoginController extends AbstractController
 {
+    /**
+     * URL: /login
+     * Methods: GET, POST
+     * @return RedirectResponse|Response instance
+     */
     public function loginAction()
     {
+        // If user is logged in, redirect to projects
+        if ($this->userManager->isLoggedIn()) {
+            return new RedirectResponse('/projects');
+        }
+
         $message = null;
+
+        // If HTTP method is POST, try to login.
         if ($this->http->getRequestInfo('request_method') == 'post') {
+            // If login succeeds, redirect to /, otherwise show login again
+            // with message.
             if ($this->userManager->login(
                     $this->http->getRequestInfo('post_params/username'),
                     $this->http->getRequestInfo('post_params/password')
                 )
             ) {
-                $this->http->redirect('/');
+                return new RedirectResponse('/');
             } else {
                 $message = array(
                     'message' => 'Username and password did not match, please retry.',
@@ -37,12 +50,19 @@ class LoginController extends AbstractController
             }
         }
 
-        return $this->app->renderTemplate('login', $message);
+        return new Response(
+            $this->app->renderTemplate('login', $message)
+        );
     }
 
+    /**
+     * URL: /logout
+     * Methods: GET
+     * @return RedirectResponse instance
+     */
     public function logoutAction()
     {
         $this->userManager->logout();
-        $this->http->redirect('/');
+        return new RedirectResponse('/');
     }
 }

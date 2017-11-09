@@ -13,16 +13,32 @@
 namespace BS\Controller;
 
 
+use BS\Model\Http\RedirectResponse;
+use BS\Model\Http\Response;
+
 class IndexController extends AbstractController
 {
+    /**
+     * URL: /
+     * Methods: GET
+     * @return RedirectResponse redirect to projects or login
+     */
     public function indexAction()
     {
         $this->redirectIfNotLoggedIn();
-        $this->http->redirect('/projects');
+        return new RedirectResponse('/projects');
     }
 
+    /**
+     * URL: /404
+     * Methods: GET
+     * @return Response instance
+     */
     public function notFoundAction()
     {
-        return $this->app->renderTemplate('404');
+        return new Response(
+            $this->app->renderTemplate('404'),
+            Response::HTTP_STATUS_NOT_FOUND
+        );
     }
 }

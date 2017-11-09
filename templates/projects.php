@@ -10,18 +10,35 @@ $(document).ready(function () {
                 action: function (e, dt, node, config) {}
             },
             { extend: 'copy', text: 'Copy to clipboard' },
-            'excel',
-            'pdf',
+            { extend: 'excel', text: 'Export to Excel' },
+            {
+                text: 'Export to CSV',
+                action: function ( e, dt, button, config ) {
+                    var data = dt.buttons.exportData();
+
+                    $.fn.dataTable.fileSave(
+                        new Blob([JSON.stringify(data)]),
+                        'Export.csv'
+                    );
+                }
+            },
+            { extend: 'pdf', text: 'Export to PDF' },
             { extend: 'colvis', text: 'Show columns' }
         ]
     });
-    table.buttons().container()
-        .appendTo('#table_projects_wrapper .col-sm-6:eq(0)');
+    table.buttons().container().appendTo('#table_projects_wrapper .col-sm-6:eq(0)');
     table.on('buttons-action', function (e, button, dataTable, node, config) {
         if (button.text() === 'New project') {
             $('#new_project_modal').modal('show');
         }
     });
+    $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
+    var filter = $('#table_projects_filter');
+    var filterInput = filter.find('label>input').detach().attr('placeholder', 'Search project');
+    filter.parent()
+        .removeClass('col-sm-6').addClass('col-sm-2 input-group')
+        .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
+        .append(filterInput);
     $('#btn_project_create').click(function (e) {
         e.preventDefault();
         $.ajax({

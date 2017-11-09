@@ -12,6 +12,7 @@
 
 namespace BS\Model\Http;
 
+use BS\Controller\IController;
 use BS\Helper\ArrayHelper;
 use BS\Model\App;
 
@@ -82,14 +83,14 @@ class Http
 
         // Redirect to 404 if URL path is not registered.
         if (!isset($availableUrls[$this->requestInfo['path']])) {
-            $this->redirect('/404');
+            (new RedirectResponse('/404'))->send();
         }
 
         $this->controllerInfo = $availableUrls[$this->requestInfo['path']];
 
         // Redirect to 404, if the request method is invalid.
         if (!in_array($this->requestInfo['request_method'], $this->controllerInfo['methods'])) {
-            $this->redirect('/404');
+            (new RedirectResponse('/404'))->send();
         }
 
         // Instantiate controller and call action.
@@ -98,8 +99,16 @@ class Http
             . $controllerClassAction[0] . 'Controller';
         $this->controllerInfo['action_name'] = $controllerClassAction[1] . 'Action';
 
-        echo (new $this->controllerInfo['controller_name'])
-            ->{$this->controllerInfo['action_name']}();
+        /**
+         * @var $controller IController
+         */
+        $controller = new $this->controllerInfo['controller_name'];
+
+        /**
+         * @var $response Response
+         */
+        $response = $controller->{$this->controllerInfo['action_name']}();
+        $response->send();
     }
 
     /**

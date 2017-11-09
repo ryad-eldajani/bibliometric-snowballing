@@ -15,9 +15,10 @@ namespace BS\Controller;
 
 use BS\Model\App;
 use BS\Model\Http\Http;
+use BS\Model\Http\RedirectResponse;
 use BS\Model\User\UserManager;
 
-abstract class AbstractController
+abstract class AbstractController implements IController
 {
     /**
      * @var App app instance
@@ -51,7 +52,7 @@ abstract class AbstractController
     protected function redirectIfNotLoggedIn()
     {
         if (!$this->userManager->isLoggedIn()) {
-            $this->http->redirect('/login');
+            (new RedirectResponse('/login'))->send();
         }
     }
 }
