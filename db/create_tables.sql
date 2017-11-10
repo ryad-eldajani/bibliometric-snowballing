@@ -27,11 +27,12 @@ CREATE TABLE IF NOT EXISTS `project` (
   `id_project` INT NOT NULL AUTO_INCREMENT,
   `id_user` INT NOT NULL,
   `project_name` varchar(255) DEFAULT NULL,
+  `created_at` DATETIME DEFAULT NOW(),
   PRIMARY KEY (`id_project`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `work` (
-  `id_work` INT NOT NULL,
+  `id_work` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(255) DEFAULT NULL,
   `subtitle` VARCHAR(255) DEFAULT NULL,
   `work_year` INT DEFAULT NULL,
@@ -39,17 +40,17 @@ CREATE TABLE IF NOT EXISTS `work` (
   PRIMARY KEY (`id_work`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `quote` (
+  `id_work` INT NOT NULL,
+  `id_work_quoted` INT NOT NULL,
+  PRIMARY KEY (`id_work`, `id_work_quoted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `work_journal` (
   `id_work` INT NOT NULL,
   `id_journal` INT NOT NULL,
   `publish_volume` INT DEFAULT NULL,
   `publish_number` INT DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `quote` (
-  `id_work` INT NOT NULL,
-  `id_work_quoted` INT NOT NULL,
-  PRIMARY KEY (`id_work`, `id_work_quoted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `work_author` (
