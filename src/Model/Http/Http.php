@@ -146,6 +146,42 @@ class Http
     }
 
     /**
+     * Returns a POST variable, if available
+     *
+     * @param string $key POST variable name to return
+     * @return null|string value of POST variable or null if not available
+     */
+    public function getPostParam($key) {
+        if (
+            !isset($this->requestInfo['post_params'])
+            || !isset($this->requestInfo['post_params'][$key])
+        ) {
+            return null;
+        }
+
+        return $this->requestInfo['post_params'][$key];
+    }
+
+    /**
+     * Alters a POST variable, if available
+     *
+     * @param string $key POST variable name to alter
+     * @param string $value POST variable value to set
+     * @return null|string altered POST variable or null if not available
+     */
+    public function alterPostParam($key, $value) {
+        if (
+            !isset($this->requestInfo['post_params'])
+            || !isset($this->requestInfo['post_params'][$key])
+        ) {
+            return null;
+        }
+
+        $this->requestInfo['post_params'][$key] = $value;
+        return $this->requestInfo['post_params'][$key];
+    }
+
+    /**
      * Getter for the controller information by key.
      *
      * @param string|null $path optional path for the specific controller information

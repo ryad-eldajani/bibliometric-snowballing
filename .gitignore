@@ -50,5 +50,8 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# PHPUnit
+phpunit.phar
+
 # Bibliometric Snowballing specific files
 conf/config.json

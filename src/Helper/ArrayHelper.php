@@ -56,6 +56,10 @@ class ArrayHelper
         $explodedPath = explode('/', $path);
         $value = $array;
         foreach ($explodedPath as $key) {
+            if (!isset($value[$key])) {
+                return null;
+            }
+
             $value = $value[$key];
         }
 
