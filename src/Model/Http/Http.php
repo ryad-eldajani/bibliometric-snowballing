@@ -163,22 +163,20 @@ class Http
     }
 
     /**
-     * Alters a POST variable, if available
+     * Alters a POST variable, if available.
      *
      * @param string $key POST variable name to alter
      * @param string $value POST variable value to set
-     * @return null|string altered POST variable or null if not available
      */
     public function alterPostParam($key, $value) {
         if (
             !isset($this->requestInfo['post_params'])
             || !isset($this->requestInfo['post_params'][$key])
         ) {
-            return null;
+            return;
         }
 
         $this->requestInfo['post_params'][$key] = $value;
-        return $this->requestInfo['post_params'][$key];
     }
 
     /**

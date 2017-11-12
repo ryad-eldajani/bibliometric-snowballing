@@ -11,12 +11,13 @@
  */
 
 use PHPUnit\Framework\TestCase;
+use BS\Model\Http\Http;
 use BS\Helper\ValidatorHelper;
 
 final class ValidatorHelperTest extends TestCase
 {
     /**
-     * @var \BS\Model\Http\Http $http Http instance
+     * @var Http $http Http instance
      */
     protected $http = null;
 
@@ -31,7 +32,7 @@ final class ValidatorHelperTest extends TestCase
     public function __construct()
     {
         parent::__construct();
-        $http = \BS\Model\Http\Http::instance();
+        $http = Http::instance();
         $helper = ValidatorHelper::instance();
 
         // Mock POST parameters.
@@ -108,6 +109,9 @@ final class ValidatorHelperTest extends TestCase
         $this->assertTrue(
             $this->helper->validate(array('g' => array('type' => 'bool')))
         );
+        $this->assertTrue(
+            $this->helper->validate(array('e' => array('type' => 'string')))
+        );
         $this->assertFalse(
             $this->helper->validate(array('e' => array('type' => 'int')))
         );
@@ -119,6 +123,37 @@ final class ValidatorHelperTest extends TestCase
         );
         $this->assertFalse(
             $this->helper->validate(array('h' => array('type' => 'bool')))
+        );
+    }
+
+    /**
+     * Test validate() 'min/max' option.
+     */
+    public function testValidateMinMax()
+    {
+        $this->assertTrue(
+            $this->helper->validate(array('a' => array('min' => 1)))
+        );
+        $this->assertFalse(
+            $this->helper->validate(array('a' => array('min' => 2)))
+        );
+        $this->assertTrue(
+            $this->helper->validate(array('a' => array('max' => 255)))
+        );
+        $this->assertFalse(
+            $this->helper->validate(array('a' => array('max' => 0)))
+        );
+        $this->assertTrue(
+            $this->helper->validate(array('i' => array('min' => 10)))
+        );
+        $this->assertFalse(
+            $this->helper->validate(array('i' => array('min' => 20)))
+        );
+        $this->assertTrue(
+            $this->helper->validate(array('i' => array('max' => 18)))
+        );
+        $this->assertFalse(
+            $this->helper->validate(array('i' => array('max' => 17)))
         );
     }
 }

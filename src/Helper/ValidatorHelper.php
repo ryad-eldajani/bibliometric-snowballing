@@ -50,6 +50,129 @@ class ValidatorHelper
     }
 
     /**
+     * Returns false, if validation is required and POST variable unset, otherwise true.
+     *
+     * @param string $postKey POST variable key
+     * @param array $validation validation information
+     * @return bool false, if validation is required and POST variable unset
+     */
+    protected function validateIsRequired($postKey, array $validation = array())
+    {
+        $postValue = $this->http->getPostParam($postKey);
+        if (
+            isset($validation['required'])
+            && $validation['required'] === true
+            && $postValue === null
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apply a function to a POST variable value, if a function is set.
+     *
+     * @param string $postKey POST variable key
+     * @param array $validation validation information
+     */
+    protected function validateApplyFunction($postKey, array $validation = array())
+    {
+        $postValue = $this->http->getPostParam($postKey);
+        if (isset($validation['func']) && is_callable($validation['func'])) {
+            $this->http->alterPostParam(
+                $postKey,
+                $validation['func']($postValue)
+            );
+        }
+    }
+
+    /**
+     * Returns false, if data type is set and POST variable value is not compatible,
+     * otherwise true.
+     *
+     * @param string $postKey POST variable key
+     * @param array $validation validation information
+     * @return bool false, if data type is required and POST variable is not compatible
+     */
+    protected function validateDataType($postKey, array $validation = array())
+    {
+        $postValue = $this->http->getPostParam($postKey);
+        if (isset($validation['type'])) {
+            // If data type has to be int, alter to int
+            if ($validation['type'] == 'int') {
+                if (!is_numeric($postValue)) {
+                    return false;
+                }
+
+                $this->http->alterPostParam(
+                    $postKey,
+                    intval($postValue)
+                );
+            } elseif ($validation['type'] == 'double') {
+                if (!is_numeric($postValue)) {
+                    return false;
+                }
+
+                $this->http->alterPostParam(
+                    $postKey,
+                    floatval($postValue)
+                );
+            } elseif ($validation['type'] == 'bool') {
+                if (!is_numeric($postValue)) {
+                    return false;
+                }
+
+                $this->http->alterPostParam(
+                    $postKey,
+                    (boolval($postValue) ? 1 : 0)
+                );
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns false, if min and/or max is set and POST variable value is
+     * does not fulfil the constraints, otherwise true.
+     *
+     * @param string $postKey POST variable key
+     * @param array $validation validation information
+     * @return bool false, if POST variable does not fulfil min/max constraint
+     */
+    protected function validateMinMax($postKey, array $validation = array())
+    {
+        $postValue = $this->http->getPostParam($postKey);
+
+        if (isset($validation['min'])) {
+            if (!is_string($postValue)) {
+                if ($postValue < $validation['min']) {
+                    return false;
+                }
+            } else {
+                if (strlen($postValue) < $validation['min']) {
+                    return false;
+                }
+            }
+        }
+
+        if (isset($validation['max'])) {
+            if (!is_string($postValue)) {
+                if ($postValue > $validation['max']) {
+                    return false;
+                }
+            } else {
+                if (strlen($postValue) > $validation['max']) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Validates POST variables by validation information.
      * Validation information must be an array with the structure:
      * array(
@@ -67,56 +190,22 @@ class ValidatorHelper
      */
     public function validate(array $validationInfo = array()) {
         foreach ($validationInfo as $postKey => $validation) {
-            $postValue = $this->http->getPostParam($postKey);
-
-            // If validation is required and POST variable is not set, return false.
-            if (
-                isset($validation['required'])
-                && $validation['required'] === true
-                && $postValue === null
-            ) {
+            // Check required constraint.
+            if (!$this->validateIsRequired($postKey, $validation)) {
                 return false;
             }
 
             // If a function is set, apply the function.
-            if (isset($validation['func']) && is_callable($validation['func'])) {
-                $postValue = $this->http->alterPostParam(
-                    $postKey,
-                    $validation['func']($postValue)
-                );
+            $this->validateApplyFunction($postKey, $validation);
+
+            // Check data type.
+            if (!$this->validateDataType($postKey, $validation)) {
+                return false;
             }
 
-            // Check data type, if set.
-            if (isset($validation['type'])) {
-                // If data type has to be int, alter to int
-                if ($validation['type'] == 'int') {
-                    if (!is_numeric($postValue)) {
-                        return false;
-                    }
-
-                    $this->http->alterPostParam(
-                        $postKey,
-                        intval($postValue)
-                    );
-                } elseif ($validation['type'] == 'double') {
-                    if (!is_numeric($postValue)) {
-                        return false;
-                    }
-
-                    $this->http->alterPostParam(
-                        $postKey,
-                        floatval($postValue)
-                    );
-                } elseif ($validation['type'] == 'bool') {
-                    if (!is_numeric($postValue)) {
-                        return false;
-                    }
-
-                    $this->http->alterPostParam(
-                        $postKey,
-                        (boolval($postValue) ? 1 : 0)
-                    );
-                }
+            // Check min/max constraints.
+            if (!$this->validateMinMax($postKey, $validation)) {
+                return false;
             }
         }
 
