@@ -27,6 +27,7 @@ class TemplateHelper implements ExtensionInterface
     public function register(Engine $engine)
     {
         $engine->registerFunction('active', [$this, 'tabActive']);
+        $engine->registerFunction('date', [$this, 'dateFormat']);
     }
 
     /**
@@ -42,5 +43,17 @@ class TemplateHelper implements ExtensionInterface
         return Http::instance()->getRequestInfo('path') == $path
             ? ($withoutClass ? ' active' : ' class="active"')
             : '';
+    }
+
+    /**
+     * Formats a date.
+     *
+     * @param string $date date
+     * @param string $format date format
+     * @return string formatted date
+     */
+    public function dateFormat($date, $format = 'd.m.Y')
+    {
+        return date($format, strtotime($date));
     }
 }

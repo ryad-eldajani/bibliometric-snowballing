@@ -99,6 +99,17 @@ class UserManager
     }
 
     /**
+     * @param $key
+     * @param null $username
+     * @return mixed|null
+     */
+    public function getUserParam($key, $username = null)
+    {
+        $userInfo = $this->getUserInformation($username);
+        return isset($userInfo[$key]) ? $userInfo[$key] : null;
+    }
+
+    /**
      * Returns user information for a specific username or null.
      *
      * @param string $username username
@@ -106,12 +117,16 @@ class UserManager
      */
     public function getUserInformation($username = null)
     {
-        if ($username === null && $this->isLoggedIn()) {
-            $username = $this->session->getValue('user.username');
+        if ($username === null) {
+            if ($this->isLoggedIn()) {
+                $username = $this->session->getValue('user.username');
+            } else {
+                return null;
+            }
         }
 
-        if (is_array($this->userInformation)) {
-            return $this->userInformation;
+        if (is_array($this->userInformation[$username])) {
+            return $this->userInformation[$username];
         }
 
         $result = Database::instance()->select(
@@ -125,8 +140,8 @@ class UserManager
             return null;
         }
 
-        $this->userInformation = $result[0];
-        return $this->userInformation;
+        $this->userInformation[$username] = $result[0];
+        return $this->userInformation[$username];
     }
 
     /**

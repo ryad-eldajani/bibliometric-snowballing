@@ -38,8 +38,8 @@ class Database
     protected $connections = array();
 
     /**
-         * Database constructor.
-         */
+     * Database constructor.
+     */
     private function __construct()
     {
         // Instantiate BS connection.
@@ -75,6 +75,7 @@ class Database
 
     /**
      * Returns the singleton.
+     *
      * @return Database instance
      */
     public static function instance()
@@ -116,14 +117,17 @@ class Database
         // We have parameters to bind to the statement.
         // Build up $parameterTypes (e.g. "ssi" for 2x string and 1x integer).
         $parameterTypes = '';
-        foreach ($parameters as $parameter) {
-            $parameterType = self::PARAM_STRING;
-            if (is_int($parameter)) {
+        for ($i = 0; $i < count($parameters); $i++) {
+            if (is_int($parameters[$i])) {
                 $parameterType = self::PARAM_INTEGER;
-            } elseif (is_double($parameter)) {
+            } elseif (is_double($parameters[$i])) {
                 $parameterType = self::PARAM_DOUBLE;
-            } elseif (is_file($parameter)) {
+            } elseif (is_file($parameters[$i])) {
                 $parameterType = self::PARAM_BLOB;
+            } else {
+                // Handle parameter as string.
+                $parameterType = self::PARAM_STRING;
+                $parameters[$i] = trim(htmlspecialchars($parameters[$i]));
             }
 
             $parameterTypes .= $parameterType;
@@ -150,7 +154,6 @@ class Database
      * @param array $parameters Parameters to bind
      * @param string $connectionType Connection type (e.g. self::CONNECTION_BS)
      * @return array SQL result
-     * @throws DbException
      */
     public function select($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
     {
@@ -165,5 +168,34 @@ class Database
         }
 
         return $resultArray;
+    }
+
+    /**
+     * Executes an INSERT statement and returns the ID of the new record.
+     *
+     * @param string $sql INSERT statement
+     * @param array $parameters Parameters to bind
+     * @param string $connectionType Connection type (e.g. self::CONNECTION_BS)
+     * @return int ID of new record
+     */
+    public function insert($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
+    {
+        $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
+        $statement->execute();
+
+        return $statement->insert_id;
+    }
+
+    /**
+     * Executes an UPDATE or DELETE statement.
+     *
+     * @param string $sql UPDATE or DELETE statement
+     * @param array $parameters Parameters to bind
+     * @param string $connectionType Connection type (e.g. self::CONNECTION_BS)
+     */
+    public function updateOrDelete($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
+    {
+        $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
+        $statement->execute();
     }
 }

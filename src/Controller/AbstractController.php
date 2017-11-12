@@ -14,6 +14,7 @@ namespace BS\Controller;
 
 
 use BS\Model\App;
+use BS\Model\Db\Database;
 use BS\Model\Http\Http;
 use BS\Model\Http\RedirectResponse;
 use BS\Model\User\UserManager;
@@ -21,19 +22,24 @@ use BS\Model\User\UserManager;
 abstract class AbstractController implements IController
 {
     /**
-     * @var App app instance
+     * @var App $app App instance
      */
     protected $app = null;
 
     /**
-     * @var Http instance
+     * @var Http $http Http instance
      */
     protected $http = null;
 
     /**
-     * @var UserManager user manager instance
+     * @var UserManager $userManager UserManager instance
      */
     protected $userManager = null;
+
+    /**
+     * @var Database $db Database instance
+     */
+    protected $db = null;
 
     /**
      * AbstractController constructor.
@@ -43,6 +49,7 @@ abstract class AbstractController implements IController
         $this->app = App::instance();
         $this->http = Http::instance();
         $this->userManager = UserManager::instance();
+        $this->db = Database::instance();
     }
 
     /**

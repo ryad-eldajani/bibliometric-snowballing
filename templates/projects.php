@@ -44,7 +44,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: '/projects/new',
-            data: {'project_id': 1, 'project_name': $('#input_project_name').val()},
+            data: {'project_name': $('#input_project_name').val()},
             dataType: 'json',
             success: function (data, status) {
                 console.log(data.project_name);
@@ -65,8 +65,7 @@ $(document).ready(function () {
                 <div class="modal-body">
                         <div class="form-group">
                             <label for="inputName">Project name</label>
-                            <input type="text" class="form-control" id="input_project_name" placeholder="Enter a new project name" data-minlength="4" required>
-                            <div class="help-block">Minimum of 4 characters</div>
+                            <input type="text" class="form-control" id="input_project_name" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
                         </div>
                 </div>
                 <div class="modal-footer">
@@ -89,45 +88,23 @@ $(document).ready(function () {
         </tr>
         </thead>
         <tbody>
+        <?php if (isset($projects)): ?>
+        <?php foreach ($projects as $project): ?>
         <tr>
-            <td>Project 1</td>
-            <td>23</td>
-            <td>01.11.2017</td>
+            <td><a href="/projects/view/<?=$this->e($project['id_project'])?>"><?=$this->e($project['project_name'])?></a></td>
+            <td><?=$this->e($project['objects'])?></td>
+            <td><?=$this->e($this->date($project['created_at']))?></td>
             <td>
-                <button type="button" class="btn btn-xs btn-info">
+                <button type="button" class="btn btn-xs btn-info" data-project-id="<?=$this->e($project['id_project'])?>">
                     <span class="glyphicon glyphicon-pencil"></span>
                 </button>
-                <button type="button" class="btn btn-xs btn-danger">
+                <button type="button" class="btn btn-xs btn-danger" data-project-id="<?=$this->e($project['id_project'])?>">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
             </td>
         </tr>
-        <tr>
-            <td>Project 2</td>
-            <td>42</td>
-            <td>03.11.2017</td>
-            <td>
-                <button type="button" class="btn btn-xs btn-info">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                </button>
-                <button type="button" class="btn btn-xs btn-danger">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </button>
-            </td>
-        </tr>
-        <tr>
-            <td>This is a test</td>
-            <td>111</td>
-            <td>08.11.2017</td>
-            <td>
-                <button type="button" class="btn btn-xs btn-info">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                </button>
-                <button type="button" class="btn btn-xs btn-danger">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </button>
-            </td>
-        </tr>
+        <?php endforeach ?>
+        <?php endif ?>
         </tbody>
     </table>
 </div>

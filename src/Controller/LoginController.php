@@ -37,8 +37,8 @@ class LoginController extends AbstractController
             // If login succeeds, redirect to /, otherwise show login again
             // with message.
             if ($this->userManager->login(
-                    $this->http->getRequestInfo('post_params/username'),
-                    $this->http->getRequestInfo('post_params/password')
+                    $this->http->getPostParam('username'),
+                    $this->http->getPostParam('password')
                 )
             ) {
                 return new RedirectResponse('/');

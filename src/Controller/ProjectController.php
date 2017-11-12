@@ -13,7 +13,9 @@
 namespace BS\Controller;
 
 
+use BS\Helper\ValidatorHelper;
 use BS\Model\Http\Response;
+use Model\Http\JsonResponse;
 
 class ProjectController extends AbstractController
 {
@@ -24,10 +26,21 @@ class ProjectController extends AbstractController
      */
     public function viewProjectsAction()
     {
+        $projects = $this->db->select(
+            'SELECT p.id_project, p.project_name, p.created_at, COUNT(wp.id_project) AS objects
+                FROM project p
+                LEFT JOIN work_project wp ON wp.id_project = p.id_project
+                WHERE p.id_user = ?
+                GROUP BY wp.id_project',
+            array($this->userManager->getUserParam('uid'))
+        );
         return new Response(
             $this->app->renderTemplate(
                 'projects',
-                array('dataTable' => true)
+                array(
+                    'dataTable' => true,
+                    'projects' => $projects
+                )
             )
         );
     }
@@ -40,23 +53,42 @@ class ProjectController extends AbstractController
     public function newProjectAction()
     {
         // If HTTP method is not POST, send bad request response.
-        if ($this->http->getRequestInfo('request_method') == 'post') {
-            return new Response(
-                \json_encode(array('error' => 'Wrong request.')),
-                Response::HTTP_STATUS_BAD_REQUEST,
-                Response::CONTENT_TYPE_JSON
+        if (!$this->http->getRequestInfo('request_method') == 'post') {
+            return new JsonResponse(
+                array('error' => 'Wrong request.'),
+                Response::HTTP_STATUS_BAD_REQUEST
             );
         }
 
-        return new Response(
-            \json_encode(
-                array(
-                    'project_name' => $this->http->getRequestInfo('post_params/project_name'),
-                    'project_id' => $this->http->getRequestInfo('post_params/project_id')
-                )
-            ),
-            Response::HTTP_STATUS_OK,
-            Response::CONTENT_TYPE_JSON
+        $validationInfo = array(
+            'project_name' => array(
+                'required' => true,
+                'type' => 'string',
+                'min' => 1,
+                'max' => 250
+            )
+        );
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Ajax request is validated, insert into database.
+        $projectId = $this->db->insert(
+            'INSERT INTO project (`id_user`, `project_name`) VALUES (?, ?)',
+            array(
+                $this->userManager->getUserParam('uid'),
+                $this->http->getPostParam('project_name')
+            )
+        );
+
+        return new JsonResponse(
+            array(
+                'project_name' => $this->http->getPostParam('project_name'),
+                'project_id' => $projectId
+            )
         );
     }
 }
