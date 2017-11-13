@@ -49,6 +49,7 @@ $(document).ready(function () {
             success: function (data, status) {
                 console.log(data.project_name);
                 $('#new_project_modal').modal('toggle');
+                location.reload();
             }
         });
     });
@@ -74,9 +75,9 @@ $(document).ready(function () {
                 </div>
             </form>
         </div>
-
     </div>
 </div>
+<?php if (isset($projects) && count($projects) > 0): ?>
 <div class="table-responsive">
     <table class="table table-striped table-sorted" id="table_projects">
         <thead>
@@ -88,23 +89,29 @@ $(document).ready(function () {
         </tr>
         </thead>
         <tbody>
-        <?php if (isset($projects)): ?>
         <?php foreach ($projects as $project): ?>
         <tr>
-            <td><a href="/projects/view/<?=$this->e($project['id_project'])?>"><?=$this->e($project['project_name'])?></a></td>
-            <td><?=$this->e($project['objects'])?></td>
-            <td><?=$this->e($this->date($project['created_at']))?></td>
+            <td><a href="/projects/view/<?=$project['id_project']?>"><?=$project['project_name']?></a></td>
+            <td><?=$project['objects']?></td>
+            <td><?=$this->date($project['created_at'])?></td>
             <td>
-                <button type="button" class="btn btn-xs btn-info" data-project-id="<?=$this->e($project['id_project'])?>">
+                <button type="button" class="btn btn-xs btn-info" data-project-id="<?=$project['id_project']?>">
                     <span class="glyphicon glyphicon-pencil"></span>
                 </button>
-                <button type="button" class="btn btn-xs btn-danger" data-project-id="<?=$this->e($project['id_project'])?>">
+                <button type="button" class="btn btn-xs btn-danger" data-project-id="<?=$project['id_project']?>">
                     <span class="glyphicon glyphicon-trash"></span>
                 </button>
             </td>
         </tr>
         <?php endforeach ?>
-        <?php endif ?>
         </tbody>
     </table>
 </div>
+<?php else: ?>
+<div class="col-sm-12">
+    <p>No projects available yet.</p>
+    <p>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#new_project_modal">Create first project</button>
+    </p>
+</div>
+<?php endif ?>

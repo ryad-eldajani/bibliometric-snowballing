@@ -103,7 +103,7 @@ class App
         // load custom configuration, if existing
         if (file_exists('conf/config.json')) {
             $jsonCustom = file_get_contents('conf/config.json');
-            $this->config = array_merge(
+            $this->config = ArrayHelper::instance()->override(
                 $this->config,
                 \json_decode($jsonCustom, true)
             );

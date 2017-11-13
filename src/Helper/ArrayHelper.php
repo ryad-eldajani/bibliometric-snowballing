@@ -65,4 +65,28 @@ class ArrayHelper
 
         return $value;
     }
+
+    /**
+     * Overrides $array1 with $array2.
+     *
+     * @param array $array1 source array which has to be overridden
+     * @param array $array2 array with override information
+     * @return array overridden array
+     */
+    public function override(array $array1 = array(), array $array2 = array())
+    {
+        foreach ($array1 as $key => $value) {
+            if (!array_key_exists($key, $array2)) {
+                continue;
+            }
+
+            if (is_array($value) && is_array($array2[$key])) {
+                $array1[$key] = $this->override($value, $array2[$key]);
+            } else {
+                $array1[$key] = $array2[$key];
+            }
+        }
+
+        return $array1;
+    }
 }

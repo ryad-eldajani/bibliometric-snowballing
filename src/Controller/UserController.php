@@ -24,6 +24,8 @@ class UserController extends AbstractController
      */
     public function viewProfileAction()
     {
+        $this->redirectIfNotLoggedIn();
+
         return new Response(
             $this->app->renderTemplate('profile')
         );

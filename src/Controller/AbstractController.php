@@ -17,7 +17,9 @@ use BS\Model\App;
 use BS\Model\Db\Database;
 use BS\Model\Http\Http;
 use BS\Model\Http\RedirectResponse;
+use BS\Model\Http\Response;
 use BS\Model\User\UserManager;
+use Model\Http\JsonResponse;
 
 abstract class AbstractController implements IController
 {
@@ -60,6 +62,20 @@ abstract class AbstractController implements IController
     {
         if (!$this->userManager->isLoggedIn()) {
             (new RedirectResponse('/login'))->send();
+        }
+    }
+
+    /**
+     * Checks, if the user is logged in. If the user is not logged in
+     * a JsonResponse with error will be sent.
+     */
+    protected function errorJsonResponseIfNotLoggedIn()
+    {
+        if (!$this->userManager->isLoggedIn()) {
+            (new JsonResponse(
+                array('error' => 'Not logged in.'),
+                Response::HTTP_STATUS_BAD_REQUEST)
+            )->send();
         }
     }
 }

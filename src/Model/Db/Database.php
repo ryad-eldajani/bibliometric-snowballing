@@ -103,8 +103,15 @@ class Database
      */
     protected function getStatement(\mysqli $connection, $sql, $parameters = array())
     {
+        // Remove extra spaces and new lines from $sql.
+        $cleansedSql = preg_replace(
+            '/\s\s+/',
+            ' ',
+            preg_replace('/\R+/', ' ', $sql)
+        );
+
         // Prepare SQL statement.
-        if (!$statement = $connection->prepare($sql)) {
+        if (!$statement = $connection->prepare($cleansedSql)) {
             throw new DbException('Prepare failed: (' . $connection->errno
                 . ') ' . $connection->error);
         }

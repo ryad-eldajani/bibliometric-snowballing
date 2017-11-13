@@ -26,12 +26,13 @@ class ProjectController extends AbstractController
      */
     public function viewProjectsAction()
     {
+        $this->redirectIfNotLoggedIn();
+
         $projects = $this->db->select(
-            'SELECT p.id_project, p.project_name, p.created_at, COUNT(wp.id_project) AS objects
-                FROM project p
-                LEFT JOIN work_project wp ON wp.id_project = p.id_project
-                WHERE p.id_user = ?
-                GROUP BY wp.id_project',
+            'SELECT p.id_project, p.project_name, p.created_at,
+            (SELECT COUNT(*) FROM work_project wp WHERE wp.id_project = p.id_project) AS objects
+            FROM project p
+            WHERE p.id_user = ?',
             array($this->userManager->getUserParam('uid'))
         );
         return new Response(
@@ -52,6 +53,8 @@ class ProjectController extends AbstractController
      */
     public function newProjectAction()
     {
+        $this->errorJsonResponseIfNotLoggedIn();
+
         // If HTTP method is not POST, send bad request response.
         if (!$this->http->getRequestInfo('request_method') == 'post') {
             return new JsonResponse(
@@ -60,6 +63,7 @@ class ProjectController extends AbstractController
             );
         }
 
+        // Validate Ajax request.
         $validationInfo = array(
             'project_name' => array(
                 'required' => true,

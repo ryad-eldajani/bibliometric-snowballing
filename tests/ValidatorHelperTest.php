@@ -28,10 +28,14 @@ final class ValidatorHelperTest extends TestCase
 
     /**
      * ValidatorHelperTest constructor.
+     *
+     * @param string $name
+     * @param array $data
+     * @param string $dataName
      */
-    public function __construct()
+    public function __construct($name = null, array $data = [], $dataName = '')
     {
-        parent::__construct();
+        parent::__construct($name, $data, $dataName);
         $http = Http::instance();
         $helper = ValidatorHelper::instance();
 
