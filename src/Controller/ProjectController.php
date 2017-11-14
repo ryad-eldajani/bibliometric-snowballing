@@ -35,12 +35,13 @@ class ProjectController extends AbstractController
             WHERE p.id_user = ?',
             array($this->userManager->getUserParam('uid'))
         );
+
         return new Response(
             $this->app->renderTemplate(
                 'projects',
                 array(
                     'dataTable' => true,
-                    'projects' => $projects
+                    'projects' => count($projects) > 0 ? $projects : null
                 )
             )
         );
@@ -89,10 +90,70 @@ class ProjectController extends AbstractController
         );
 
         return new JsonResponse(
-            array(
-                'project_name' => $this->http->getPostParam('project_name'),
-                'project_id' => $projectId
+            $this->db->select(
+                'SELECT * FROM project WHERE id_project = ?',
+                array($projectId)
             )
+        );
+    }
+
+
+
+    /**
+     * URL: /projects/delete
+     * Methods: POST
+     * @return Response instance
+     */
+    public function deleteProjectAction()
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+
+        // If HTTP method is not POST, send bad request response.
+        if (!$this->http->getRequestInfo('request_method') == 'post') {
+            return new JsonResponse(
+                array('error' => 'Wrong request.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Validate Ajax request.
+        $validationInfo = array(
+            'project_id' => array(
+                'required' => true,
+                'type' => 'int'
+            )
+        );
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Check, if current user is project owner.
+        $userId = $this->userManager->getUserParam('uid');
+        $isOwner = $this->db->select(
+            'SELECT id_project FROM project WHERE id_project = ? AND id_user = ?',
+            array(
+                $this->http->getPostParam('project_id'),
+                $userId
+            )
+        );
+        if (count($isOwner) !== 1) {
+            return new JsonResponse(
+                array('error' => 'Deletion denied.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // User is project owner, delete project.
+        $this->db->updateOrDelete(
+            'DELETE FROM project WHERE id_project = ?',
+            array($this->http->getPostParam('project_id'))
+        );
+
+        return new JsonResponse(
+            array('id_project' => $this->http->getPostParam('project_id'))
         );
     }
 }
