@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/buttons.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
 
     <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>

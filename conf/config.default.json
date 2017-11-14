@@ -23,6 +23,10 @@
       "controller": "Project/newProject",
       "methods": ["post"]
     },
+    "/projects/delete": {
+      "controller": "Project/deleteProject",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

@@ -24,11 +24,7 @@ body {
     box-shadow: 0 6px 12px rgba(0,0,0,.175);
 }
 .panel-footer {
-    position: absolute;
-    bottom: 0;
     width: 100%;
-    -webkit-box-shadow: 0 -3px 3px rgba(0,0,0,.175);
-    box-shadow: 0 -3px 3px rgba(0,0,0,.175);
 }
 .exception {
     font-family: source-code-pro, Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
@@ -58,6 +54,46 @@ legend.legend {
     padding-right: 15px;
     padding-left: 15px;
 }
-.dataTables_filter input {
-
+.dataTable td {
+    vertical-align: middle!important;
+}
+.dataTable td .dropdown-menu {
+    min-width: 120px!important;
+    position: fixed;
+    top: auto;
+    left: auto;
+}
+.table-responsive .btn img {
+    max-height: 18px;
+}
+.color-danger {
+    color: #a94442!important;
+}
+.bold {
+    font-weight: bold;
+}
+.dropdown-menu>.active>a {
+    background-color: #fff!important;
+    color: #333!important;
+}
+.dropdown-menu>li.buttons-columnVisibility:not(.active)>a:before {
+    background-image: url("/static/gfx/open_icon_library/oxygen-style/actions/dialog-cancel-3.png");
+    background-size: 18px 18px;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    content: "";
+    margin-right: 5px;
+}
+.dropdown-menu>li.buttons-columnVisibility.active>a:before {
+    background-image: url("/static/gfx/open_icon_library/oxygen-style/actions/dialog-ok-3.png");
+    background-size: 20px 20px;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    content: "";
+    margin-right: 5px;
+}
+.dropdown-option {
+    padding: 0 5px 0 5px;
 }
