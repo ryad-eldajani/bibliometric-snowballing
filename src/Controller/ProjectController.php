@@ -13,9 +13,10 @@
 namespace BS\Controller;
 
 
+use BS\Model\Entity\Project;
 use BS\Helper\ValidatorHelper;
 use BS\Model\Http\Response;
-use Model\Http\JsonResponse;
+use BS\Model\Http\JsonResponse;
 
 class ProjectController extends AbstractController
 {
@@ -28,20 +29,12 @@ class ProjectController extends AbstractController
     {
         $this->redirectIfNotLoggedIn();
 
-        $projects = $this->db->select(
-            'SELECT p.id_project, p.project_name, p.created_at,
-            (SELECT COUNT(*) FROM work_project wp WHERE wp.id_project = p.id_project) AS objects
-            FROM project p
-            WHERE p.id_user = ?',
-            array($this->userManager->getUserParam('uid'))
-        );
-
         return new Response(
             $this->app->renderTemplate(
                 'projects',
                 array(
                     'dataTable' => true,
-                    'projects' => count($projects) > 0 ? $projects : null
+                    'projects' => Project::read()
                 )
             )
         );

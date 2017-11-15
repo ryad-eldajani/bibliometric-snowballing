@@ -237,7 +237,7 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
-<?php if (isset($projects) && count($projects) > 0): ?>
+<?php if (isset($projects)): ?>
 <div class="table-responsive">
     <table class="table table-striped table-sorted" id="table_projects">
         <thead>
@@ -249,11 +249,12 @@ $(document).ready(function () {
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($projects as $project): ?>
-        <tr id="tr_project_id_<?=$project['id_project']?>">
-            <td><a href="/projects/view/<?=$project['id_project']?>" class="project-link"><?=$project['project_name']?></a></td>
-            <td><?=$project['objects']?></td>
-            <td><?=$this->date($project['created_at'])?></td>
+        <?php foreach ($projects as $projectId => $project): ?>
+        <?php /** @var \BS\Model\Entity\IEntity $project */ ?>
+        <tr id="tr_project_id_<?=$projectId?>">
+            <td><a href="/projects/view/<?=$projectId?>" class="project-link"><?=$project->get('name')?></a></td>
+            <td><?=count($project->get('workIds'))?></td>
+            <td><?=$this->date($project->get('createdAt'))?></td>
             <td>
                 <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">
@@ -262,12 +263,12 @@ $(document).ready(function () {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#" id="rename_project_toggle" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$project['id_project']?>" data-project-name="<?=$project['project_name']?>">
+                            <a href="#" id="rename_project_toggle" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$projectId?>" data-project-name="<?=$project->get('name')?>">
                                 <span class="glyphicon glyphicon-pencil"></span> Rename
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$project['id_project']?>">
+                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$projectId?>">
                                 <span class="glyphicon glyphicon-trash"></span> Delete
                             </a>
                         </li>

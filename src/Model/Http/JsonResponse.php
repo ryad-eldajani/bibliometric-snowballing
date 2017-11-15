@@ -10,27 +10,25 @@
  * LICENSE.txt file that was distributed with this source code.
  */
 
-namespace Model\Http;
+namespace BS\Model\Http;
 
-
-use BS\Model\Http\Response;
 
 class JsonResponse extends Response
 {
     /**
      * JsonResponse constructor.
      *
-     * @param array $content content
+     * @param mixed $content content
      * @param int $httpStatus HTTP status code
      * @param array $customParameters custom parameters
      */
     public function __construct(
-        array $content = array(),
+        $content = null,
         $httpStatus = self::HTTP_STATUS_OK,
         array $customParameters = null
     ) {
         parent::__construct(
-            json_encode($content),
+            \json_encode($content),
             $httpStatus,
             Response::CONTENT_TYPE_JSON,
             $customParameters

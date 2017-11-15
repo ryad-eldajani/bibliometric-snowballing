@@ -48,12 +48,12 @@ class TemplateHelper implements ExtensionInterface
     /**
      * Formats a date.
      *
-     * @param string $date date
+     * @param int $timestamp timestamp
      * @param string $format date format
      * @return string formatted date
      */
-    public function dateFormat($date, $format = 'd.m.Y')
+    public function dateFormat($timestamp, $format = 'd.m.Y')
     {
-        return date($format, strtotime($date));
+        return date($format, $timestamp);
     }
 }
