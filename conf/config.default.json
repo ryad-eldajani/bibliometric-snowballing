@@ -27,6 +27,10 @@
       "controller": "Project/deleteProject",
       "methods": ["post"]
     },
+    "/projects/rename": {
+      "controller": "Project/renameProject",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

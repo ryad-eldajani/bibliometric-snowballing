@@ -75,7 +75,7 @@ $(document).ready(function () {
                 modal.modal('toggle');
 
                 $('#table_projects').find('tr:last').after(
-                    '<tr><td><a href="/projects/view/' + data[0].id_project + '">' + data[0].project_name + '</a></td><td>0</td>'
+                    '<tr><td><a href="/projects/view/' + data[0].id_project + '"  class="project-link">' + data[0].project_name + '</a></td><td>0</td>'
                     + '<td>' + sqlDateTimeToJs(data[0].created_at) + '</td><td><div class="dropdown">'
                     + '<button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">'
                     + '<i class="fa fa-cog"></i><span class="caret"></span></button><ul class="dropdown-menu"><li>'
@@ -131,6 +131,47 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Delete project modal dialog.
+    $('#rename_project_modal').on('show.bs.modal', function(e) {
+        var data = $(e.relatedTarget).data();
+        var input = $('#input_project_name_rename');
+        input.val(data.projectName);
+        input.data('projectId', data.projectId)
+    });
+
+    // Rename project button submit click.
+    $('#btn_project_rename').click(function (e) {
+        e.preventDefault();
+        var $this = $(this);
+        var modal = $('#rename_project_modal');
+        var input = $('#input_project_name_rename');
+        $this.button('loading');
+        $.ajax({
+            type: 'POST',
+            url: '/projects/rename',
+            data: {
+                'project_id': input.data('projectId'),
+                'project_name': input.val()
+            },
+            dataType: 'json',
+            success: function (data, status) {
+                $this.button('reset');
+                $('#input_project_name_rename').val('');
+                modal.modal('toggle');
+                $('#tr_project_id_' + data.id_project)
+                    .find('a.project-link')
+                    .text(data.project_name);
+                $('#rename_project_toggle').data('projectName', data.project_name);
+                modal.find('.alert').addClass('hidden');
+            },
+            error: function (xhr, status, error) {
+                modal.find('.alert')
+                    .text(JSON.parse(xhr.responseText).error)
+                    .removeClass('hidden');
+            }
+        });
+    });
 });
 </script>
 <div id="new_project_modal" class="modal fade" role="dialog">
@@ -173,6 +214,29 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
+<div id="rename_project_modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form role="form" data-toggle="validator">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Rename project</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning hidden"></div>
+                    <div class="form-group">
+                        <label for="inputName">Project name</label>
+                        <input type="text" class="form-control" id="input_project_name_rename" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" id="btn_project_rename" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Renaming project...">Rename project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <?php if (isset($projects) && count($projects) > 0): ?>
 <div class="table-responsive">
     <table class="table table-striped table-sorted" id="table_projects">
@@ -187,7 +251,7 @@ $(document).ready(function () {
         <tbody>
         <?php foreach ($projects as $project): ?>
         <tr id="tr_project_id_<?=$project['id_project']?>">
-            <td><a href="/projects/view/<?=$project['id_project']?>"><?=$project['project_name']?></a></td>
+            <td><a href="/projects/view/<?=$project['id_project']?>" class="project-link"><?=$project['project_name']?></a></td>
             <td><?=$project['objects']?></td>
             <td><?=$this->date($project['created_at'])?></td>
             <td>
@@ -198,12 +262,12 @@ $(document).ready(function () {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$project['id_project']?>" data-project-name="<?=$project['project_name']?>">
+                            <a href="#" id="rename_project_toggle" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$project['id_project']?>" data-project-name="<?=$project['project_name']?>">
                                 <span class="glyphicon glyphicon-pencil"></span> Rename
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$project['id_project']?>" data-project-name="<?=$project['project_name']?>">
+                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$project['id_project']?>">
                                 <span class="glyphicon glyphicon-trash"></span> Delete
                             </a>
                         </li>
