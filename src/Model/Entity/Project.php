@@ -17,6 +17,21 @@ use BS\Helper\DataTypeHelper;
 use BS\Model\Db\Database;
 use BS\Model\User\UserManager;
 
+/**
+ * Class Project.
+ *
+ * @package BS\Model\Entity
+ * @method int|string|null getId()
+ * @method string|null getName()
+ * @method int|null getUserId()
+ * @method int|null getCreatedAt()
+ * @method int[]|null getWorkIds()
+ * @method array<int|Work>|null getWorks()
+ * @method void setName(string $name)
+ * @method void setUserId(int $userId)
+ * @method void setWorkIds(int[] $workIds)
+ * @method void setWorks(array $works)
+ */
 class Project extends Entity
 {
     /**
@@ -35,7 +50,7 @@ class Project extends Entity
     protected $userId = null;
 
     /**
-     * @var string|null $createdAt creation timestamp
+     * @var int|null $createdAt creation timestamp
      */
     protected $createdAt = null;
 
@@ -43,6 +58,11 @@ class Project extends Entity
      * @var int[]|null array of work identifiers
      */
     protected $workIds = null;
+
+    /**
+     * @var array|null list of ID => Work entities
+     */
+    protected $works = null;
 
     /**
      * Project constructor.
@@ -72,7 +92,7 @@ class Project extends Entity
      * Reads all ($id = null) or a specific entity and returns it.
      *
      * @param int|string|null $id identifier of this entity
-     * @return IEntity|array|null IEntity instance(s) or null
+     * @return Project|array|null Project instance(s) or null
      */
     public static function read($id = null)
     {
@@ -92,12 +112,15 @@ class Project extends Entity
             $sqlParams[] = $id;
         }
 
+        // Fetch result from the database.
         $sqlResult = Database::instance()->select($sql, $sqlParams);
 
+        // If we have no result, return null.
         if (count($sqlResult) == 0) {
             return null;
         }
 
+        // We have at least one result, create project entity/entities.
         foreach ($sqlResult as $record) {
             $project = new Project(
                 DataTypeHelper::instance()->get($record['id_project'], 'int'),
@@ -119,7 +142,16 @@ class Project extends Entity
      */
     public function create()
     {
-        // TODO: Implement create() method.
+        // If this entity already has an ID, don't perform insert.
+        if (isset($this->id)) {
+            return;
+        }
+
+        $sql = 'INSERT INTO project (id_user, project_name) VALUES (?, ?)';
+        $sqlParams = array($this->userId, $this->name);
+
+        $this->id = Database::instance()->insert($sql, $sqlParams);
+        self::addToCache($this);
     }
 
     /**
@@ -127,7 +159,15 @@ class Project extends Entity
      */
     public function update()
     {
-        // TODO: Implement update() method.
+        // If no ID is set, this entity is not in the database already.
+        if (!isset($this->id)) {
+            return;
+        }
+
+        $sql = 'UPDATE project SET id_user = ?, project_name = ? WHERE id_project = ?';
+        $sqlParams = array($this->userId, $this->name, $this->id);
+
+        Database::instance()->updateOrDelete($sql, $sqlParams);
     }
 
     /**
@@ -135,6 +175,66 @@ class Project extends Entity
      */
     public function delete()
     {
-        // TODO: Implement delete() method.
+        // If no ID is set, this entity is not in the database already.
+        if (!isset($this->id)) {
+            return;
+        }
+
+        $sql = 'DELETE FROM project WHERE id_project = ?';
+        $sqlParams = array($this->id);
+
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+        $this->id = null;
+    }
+
+    /**
+     * Returns the work entities as a ID -> IEntity list.
+     *
+     * @return array|null array of entities
+     */
+    public function getWorkList()
+    {
+        // If no ID is set, this entity does not exist in the database.
+        if (!isset($this->id)) {
+            return null;
+        }
+
+        // If works are already fetched, return.
+        if (is_array($this->works)) {
+            return $this->works;
+        }
+
+        $sql = 'SELECT * FROM work w, work_project wp
+                WHERE w.id_work = wp.id_work AND wp.id_project = ?';
+        $sqlParams = array($this->id);
+
+        $sqlResult = Database::instance()->select($sql, $sqlParams);
+
+        if (count($sqlResult) == 0) {
+            return null;
+        }
+
+        $this->works = array();
+        foreach ($sqlResult as $record) {
+            $workId = DataTypeHelper::instance()->get($record['w.id_work'], 'int');
+
+            // If work entity is already in cache, use entity from cache.
+            if ($work = Work::getCache($workId)) {
+                $this->works[(string)$workId] = $work;
+                continue;
+            }
+
+            $work = new Work(
+                $workId,
+                $record['title'],
+                $record['subtitle'],
+                DataTypeHelper::instance()->get($record['work_year'], 'int'),
+                $record['doi']
+            );
+            Work::addToCache($work);
+            $this->works[(string)$workId] = $work;
+        }
+
+        return $this->works;
     }
 }

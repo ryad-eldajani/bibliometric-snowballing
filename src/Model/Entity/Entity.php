@@ -13,10 +13,15 @@
 namespace BS\Model\Entity;
 
 
+/**
+ * Abstract class Entity.
+ *
+ * @package BS\Model\Entity
+ */
 abstract class Entity implements IEntity, \JsonSerializable
 {
     /**
-     * @var array $cache entity cache
+     * @var array<int|string,IEntity> $cache entity cache
      */
     protected static $cache = array();
 
@@ -28,20 +33,68 @@ abstract class Entity implements IEntity, \JsonSerializable
     }
 
     /**
-     * Returns a value for an attribute by key or null if not existent.
+     * Magic method __get() to return a value for an unavailable property.
      *
-     * @param string $attribute attribute name
-     * @return null|mixed attribute value or null
+     * @param string $name property name
+     * @return null|mixed property value
      */
-    public function get($attribute)
+    public function __get($name)
     {
         $properties = get_object_vars($this);
 
-        if (!isset($properties[$attribute])) {
+        if (!isset($properties[$name])) {
             return null;
         }
 
-        return $properties[$attribute];
+        return $properties[$name];
+    }
+
+    /**
+     * Magic method __get() to return a value for an unavailable property.
+     *
+     * @param string $name property name
+     * @param array $value property value
+     */
+    public function __set($name, $value)
+    {
+        $properties = get_object_vars($this);
+
+        if (!isset($properties[$name]) || count($value) != 1) {
+            return;
+        }
+
+        $this->$name = $value[0];
+    }
+
+    /**
+     * Magic method __call() to get "magic getters".
+     * E.g. $this->getId() returns $this->id.
+     *
+     * @param string $name method name
+     * @param array $arguments method arguments
+     * @return mixed|null property
+     */
+    public function __call($name, $arguments)
+    {
+        $nameParts = preg_split('/(?=[A-Z])/', $name, -1, PREG_SPLIT_NO_EMPTY);
+        if (count($nameParts) < 2) {
+            return null;
+        }
+
+        if (!in_array($nameParts[0], array('get', 'set'))) {
+            return null;
+        }
+
+        $propertyName = '';
+        for ($i = 1; $i < count($nameParts); $i++) {
+            $propertyName .= $i == 1
+                ? strtolower($nameParts[$i])
+                : $nameParts[$i];
+        }
+
+        return $nameParts[0] == 'get'
+            ? $this->__get($propertyName)
+            : $this->__set($propertyName, $arguments);
     }
 
     /**
@@ -82,7 +135,7 @@ abstract class Entity implements IEntity, \JsonSerializable
      */
     public static function addToCache(IEntity $entity)
     {
-        self::$cache[(string)$entity->get('id')] = $entity;
+        self::$cache[(string)$entity->getId()] = $entity;
     }
 
     /**

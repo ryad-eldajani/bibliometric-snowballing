@@ -20,9 +20,9 @@
                     <?php if (isset($projects) && count($projects) > 0): ?>
                     <li role="separator" class="divider"></li>
                     <li class="dropdown-header">Available projects</li>
-                    <?php foreach ($projects as $projectId => $project): ?>
-                    <?php /** @var \BS\Model\Entity\IEntity $project */ ?>
-                    <li><a href="/projects/view/<?=$projectId?>"><?=$project->get('name')?></a></li>
+                    <?php foreach ($projects as $project): ?>
+                    <?php /** @var \BS\Model\Entity\Project $project */ ?>
+                    <li><a href="/projects/view/<?=$project->getId()?>"><?=$project->getName()?></a></li>
                     <?php endforeach ?>
                     <?php endif ?>
                 </ul>

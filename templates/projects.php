@@ -45,9 +45,13 @@ $(document).ready(function () {
         ]
     });
     table.buttons().container().appendTo('#table_projects_wrapper .col-sm-6:eq(0)');
-    table.on('buttons-action', function (e, button, dataTable, node, config) {
+    table.on('buttons-action', function (e, button) {
         if (button.text().indexOf('New Project') !== -1) {
-            $('#new_project_modal').modal('show');
+            var modal = $('#new_project_modal');
+            modal.modal('show');
+            modal.on('shown.bs.modal', function() {
+                $(this).find('input').focus();
+            });
         }
     });
     $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
@@ -68,28 +72,28 @@ $(document).ready(function () {
             type: 'POST',
             url: '/projects/new',
             data: {'project_name': $('#input_project_name').val()},
-            dataType: 'json',
-            success: function (data, status) {
+            success: function (data) {
+                var project = JSON.parse(data);
                 $this.button('reset');
                 $('#input_project_name').val('');
                 modal.modal('toggle');
 
                 $('#table_projects').find('tr:last').after(
-                    '<tr><td><a href="/projects/view/' + data[0].id_project + '"  class="project-link">' + data[0].project_name + '</a></td><td>0</td>'
-                    + '<td>' + sqlDateTimeToJs(data[0].created_at) + '</td><td><div class="dropdown">'
+                    '<tr><td><a href="/projects/view/' + project.id + '"  class="project-link">' + project.name + '</a></td><td>0</td>'
+                    + '<td>' + timestampToDate(project.createdAt) + '</td><td><div class="dropdown">'
                     + '<button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">'
                     + '<i class="fa fa-cog"></i><span class="caret"></span></button><ul class="dropdown-menu"><li>'
                     + '<a href="#" data-toggle="modal" data-target="#rename_project_modal" data-project-id="'
-                    + data[0].id_project + '" data-project-name="' + data[0].project_name + '">'
+                    + project.id + '" data-project-name="' + project.name + '">'
                     + '<span class="glyphicon glyphicon-pencil"></span> Rename</a></li><li>'
                     + '<a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="'
-                    + data[0].id_project + '" data-project-name="' + data[0].project_name + '">'
+                    + project.id + '" data-project-name="' + project.name + '">'
                     + '<span class="glyphicon glyphicon-trash"></span> Delete</a>'
                     + '</li></ul></div></td></tr>'
                 );
                 modal.find('.alert').addClass('hidden');
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
@@ -116,14 +120,13 @@ $(document).ready(function () {
             type: 'POST',
             url: '/projects/delete',
             data: {'project_id': $(this).data('projectId')},
-            dataType: 'json',
-            success: function (data, status) {
+            success: function (data) {
                 $this.button('reset');
                 modal.find('.alert').addClass('hidden');
-                $('#tr_project_id_' + data.id_project).remove();
+                $('#tr_project_id_' + JSON.parse(data.project_id)).remove();
                 modal.modal('toggle');
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
@@ -132,12 +135,14 @@ $(document).ready(function () {
         });
     });
 
-    // Delete project modal dialog.
+    // Rename project modal dialog.
     $('#rename_project_modal').on('show.bs.modal', function(e) {
         var data = $(e.relatedTarget).data();
         var input = $('#input_project_name_rename');
         input.val(data.projectName);
-        input.data('projectId', data.projectId)
+        input.data('projectId', data.projectId);
+    }).on('shown.bs.modal', function() {
+        $(this).find('#input_project_name_rename').focus();
     });
 
     // Rename project button submit click.
@@ -154,18 +159,18 @@ $(document).ready(function () {
                 'project_id': input.data('projectId'),
                 'project_name': input.val()
             },
-            dataType: 'json',
-            success: function (data, status) {
+            success: function (data) {
+                var project = JSON.parse(data);
                 $this.button('reset');
                 $('#input_project_name_rename').val('');
                 modal.modal('toggle');
-                $('#tr_project_id_' + data.id_project)
+                $('#tr_project_id_' + project.id)
                     .find('a.project-link')
-                    .text(data.project_name);
-                $('#rename_project_toggle').data('projectName', data.project_name);
+                    .text(project.name);
+                $('#rename_project_toggle').data('projectName', project.name);
                 modal.find('.alert').addClass('hidden');
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
@@ -249,12 +254,12 @@ $(document).ready(function () {
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($projects as $projectId => $project): ?>
-        <?php /** @var \BS\Model\Entity\IEntity $project */ ?>
-        <tr id="tr_project_id_<?=$projectId?>">
-            <td><a href="/projects/view/<?=$projectId?>" class="project-link"><?=$project->get('name')?></a></td>
-            <td><?=count($project->get('workIds'))?></td>
-            <td><?=$this->date($project->get('createdAt'))?></td>
+        <?php foreach ($projects as $project): ?>
+        <?php /** @var \BS\Model\Entity\Project $project */ ?>
+        <tr id="tr_project_id_<?=$project->getId()?>">
+            <td><a href="/projects/view/<?=$project->getId()?>" class="project-link"><?=$project->getName()?></a></td>
+            <td><?=count($project->getWorkIds())?></td>
+            <td><?=$this->date($project->getCreatedAt())?></td>
             <td>
                 <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">
@@ -263,12 +268,12 @@ $(document).ready(function () {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a href="#" id="rename_project_toggle" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$projectId?>" data-project-name="<?=$project->get('name')?>">
+                            <a href="#" id="rename_project_toggle" data-toggle="modal" data-target="#rename_project_modal" data-project-id="<?=$project->getId()?>" data-project-name="<?=$project->getName()?>">
                                 <span class="glyphicon glyphicon-pencil"></span> Rename
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$projectId?>">
+                            <a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="<?=$project->getId()?>" data-project-name="<?=$project->getName()?>">
                                 <span class="glyphicon glyphicon-trash"></span> Delete
                             </a>
                         </li>

@@ -1,6 +1,12 @@
-var sqlDateTimeToJs = function(datetime) {
-    // Split timestamp into [ Y, M, D, h, m, s ]
-    var timeParts = datetime.split(/[- :]/);
+var timestampToDate = function(timestamp) {
+    var date = new Date(timestamp);
 
-    return timeParts[2] + '.' + timeParts[1] + '.' + timeParts[0];
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+
+    month = (month < 10 ? '0' : '') + month;
+    day = (day < 10 ? '0' : '') + day;
+
+    return day + '.' + month + '.' + year;
 };

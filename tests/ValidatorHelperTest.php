@@ -52,10 +52,11 @@ final class ValidatorHelperTest extends TestCase
                     'c' => '9999999999999999999999999999',
                     'd' => '99999999999999999999.9999999',
                     'e' => 'abc',
-                    'f' => '  abc  ',
+                    'f' => '  ABC  ',
                     'g' => '0',
                     'h' => '',
                     'i' => 'aaaaaaaaaaaaaaaaaa',
+                    'j' => ' <script>alert("!");</script>  '
                 )
             )
         );
@@ -89,7 +90,7 @@ final class ValidatorHelperTest extends TestCase
     public function testValidateFunc()
     {
         $this->assertTrue(
-            $this->helper->validate(array('f' => array('func' => function($x) { return trim($x); })))
+            $this->helper->validate(array('f' => array('func' => function($x) { return strtolower($x); }, 'type' => 'string')))
         );
         $this->assertEquals('abc', $this->http->getPostParam('f'));
 
@@ -99,7 +100,7 @@ final class ValidatorHelperTest extends TestCase
         $this->assertEquals('ABC', $this->http->getPostParam('e'));
     }
 
-    /**
+    /**&lt;script&gt;alert("!")&lt;/script&gt;
      * Test validate() 'type' option.
      */
     public function testValidateType()
@@ -128,6 +129,11 @@ final class ValidatorHelperTest extends TestCase
         $this->assertFalse(
             $this->helper->validate(array('h' => array('type' => 'bool')))
         );
+        $this->assertTrue(
+            $this->helper->validate(array('j' => array('type' => 'string')))
+        );
+        $this->assertEquals('&lt;script&gt;alert(&quot;!&quot;);&lt;/script&gt;', $this->http->getPostParam('j'));
+
     }
 
     /**

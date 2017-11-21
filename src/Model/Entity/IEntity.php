@@ -13,6 +13,12 @@
 namespace BS\Model\Entity;
 
 
+/**
+ * Interface IEntity.
+ *
+ * @package BS\Model\Entity
+ * @method int|string|null getId()
+ */
 interface IEntity
 {
     /**
@@ -37,14 +43,6 @@ interface IEntity
      * Deletes an entity in the database Performs DELETE statement.
      */
     public function delete();
-
-    /**
-     * Returns a value for an attribute by key or null if not existent.
-     *
-     * @param string $attribute attribute name
-     * @return null|mixed attribute value or null
-     */
-    public function get($attribute);
 
     /**
      * Returns the an IEntity instance from the cache

@@ -127,6 +127,16 @@ class ValidatorHelper
                     $postKey,
                     (boolval($postValue) ? 1 : 0)
                 );
+            } elseif ($validation['type'] == 'string') {
+                if (!is_string($postValue)) {
+                    return false;
+                }
+
+                // Sanitize string value.
+                $this->http->alterPostParam(
+                    $postKey,
+                    trim(htmlspecialchars($postValue))
+                );
             }
         }
 

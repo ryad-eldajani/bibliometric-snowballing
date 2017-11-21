@@ -134,7 +134,6 @@ class Database
             } else {
                 // Handle parameter as string.
                 $parameterType = self::PARAM_STRING;
-                $parameters[$i] = trim(htmlspecialchars($parameters[$i]));
             }
 
             $parameterTypes .= $parameterType;

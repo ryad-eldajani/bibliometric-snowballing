@@ -73,21 +73,16 @@ class ProjectController extends AbstractController
             );
         }
 
-        // Ajax request is validated, insert into database.
-        $projectId = $this->db->insert(
-            'INSERT INTO project (`id_user`, `project_name`) VALUES (?, ?)',
-            array(
-                $this->userManager->getUserParam('uid'),
-                $this->http->getPostParam('project_name')
-            )
+        // Ajax request is validated, create project entity in database.
+        $project = new Project(
+            null,
+            $this->http->getPostParam('project_name'),
+            time() * 1000,
+            $this->userManager->getUserParam('uid')
         );
+        $project->create();
 
-        return new JsonResponse(
-            $this->db->select(
-                'SELECT * FROM project WHERE id_project = ?',
-                array($projectId)
-            )
-        );
+        return new JsonResponse($project);
     }
 
     /**
@@ -121,16 +116,11 @@ class ProjectController extends AbstractController
             );
         }
 
+        $project = Project::read($this->http->getPostParam('project_id'));
+
         // Check, if current user is project owner.
         $userId = $this->userManager->getUserParam('uid');
-        $isOwner = $this->db->select(
-            'SELECT id_project FROM project WHERE id_project = ? AND id_user = ?',
-            array(
-                $this->http->getPostParam('project_id'),
-                $userId
-            )
-        );
-        if (count($isOwner) !== 1) {
+        if ($project === null || $project->getUserId() != $userId) {
             return new JsonResponse(
                 array('error' => 'Deletion denied.'),
                 Response::HTTP_STATUS_BAD_REQUEST
@@ -138,13 +128,10 @@ class ProjectController extends AbstractController
         }
 
         // User is project owner, delete project.
-        $this->db->updateOrDelete(
-            'DELETE FROM project WHERE id_project = ?',
-            array($this->http->getPostParam('project_id'))
-        );
+        $project->delete();
 
         return new JsonResponse(
-            array('id_project' => $this->http->getPostParam('project_id'))
+            array('project_id' => $this->http->getPostParam('project_id'))
         );
     }
 
@@ -182,36 +169,21 @@ class ProjectController extends AbstractController
             );
         }
 
+        $project = Project::read($this->http->getPostParam('project_id'));
+
         // Check, if current user is project owner.
         $userId = $this->userManager->getUserParam('uid');
-        $isOwner = $this->db->select(
-            'SELECT id_project FROM project WHERE id_project = ? AND id_user = ?',
-            array(
-                $this->http->getPostParam('project_id'),
-                $userId
-            )
-        );
-        if (count($isOwner) !== 1) {
+        if ($project === null || $project->getUserId() != $userId) {
             return new JsonResponse(
-                array('error' => 'Deletion denied.'),
+                array('error' => 'Renaming denied.'),
                 Response::HTTP_STATUS_BAD_REQUEST
             );
         }
 
-        // User is project owner, delete project.
-        $this->db->updateOrDelete(
-            'UPDATE project SET project_name = ? WHERE id_project = ?',
-            array(
-                $this->http->getPostParam('project_name'),
-                $this->http->getPostParam('project_id')
-            )
-        );
+        // User is project owner, update project.
+        $project->setName($this->http->getPostParam('project_name'));
+        $project->update();
 
-        return new JsonResponse(
-            array(
-                'project_name' => $this->http->getPostParam('project_name'),
-                'id_project' => $this->http->getPostParam('project_id')
-            )
-        );
+        return new JsonResponse($project);
     }
 }
