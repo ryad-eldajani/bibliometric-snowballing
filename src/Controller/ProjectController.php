@@ -50,12 +50,13 @@ class ProjectController extends AbstractController
     {
         $this->redirectIfNotLoggedIn();
         $project = Project::read($params['projectId']);
-        $project->getWorkList();
+        $project->getWorks();
 
         return new Response(
             $this->app->renderTemplate(
                 'project',
                 array(
+                    'dataTable' => true,
                     'project' => $project,
                     'projects' => Project::read()
                 )

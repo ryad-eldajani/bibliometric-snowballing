@@ -35,6 +35,14 @@
       "controller": "Project/viewProject",
       "methods": ["get"]
     },
+    "/works/view/{workId}": {
+      "controller": "Work/viewWork",
+      "methods": ["get"]
+    },
+    "/works/new": {
+      "controller": "Work/newWork",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

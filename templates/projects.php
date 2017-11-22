@@ -54,9 +54,11 @@ $(document).ready(function () {
             });
         }
     });
+
+    // Modify search input
     $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
     var filter = $('#table_projects_filter');
-    var filterInput = filter.find('label>input').detach().attr('placeholder', 'Search project');
+    var filterInput = filter.find('label>input').detach().attr('placeholder', 'Search Project');
     filter.parent()
         .removeClass('col-sm-6').addClass('col-sm-2 input-group')
         .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
@@ -190,7 +192,7 @@ $(document).ready(function () {
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
                     <div class="form-group">
-                        <label for="inputName">Project name</label>
+                        <label for="input_project_name">Project name</label>
                         <input type="text" class="form-control" id="input_project_name" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
                     </div>
                 </div>
@@ -230,7 +232,7 @@ $(document).ready(function () {
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
                     <div class="form-group">
-                        <label for="inputName">Project name</label>
+                        <label for="input_project_name_rename">Project name</label>
                         <input type="text" class="form-control" id="input_project_name_rename" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
                     </div>
                 </div>

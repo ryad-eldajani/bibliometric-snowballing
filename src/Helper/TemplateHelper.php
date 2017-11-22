@@ -28,6 +28,7 @@ class TemplateHelper implements ExtensionInterface
     {
         $engine->registerFunction('active', [$this, 'tabActive']);
         $engine->registerFunction('date', [$this, 'dateFormat']);
+        $engine->registerFunction('join', [$this, 'joinArray']);
     }
 
     /**
@@ -55,5 +56,18 @@ class TemplateHelper implements ExtensionInterface
     public function dateFormat($timestamp, $format = 'd.m.Y')
     {
         return date($format, $timestamp);
+    }
+
+    /**
+     * Joins an array to a string.
+     * E.g.: joinArray(array('a', 'b', 'c'), ', ') -> 'a, b, c'
+     *
+     * @param array $array array to join
+     * @param string $separator separator to use
+     * @return string joined stirng
+     */
+    public function joinArray(array $array = null, $separator = ', ')
+    {
+        return $array !== null ? implode($separator, $array) : '';
     }
 }

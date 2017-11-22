@@ -60,7 +60,7 @@ class Project extends Entity
     protected $workIds = null;
 
     /**
-     * @var array|null list of ID => Work entities
+     * @var array<int|Work>|null list of ID => Work entities
      */
     protected $works = null;
 
@@ -71,14 +71,14 @@ class Project extends Entity
      * @param string|null $name project name
      * @param string|null $createdAt creation timestamp
      * @param int|null $userId user identifier
-     * @param null|array $workIds
+     * @param null|array $workIds array of work identifiers
      */
     public function __construct(
         $id = null,
         $name = null,
         $createdAt = null,
         $userId = null,
-        $workIds = null
+        array $workIds = null
     ) {
         parent::__construct();
         $this->id = $id;
@@ -166,8 +166,14 @@ class Project extends Entity
 
         $sql = 'UPDATE project SET id_user = ?, project_name = ? WHERE id_project = ?';
         $sqlParams = array($this->userId, $this->name, $this->id);
-
         Database::instance()->updateOrDelete($sql, $sqlParams);
+
+        // Update work IDs.
+        foreach ($this->workIds as $workId) {
+            $sql = 'REPLACE INTO work_project (id_project, id_work) VALUES (?, ?)';
+            $sqlParams = array($this->id, $workId);
+            Database::instance()->updateOrDelete($sql, $sqlParams);
+        }
     }
 
     /**
@@ -182,9 +188,17 @@ class Project extends Entity
 
         $sql = 'DELETE FROM project WHERE id_project = ?';
         $sqlParams = array($this->id);
-
         Database::instance()->updateOrDelete($sql, $sqlParams);
         $this->id = null;
+
+        // Delete work IDs.
+        foreach ($this->workIds as $workId) {
+            $sql = 'DELETE FROM work_project WHERE id_project = ? AND id_work = ?';
+            $sqlParams = array($this->id, $workId);
+            Database::instance()->updateOrDelete($sql, $sqlParams);
+        }
+        $this->workIds = null;
+        $this->works = null;
     }
 
     /**
@@ -192,7 +206,7 @@ class Project extends Entity
      *
      * @return array|null array of entities
      */
-    public function getWorkList()
+    public function getWorks()
     {
         // If no ID is set, this entity does not exist in the database.
         if (!isset($this->id)) {
@@ -200,7 +214,10 @@ class Project extends Entity
         }
 
         // If works are already fetched, return.
-        if (is_array($this->works)) {
+        if (
+            is_array($this->works)
+            && count($this->workIds) == count($this->works)
+        ) {
             return $this->works;
         }
 
@@ -236,5 +253,15 @@ class Project extends Entity
         }
 
         return $this->works;
+    }
+
+    /**
+     * Adds a work identifier.
+     *
+     * @param int $workId work identifier
+     */
+    public function addWorkId($workId)
+    {
+        $this->workIds[] = $workId;
     }
 }
