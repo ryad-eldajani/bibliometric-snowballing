@@ -98,6 +98,19 @@ abstract class Entity implements IEntity, \JsonSerializable
     }
 
     /**
+     * Returns the cache key for the entity cache.
+     *
+     * @param string|int $id identifier of entity
+     * @return string cache key
+     */
+    protected static function getCacheKey($id)
+    {
+
+        return end(explode('\\', static::class))
+            . '_' . (string)$id;
+    }
+
+    /**
      * Returns true, if an  IEntity instance is in cache.
      *
      * @param int|string $id identifier of the entity
@@ -105,27 +118,27 @@ abstract class Entity implements IEntity, \JsonSerializable
      */
     public static function isInCache($id)
     {
-        return isset(self::$cache[(string)$id]);
+        return isset(static::$cache[static::getCacheKey($id)]);
     }
 
     /**
      * Returns the an IEntity instance from the cache
      * or the complete cache ($id = null). If an $id
      * is given and the entity is not in the cache,
-     * it will be retrieved using the self::read() method.
+     * it will be retrieved using the static::read() method.
      *
      * @param int|string|null $id IEntity identifier
      * @return IEntity|array IEntity instance(s) from cache
      */
     public static function getCache($id = null)
     {
-        return $id !== null
-            ? (
-                self::isInCache($id)
-                ? self::$cache[$id]
-                : self::read($id)
-            )
-            : self::$cache;
+        if ($id === null) {
+            return static::$cache;
+        }
+
+        return static::isInCache($id)
+                ? static::$cache[static::getCacheKey($id)]
+                : static::read($id);
     }
 
     /**
@@ -135,7 +148,7 @@ abstract class Entity implements IEntity, \JsonSerializable
      */
     public static function addToCache(IEntity $entity)
     {
-        self::$cache[(string)$entity->getId()] = $entity;
+        static::$cache[static::getCacheKey($entity->getId())] = $entity;
     }
 
     /**

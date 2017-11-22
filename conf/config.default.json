@@ -31,6 +31,10 @@
       "controller": "Project/renameProject",
       "methods": ["post"]
     },
+    "/projects/view/{projectId}": {
+      "controller": "Project/viewProject",
+      "methods": ["get"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

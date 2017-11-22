@@ -104,8 +104,8 @@ class Project extends Entity
         $sqlParams = array(UserManager::instance()->getUserParam('uid'));
 
         if ($id !== null) {
-            if (self::isInCache($id)) {
-                return self::getCache($id);
+            if (static::isInCache($id)) {
+                return static::getCache($id);
             }
 
             $sql .= ' AND p.id_project = ?';
@@ -129,12 +129,12 @@ class Project extends Entity
                 DataTypeHelper::instance()->get($record['id_user'], 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['work_ids']), 'int')
             );
-            self::addToCache($project);
+            static::addToCache($project);
         }
 
         return $id !== null
-            ? self::getCache($id)
-            : self::getCache();
+            ? static::getCache($id)
+            : static::getCache();
     }
 
     /**
@@ -151,7 +151,7 @@ class Project extends Entity
         $sqlParams = array($this->userId, $this->name);
 
         $this->id = Database::instance()->insert($sql, $sqlParams);
-        self::addToCache($this);
+        static::addToCache($this);
     }
 
     /**
@@ -216,7 +216,7 @@ class Project extends Entity
 
         $this->works = array();
         foreach ($sqlResult as $record) {
-            $workId = DataTypeHelper::instance()->get($record['w.id_work'], 'int');
+            $workId = DataTypeHelper::instance()->get($record['id_work'], 'int');
 
             // If work entity is already in cache, use entity from cache.
             if ($work = Work::getCache($workId)) {

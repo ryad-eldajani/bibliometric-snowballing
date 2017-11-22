@@ -71,6 +71,58 @@ class Http
         if ($this->requestInfo['request_method'] == 'post') {
             $this->requestInfo['post_params'] = $_POST;
         }
+
+        $this->setControllerInfo($this->requestInfo['path']);
+    }
+
+    /**
+     * Sets the controller information if available. Otherwise a redirect
+     * response to 404 is sent.
+     *
+     * @param string $requestUrl request URL path
+     */
+    protected function setControllerInfo($requestUrl)
+    {
+        $availableUrls = App::instance()->getConfig('urls');
+        if (isset($availableUrls[$requestUrl])) {
+            // URL is directly available.
+            $this->controllerInfo = $availableUrls[$this->requestInfo['path']];
+            return;
+        } else {
+            // Check all variable URLs, if they match with the request URL.
+            foreach ($availableUrls as $availableUrl => $controllerInformation) {
+                // If the available URL does not contain a curly brace, continue.
+                if (strpos($availableUrl, '{') === false) {
+                    continue;
+                }
+
+                // Check, if static part is part of request URL.
+                $variableUrlParts = preg_split('/{+(.*?)}/', $availableUrl);
+                if (strpos($requestUrl, $variableUrlParts[0]) !== false) {
+                    // Static part is part of request URL, set controller
+                    // information and variable parts.
+                    if (preg_match_all('/{+(.*?)}/', $availableUrl, $matches)) {
+                        $this->controllerInfo = $controllerInformation;
+
+                        // Split variable parts from request URL, combine with
+                        // variable names from $matches and set as 'params'.
+                        $variableRequestUrlParts = explode(
+                            '/',
+                            str_replace($variableUrlParts[0], '', $requestUrl)
+                        );
+                        $this->controllerInfo['params'] = array_combine(
+                            $matches[1],
+                            $variableRequestUrlParts
+                        );
+                    }
+
+                    return;
+                }
+            }
+        }
+
+        // Controller is not available, return 404 redirect response.
+        (new RedirectResponse('/404'))->send();
     }
 
     /**
@@ -79,14 +131,6 @@ class Http
     public function handleRequest()
     {
         $this->setupRequestInfo();
-        $availableUrls = App::instance()->getConfig('urls');
-
-        // Redirect to 404 if URL path is not registered.
-        if (!isset($availableUrls[$this->requestInfo['path']])) {
-            (new RedirectResponse('/404'))->send();
-        }
-
-        $this->controllerInfo = $availableUrls[$this->requestInfo['path']];
 
         // Redirect to 404, if the request method is invalid.
         if (!in_array($this->requestInfo['request_method'], $this->controllerInfo['methods'])) {
@@ -107,7 +151,11 @@ class Http
         /**
          * @var $response Response
          */
-        $response = $controller->{$this->controllerInfo['action_name']}();
+        $response = $controller->{$this->controllerInfo['action_name']}(
+            isset($this->controllerInfo['params'])
+                ? $this->controllerInfo['params']
+                : null
+        );
         $response->send();
     }
 

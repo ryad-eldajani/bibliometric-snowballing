@@ -41,6 +41,29 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * URL: /projects/view/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return Response instance
+     */
+    public function viewProjectAction(array $params = array())
+    {
+        $this->redirectIfNotLoggedIn();
+        $project = Project::read($params['projectId']);
+        $project->getWorkList();
+
+        return new Response(
+            $this->app->renderTemplate(
+                'project',
+                array(
+                    'project' => $project,
+                    'projects' => Project::read()
+                )
+            )
+        );
+    }
+
+    /**
      * URL: /projects/new
      * Methods: POST
      * @return Response instance

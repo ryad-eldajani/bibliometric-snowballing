@@ -18,8 +18,9 @@ use BS\Model\Db\Database;
 
 /**
  * Class Work.
+ *
  * @package BS\Model\Entity
- * @method int|null getId()
+ * @method int|string|null getId()
  * @method string|null getTitle()
  * @method string|null getSubTitle()
  * @method int|null getWorkYear()
@@ -88,8 +89,8 @@ class Work extends Entity
         $sqlParams = array();
 
         if ($id !== null) {
-            if (self::isInCache($id)) {
-                return self::getCache($id);
+            if (static::isInCache($id)) {
+                return static::getCache($id);
             }
 
             $sql .= '  work WHERE id_work = ?';
@@ -113,12 +114,12 @@ class Work extends Entity
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
                 $record['doi']
             );
-            self::addToCache($work);
+            static::addToCache($work);
         }
 
         return $id !== null
-            ? self::getCache($id)
-            : self::getCache();
+            ? static::getCache($id)
+            : static::getCache();
     }
 
     /**
