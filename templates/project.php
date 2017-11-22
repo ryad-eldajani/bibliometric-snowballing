@@ -194,7 +194,7 @@ $(document).ready(function () {
     <table class="table table-striped table-sorted" id="table_works">
         <thead>
         <tr>
-            <th>Incude</th>
+            <th>Include</th>
             <th>Work title</th>
             <th>Authors</th>
             <th>Journal</th>
