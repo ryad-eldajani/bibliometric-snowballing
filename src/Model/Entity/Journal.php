@@ -160,4 +160,34 @@ class Journal extends Entity
         Database::instance()->updateOrDelete($sql, $sqlParams);
         $this->id = null;
     }
+
+    /**
+     * Reads an entity by ISSN and returns it.
+     *
+     * @param string $issn first name of this entity
+     * @return Journal|null instance or null
+     */
+    public static function readByIssn($issn)
+    {
+        $sql = 'SELECT j.id_journal, j.journal_name, j.issn FROM journal j
+                WHERE j.issn = ?';
+        $sqlParams = array($issn);
+
+        // Fetch result from the database.
+        $sqlResult = Database::instance()->select($sql, $sqlParams);
+
+        // If we have no result, return null.
+        if (count($sqlResult) != 1) {
+            return null;
+        }
+
+        $journal = new Journal(
+            DataTypeHelper::instance()->get($sqlResult[0]['j.id_journal'], 'int'),
+            $sqlResult[0]['j.journal_name'],
+            $sqlResult[0]['j.issn']
+        );
+        static::addToCache($journal);
+
+        return $journal;
+    }
 }

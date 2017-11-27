@@ -160,4 +160,35 @@ class Author extends Entity
         Database::instance()->updateOrDelete($sql, $sqlParams);
         $this->id = null;
     }
+
+    /**
+     * Reads an entity by first- and last name and returns it.
+     *
+     * @param string $firstName first name of this entity
+     * @param string $lastName last name of this entity
+     * @return Author|null instance or null
+     */
+    public static function readByFirstLastName($firstName, $lastName)
+    {
+        $sql = 'SELECT a.id_author, a.first_name, a.last_name FROM author a
+                WHERE a.first_name = ? AND a.last_name = ?';
+        $sqlParams = array($firstName, $lastName);
+
+        // Fetch result from the database.
+        $sqlResult = Database::instance()->select($sql, $sqlParams);
+
+        // If we have no result, return null.
+        if (count($sqlResult) != 1) {
+            return null;
+        }
+
+        $author = new Author(
+            DataTypeHelper::instance()->get($sqlResult[0]['a.id_author'], 'int'),
+            $sqlResult[0]['a.first_name'],
+            $sqlResult[0]['a.last_name']
+        );
+        static::addToCache($author);
+
+        return $author;
+    }
 }

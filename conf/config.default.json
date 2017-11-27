@@ -59,5 +59,12 @@
       "controller": "User/viewProfile",
       "methods": ["get"]
     }
+  },
+  "apis": {
+    "crossref": {
+      "class": "BS\\Model\\Api\\CrossRefApi",
+      "url": "https://api.crossref.org/works/{doi}",
+      "method": "get"
+    }
   }
 }

@@ -14,6 +14,8 @@ namespace BS\Model\Entity;
 
 
 use BS\Helper\DataTypeHelper;
+use BS\Model\Api\AbstractApi;
+use BS\Model\Api\CrossRefApi;
 use BS\Model\Db\Database;
 
 /**
@@ -147,6 +149,7 @@ class Work extends Entity
                 DataTypeHelper::instance()->getArray(explode(',', $record['author_ids']), 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['journal_ids']), 'int')
             );
+            $work->setAuthorsJournals();
             static::addToCache($work);
         }
 
@@ -350,5 +353,126 @@ class Work extends Entity
         }
 
         return $this->journals;
+    }
+
+    /**
+     * Reads and creates a work entity from CrossRef Api
+     * and returns it if existent, otherwise null.
+     *
+     * @param string $doi DOI of this entity
+     * @return Work|null Work instance or null
+     */
+    protected static function readWorkFromApiByDoi($doi)
+    {
+        /** @var CrossRefApi $api */
+        $api = AbstractApi::instance('crossref');
+        $allData = $api->getDoiInformation($doi);
+
+        if (!isset($allData['status']) || $allData['status'] != 'ok') {
+            return null;
+        }
+
+        $workData = $allData['message'];
+        $work = new Work(
+            null,
+            $workData['title'][0],
+            $workData['subtitle'],
+            $workData['created']['date-parts'][0][0],
+            $workData['DOI']
+        );
+
+        // Create authors.
+        foreach ($workData['author'] as $authorData) {
+            if (!$author = Author::readByFirstLastName(
+                $authorData['given'],
+                $authorData['family']
+            )) {
+                $author = new Author(
+                    null,
+                    $authorData['given'],
+                    $authorData['family']
+                );
+                //$author->create();
+            }
+
+            $work->authors[(string)$author->getId()] = $author;
+            $work->authorIds[] = $author->getId();
+        }
+
+        // Create journal.
+        if ($workData['type'] == 'journal-article') {
+            if (!$journal = Journal::readByIssn($workData['ISSN'][0])) {
+                $journal = new Journal(
+                    null,
+                    $workData['short-container-title'][0],
+                    $workData['ISSN'][0]
+                );
+                //$journal->create();
+            }
+
+            $work->journals[(string)$journal->getId()] = $journal;
+            $work->journalIds[] = $journal->getId();
+        }
+
+        return $work;
+    }
+
+    /**
+     * Sets the authors and journals by given author/journal IDs.
+     */
+    protected function setAuthorsJournals()
+    {
+        if (count($this->journalIds) != count($this->journals)) {
+            $this->journals = array();
+            foreach ($this->journalIds as $journalId) {
+                $journal = Journal::read($journalId);
+                $this->journals[(string)$journal->getId()] = $journal;
+            }
+        }
+
+        if (count($this->authorIds) != count($this->authors)) {
+            $this->authors = array();
+            foreach ($this->authorIds as $authorId) {
+                $author = Author::read($authorId);
+                $this->authors[(string)$author->getId()] = $author;
+            }
+        }
+    }
+
+    /**
+     * Read a work entity and returns it if existent, otherwise null.
+     *
+     * @param string $doi DOI of this entity
+     * @return Work|null Work instance or null
+     */
+    public static function readByDoi($doi)
+    {
+        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
+                  (SELECT GROUP_CONCAT(wj.id_work) FROM work_journal wj) as journal_ids,
+                  (SELECT GROUP_CONCAT(wa.id_work) FROM work_author wa) as author_ids
+                FROM work w WHERE doi = ?';
+        $sqlParams = array($doi);
+
+        // Fetch result from the database.
+        $sqlResult = Database::instance()->select($sql, $sqlParams);
+
+        // If we do not have exactly one result, try to fetch information from API.
+        if (count($sqlResult) != 1) {
+            return static::readWorkFromApiByDoi($doi);
+        }
+
+        $work = new Work(
+            DataTypeHelper::instance()->get($sqlResult[0]['id_work'], 'int'),
+            $sqlResult[0]['title'],
+            $sqlResult[0]['subtitle'],
+            DataTypeHelper::instance()->get($sqlResult[0]['work_year'], 'int'),
+            $sqlResult[0]['doi'],
+            DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['author_ids']), 'int'),
+            DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['journal_ids']), 'int')
+        );
+        static::addToCache($work);
+        $work->setAuthorsJournals();
+
+        return $work;
     }
 }

@@ -199,7 +199,8 @@ class Http
      * @param string $key POST variable name to return
      * @return null|string value of POST variable or null if not available
      */
-    public function getPostParam($key) {
+    public function getPostParam($key)
+    {
         if (
             !isset($this->requestInfo['post_params'])
             || !isset($this->requestInfo['post_params'][$key])
@@ -216,7 +217,8 @@ class Http
      * @param string $key POST variable name to alter
      * @param string $value POST variable value to set
      */
-    public function alterPostParam($key, $value) {
+    public function alterPostParam($key, $value)
+    {
         if (
             !isset($this->requestInfo['post_params'])
             || !isset($this->requestInfo['post_params'][$key])
@@ -238,5 +240,32 @@ class Http
         return $path === null
             ? $this->controllerInfo
             : ArrayHelper::instance()->getValueByPath($this->controllerInfo, $path);
+    }
+
+    /**
+     * Executes a cURL request and outputs the response.
+     *
+     * @param string $url URL to request
+     * @param string $method HTTP method ("get", "post", "delete", "put")
+     * @param null|array $postFields POST parameters
+     * @return string HTTP output of response
+     */
+    public function curlRequest($url, $method, array $postFields = null)
+    {
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
+        curl_setopt($curl, CURLOPT_URL, $url);
+
+        // If we have values to be posted (possible in POST, DELETE, PUT),
+        // raw encode the POST values by using "http_build_query()".
+        if (is_array($postFields) && count($postFields) > 0) {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($postFields));
+        }
+
+        $curlResponse = curl_exec($curl);
+        curl_close($curl);
+
+        return $curlResponse . PHP_EOL;
     }
 }
