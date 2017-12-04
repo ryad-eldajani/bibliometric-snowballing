@@ -14,7 +14,6 @@ namespace BS\Model;
 
 use BS\Helper\ArrayHelper;
 use BS\Helper\TemplateHelper;
-use BS\Model\Exceptions\AppException;
 use BS\Model\Http\Http;
 use BS\Model\Typo3\Typo3System;
 use BS\Model\User\UserManager;
@@ -88,7 +87,6 @@ class App
 
     /**
      * Loads the configuration.
-     * @throws AppException
      */
     protected function loadConfiguration()
     {

@@ -6,6 +6,11 @@
 <script type="text/javascript">
 $(document).ready(function () {
     var table = $('#table_works').DataTable({
+        columnDefs: [{
+            width: '10px',
+            targets: 0,
+            orderable: false
+        }],
         scrollY: false,
         lengthChange: false,
         buttons: [
@@ -219,18 +224,21 @@ $(document).ready(function () {
                 modal.data('workId', '');
                 modal.modal('toggle');
 
+                var j;
                 var authors = '';
-                if (work.authors.length > 0) {
+                if (Object.keys(work.authors).length > 0) {
+                    j = 0;
                     $.each(work.authors, function (i, author) {
-                        if (i > 0) authors += ', ';
+                        if (j++ > 0) authors += ', ';
                         authors += author.firstName + ' ' + author.lastName;
                     });
                 }
 
                 var journals = '';
-                if (work.journals.length > 0) {
+                if (Object.keys(work.journals).length > 0) {
+                    j = 0;
                     $.each(work.journals, function (i, journal) {
-                        if (i > 0) journals += ', ';
+                        if (j++ > 0) journals += ', ';
                         journals += journal.journalName;
                     });
                 }
@@ -327,7 +335,7 @@ $(document).ready(function () {
     <table class="table table-striped table-sorted" id="table_works">
         <thead>
         <tr>
-            <th>Include</th>
+            <th>Inc.</th>
             <th>Work title</th>
             <th>Authors</th>
             <th>Journal</th>

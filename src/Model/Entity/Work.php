@@ -116,8 +116,10 @@ class Work extends Entity
     public static function read($id = null)
     {
         $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
-                  (SELECT GROUP_CONCAT(wj.id_work) FROM work_journal wj) as journal_ids,
-                  (SELECT GROUP_CONCAT(wa.id_work) FROM work_author wa) as author_ids
+                  (SELECT GROUP_CONCAT(wj.id_work) FROM work_journal wj WHERE wj.id_work = w.id_work)
+                  AS journal_ids,
+                  (SELECT GROUP_CONCAT(wa.id_work) FROM work_author wa WHERE wa.id_work = w.id_work)
+                  AS author_ids
                 FROM work w';
         $sqlParams = array();
 
