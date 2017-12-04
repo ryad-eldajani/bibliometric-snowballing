@@ -179,6 +179,25 @@ class Work extends Entity
         );
 
         $this->id = Database::instance()->insert($sql, $sqlParams);
+        static::addToCache($this);
+
+        // Create author IDs.
+        if (count($this->authorIds) > 0) {
+            foreach ($this->authorIds as $authorId) {
+                $sql = 'INSERT INTO work_author (id_work, id_author) VALUES (?, ?)';
+                $sqlParams = array($this->id, $authorId);
+                Database::instance()->insert($sql, $sqlParams);
+            }
+        }
+
+        // Create journal IDs.
+        if (count($this->journalIds) > 0) {
+            foreach ($this->journalIds as $journalId) {
+                $sql = 'INSERT INTO work_journal (id_work, id_journal) VALUES (?, ?)';
+                $sqlParams = array($this->id, $journalId);
+                Database::instance()->insert($sql, $sqlParams);
+            }
+        }
     }
 
     /**
@@ -376,7 +395,7 @@ class Work extends Entity
         $work = new Work(
             null,
             $workData['title'][0],
-            $workData['subtitle'],
+            isset($workData['subtitle'][0]) ? $workData['subtitle'][0] : '',
             $workData['created']['date-parts'][0][0],
             $workData['DOI']
         );
@@ -392,7 +411,7 @@ class Work extends Entity
                     $authorData['given'],
                     $authorData['family']
                 );
-                //$author->create();
+                $author->create();
             }
 
             $work->authors[(string)$author->getId()] = $author;
@@ -407,13 +426,14 @@ class Work extends Entity
                     $workData['short-container-title'][0],
                     $workData['ISSN'][0]
                 );
-                //$journal->create();
+                $journal->create();
             }
 
             $work->journals[(string)$journal->getId()] = $journal;
             $work->journalIds[] = $journal->getId();
         }
 
+        $work->create();
         return $work;
     }
 
@@ -448,8 +468,10 @@ class Work extends Entity
     public static function readByDoi($doi)
     {
         $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
-                  (SELECT GROUP_CONCAT(wj.id_work) FROM work_journal wj) as journal_ids,
-                  (SELECT GROUP_CONCAT(wa.id_work) FROM work_author wa) as author_ids
+                  (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
+                  AS journal_ids,
+                  (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
+                  AS author_ids
                 FROM work w WHERE doi = ?';
         $sqlParams = array($doi);
 
@@ -474,5 +496,39 @@ class Work extends Entity
         $work->setAuthorsJournals();
 
         return $work;
+    }
+
+    /**
+     * Adds an author ID to the authors.
+     *
+     * @param int $authorId author identifier
+     */
+    public function addAuthorId($authorId)
+    {
+        if (in_array($authorId, $this->authorIds)) {
+            return;
+        }
+
+        if ($author = Author::read($authorId)) {
+            $this->authorIds[] = $authorId;
+            $this->authors[(string)$author->getId()] = $author;
+        }
+    }
+
+    /**
+     * Adds an journal ID to the journals.
+     *
+     * @param int $journalId journal identifier
+     */
+    public function addJournalId($journalId)
+    {
+        if (in_array($journalId, $this->journalIds)) {
+            return;
+        }
+
+        if ($journal = Journal::read($journalId)) {
+            $this->journalIds[] = $journalId;
+            $this->journals[(string)$journal->getId()] = $journal;
+        }
     }
 }

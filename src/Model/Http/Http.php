@@ -194,17 +194,26 @@ class Http
     }
 
     /**
+     * Returns true, if a POST variable exists.
+     *
+     * @param string $key POST variable
+     * @return bool true, if POST variable exists
+     */
+    public function hasPostParam($key)
+    {
+        return isset($this->requestInfo['post_params'])
+            && isset($this->requestInfo['post_params'][$key]);
+    }
+
+    /**
      * Returns a POST variable, if available
      *
      * @param string $key POST variable name to return
-     * @return null|string value of POST variable or null if not available
+     * @return null|string|array value of POST variable or null if not available
      */
     public function getPostParam($key)
     {
-        if (
-            !isset($this->requestInfo['post_params'])
-            || !isset($this->requestInfo['post_params'][$key])
-        ) {
+        if (!$this->hasPostParam($key)) {
             return null;
         }
 
@@ -215,14 +224,11 @@ class Http
      * Alters a POST variable, if available.
      *
      * @param string $key POST variable name to alter
-     * @param string $value POST variable value to set
+     * @param string|array $value POST variable value to set
      */
     public function alterPostParam($key, $value)
     {
-        if (
-            !isset($this->requestInfo['post_params'])
-            || !isset($this->requestInfo['post_params'][$key])
-        ) {
+        if (!$this->hasPostParam($key)) {
             return;
         }
 

@@ -90,9 +90,9 @@ class Author extends Entity
         // We have at least one result, create project entity/entities.
         foreach ($sqlResult as $record) {
             $author = new Author(
-                DataTypeHelper::instance()->get($record['a.id_author'], 'int'),
-                $record['a.first_name'],
-                $record['a.last_name']
+                DataTypeHelper::instance()->get($record['id_author'], 'int'),
+                $record['first_name'],
+                $record['last_name']
             );
             static::addToCache($author);
         }
@@ -121,6 +121,7 @@ class Author extends Entity
         );
 
         $this->id = Database::instance()->insert($sql, $sqlParams);
+        static::addToCache($this);
     }
 
     /**
@@ -183,9 +184,9 @@ class Author extends Entity
         }
 
         $author = new Author(
-            DataTypeHelper::instance()->get($sqlResult[0]['a.id_author'], 'int'),
-            $sqlResult[0]['a.first_name'],
-            $sqlResult[0]['a.last_name']
+            DataTypeHelper::instance()->get($sqlResult[0]['id_author'], 'int'),
+            $sqlResult[0]['first_name'],
+            $sqlResult[0]['last_name']
         );
         static::addToCache($author);
 

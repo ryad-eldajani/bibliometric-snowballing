@@ -39,6 +39,7 @@ class Database
 
     /**
      * Database constructor.
+     * @throws DbException
      */
     private function __construct()
     {
@@ -159,21 +160,25 @@ class Database
      * @param string $sql SELECT statement
      * @param array $parameters Parameters to bind
      * @param string $connectionType Connection type (e.g. self::CONNECTION_BS)
-     * @return array SQL result
+     * @return array|null SQL result
      */
     public function select($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
     {
-        $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
-        $statement->execute();
-        $statementResult = $statement->get_result();
+        try {
+            $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
+            $statement->execute();
+            $statementResult = $statement->get_result();
 
-        // Put result into $resultArray for each result row.
-        $resultArray = array();
-        while ($resultRow = $statementResult->fetch_array(MYSQLI_ASSOC)) {
-            $resultArray[] = $resultRow;
+            // Put result into $resultArray for each result row.
+            $resultArray = array();
+            while ($resultRow = $statementResult->fetch_array(MYSQLI_ASSOC)) {
+                $resultArray[] = $resultRow;
+            }
+
+            return $resultArray;
+        } catch (DbException $e) {
+            return null;
         }
-
-        return $resultArray;
     }
 
     /**
@@ -186,10 +191,14 @@ class Database
      */
     public function insert($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
     {
-        $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
-        $statement->execute();
+        try {
+            $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
+            $statement->execute();
 
-        return $statement->insert_id;
+            return $statement->insert_id;
+        } catch (DbException $e) {
+            return null;
+        }
     }
 
     /**
@@ -201,7 +210,10 @@ class Database
      */
     public function updateOrDelete($sql, $parameters = array(), $connectionType = self::CONNECTION_BS)
     {
-        $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
-        $statement->execute();
+        try {
+            $statement = $this->getStatement($this->connections[$connectionType], $sql, $parameters);
+            $statement->execute();
+        } catch (DbException $e) {
+        }
     }
 }

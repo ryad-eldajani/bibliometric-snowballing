@@ -97,3 +97,6 @@ legend.legend {
 .dropdown-option {
     padding: 0 5px 0 5px;
 }
+#new_work_modal .row button {
+    width: 100%;
+}

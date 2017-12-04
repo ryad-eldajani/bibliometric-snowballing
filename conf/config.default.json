@@ -43,6 +43,10 @@
       "controller": "Work/newWork",
       "methods": ["post"]
     },
+    "/works/request/doi": {
+      "controller": "Work/requestDoiWork",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

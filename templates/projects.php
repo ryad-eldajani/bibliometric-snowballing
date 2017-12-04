@@ -75,12 +75,17 @@ $(document).ready(function () {
             url: '/projects/new',
             data: {'project_name': $('#input_project_name').val()},
             success: function (data) {
+                var table = $('#table_projects');
+                if (table.length === 0) {
+                    location.reload();
+                }
+
                 var project = JSON.parse(data);
                 $this.button('reset');
                 $('#input_project_name').val('');
                 modal.modal('toggle');
 
-                $('#table_projects').find('tr:last').after(
+                table.find('tr:last').after(
                     '<tr><td><a href="/projects/view/' + project.id + '"  class="project-link">' + project.name + '</a></td><td>0</td>'
                     + '<td>' + timestampToDate(project.createdAt) + '</td><td><div class="dropdown">'
                     + '<button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">'

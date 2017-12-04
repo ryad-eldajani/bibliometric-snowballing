@@ -28,7 +28,7 @@ class JsonResponse extends Response
         array $customParameters = null
     ) {
         parent::__construct(
-            \json_encode($content),
+            json_encode($content),
             $httpStatus,
             Response::CONTENT_TYPE_JSON,
             $customParameters

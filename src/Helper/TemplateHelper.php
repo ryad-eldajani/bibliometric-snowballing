@@ -13,6 +13,7 @@
 namespace BS\Helper;
 
 
+use BS\Model\Entity\Entity;
 use BS\Model\Http\Http;
 use League\Plates\Engine;
 use League\Plates\Extension\ExtensionInterface;
@@ -29,6 +30,7 @@ class TemplateHelper implements ExtensionInterface
         $engine->registerFunction('active', [$this, 'tabActive']);
         $engine->registerFunction('date', [$this, 'dateFormat']);
         $engine->registerFunction('join', [$this, 'joinArray']);
+        $engine->registerFunction('joinEntities', [$this, 'joinEntities']);
     }
 
     /**
@@ -69,5 +71,32 @@ class TemplateHelper implements ExtensionInterface
     public function joinArray(array $array = null, $separator = ', ')
     {
         return $array !== null ? implode($separator, $array) : '';
+    }
+
+    public function joinEntities(array $entities = null, array $properties = array(), $separator = ', ')
+    {
+        if (!is_array($entities)) {
+            return '';
+        }
+
+        $output = '';
+        $i = 0;
+        foreach ($entities as $entity) {
+            /** @var Entity $entity */
+
+            if ($i++ > 0) {
+                $output .= $separator;
+            }
+
+            $j = 0;
+            foreach ($properties as $property) {
+                if ($j++ > 0) {
+                    $output .= ' ';
+                }
+                $output .= $entity->__get($property);
+            }
+        }
+
+        return $output;
     }
 }

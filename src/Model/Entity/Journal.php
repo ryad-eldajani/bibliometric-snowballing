@@ -90,9 +90,9 @@ class Journal extends Entity
         // We have at least one result, create project entity/entities.
         foreach ($sqlResult as $record) {
             $journal = new Journal(
-                DataTypeHelper::instance()->get($record['j.id_journal'], 'int'),
-                $record['j.journal_name'],
-                $record['j.issn']
+                DataTypeHelper::instance()->get($record['id_journal'], 'int'),
+                $record['journal_name'],
+                $record['issn']
             );
             static::addToCache($journal);
         }
@@ -121,6 +121,7 @@ class Journal extends Entity
         );
 
         $this->id = Database::instance()->insert($sql, $sqlParams);
+        static::addToCache($this);
     }
 
     /**
@@ -182,9 +183,9 @@ class Journal extends Entity
         }
 
         $journal = new Journal(
-            DataTypeHelper::instance()->get($sqlResult[0]['j.id_journal'], 'int'),
-            $sqlResult[0]['j.journal_name'],
-            $sqlResult[0]['j.issn']
+            DataTypeHelper::instance()->get($sqlResult[0]['id_journal'], 'int'),
+            $sqlResult[0]['journal_name'],
+            $sqlResult[0]['issn']
         );
         static::addToCache($journal);
 

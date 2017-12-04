@@ -13,7 +13,6 @@
 namespace BS\Model\Api;
 
 
-use BS\Model\Entity\Work;
 
 class CrossRefApi extends AbstractApi
 {

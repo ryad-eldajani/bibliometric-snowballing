@@ -69,12 +69,17 @@ $(document).ready(function () {
         .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
         .append(filterInput);
 
-    // API call to crossref.org, when DOI is filled out and nothing else
+    // API call for DOI, when DOI is filled out and nothing else
     $('#input_work_doi').on('blur', function(e) {
         e.preventDefault();
         var $this = $(this);
         var modal = $('#new_work_modal');
         var allInputEmpty = true;
+
+        // Request, if only DOI is filled
+        if ($this.val().trim() === '') {
+            return;
+        }
 
         modal.find('input').not($this).each(function() {
             if ($(this).val() !== '') {
@@ -87,21 +92,81 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            type: 'GET',
-            url: 'https://api.crossref.org/works/' + $this.val(),
+            type: 'POST',
+            url: '/works/request/doi',
+            data: {
+                'work_doi': $this.val()
+            },
             success: function (data) {
-                var work = data['message'];
-                $('#input_work_title').val(work['title'][0]);
-                $('#input_work_subtitle').val('');
-                $('#input_work_year').val(work['created']['date-parts'][0][0]);
+                var work = JSON.parse(data);
+                console.log(work);
+                if (work === null) return;
+                modal.data('workId', work['id']);
+                $('#input_work_title').val(work['title']);
+                $('#input_work_subtitle').val(work['subTitle']);
+                $('#input_work_year').val(work['workYear']);
+                $.each(work.authors, function (i, author) {
+                    $('#select_work_authors').append($('<option>', {
+                        value: author.id,
+                        text : author.firstName + ' ' + author.lastName,
+                        attr: {
+                            'data-firstname': author.firstName,
+                            'data-lastname': author.lastName
+                        }
+                    }));
+                });
+                $.each(work.journals, function (i, journal) {
+                    $('#select_work_journals').append($('<option>', {
+                        value: journal.id,
+                        text : journal.journalName,
+                        attr: {'data-issn': journal.issn}
+                    }));
+                });
                 modal.find('.alert').addClass('hidden');
             },
             error: function (xhr) {
+                console.log(xhr.responseText);
                 modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
             }
         });
+    });
+
+    // Reset button click.
+    $('#btn_work_reset').click(function () {
+        $('#new_work_modal').find('input').val('');
+    });
+
+    // Add Journal.
+    $('#btn_work_add_journal').click(function() {
+        var journalName = $('#work_add_journal_name');
+        var journalIssn = $('#work_add_journal_issn');
+        $('#select_work_journals').append($('<option>', {
+            text : journalName.val(),
+            attr: {'data-issn': journalIssn.val()}
+        }).on('dblclick', function() {
+            $(this).remove();
+        }));
+        journalName.val('');
+        journalIssn.val('');
+    });
+
+    // Add Author.
+    $('#btn_work_add_author').click(function() {
+        var authorFirstName = $('#work_add_author_first_name');
+        var authorLastName = $('#work_add_author_last_name');
+        $('#select_work_authors').append($('<option>', {
+            text : authorFirstName.val() + ' ' + authorLastName.val(),
+            attr: {
+                'data-firstname': authorFirstName.val(),
+                'data-lastname': authorLastName.val()
+            }
+        }).on('dblclick', function() {
+            $(this).remove();
+        }));
+        authorFirstName.val('');
+        authorLastName.val('');
     });
 
     // New project button submit click.
@@ -110,15 +175,39 @@ $(document).ready(function () {
         var $this = $(this);
         var modal = $('#new_work_modal');
         $this.button('loading');
+
+        // Setup author data:
+        var dataAuthors = [];
+        $('#select_work_authors').find('option').each(function() {
+            dataAuthors.push({
+                'id': $(this).attr('value') ? $(this).attr('value') : null,
+                'first_name': $(this).data('firstname'),
+                'last_name': $(this).data('lastname')
+            });
+        });
+
+        // Setup journal data:
+        var dataJournals = [];
+        $('#select_work_journals').find('option').each(function() {
+            dataJournals.push({
+                'id': $(this).attr('value') ? $(this).attr('value') : null,
+                'journal_name': $(this).text(),
+                'issn': $(this).data('issn')
+            });
+        });
+
         $.ajax({
             type: 'POST',
             url: '/works/new',
             data: {
                 'project_id': modal.data('projectId'),
+                'work_id': modal.data('workId'),
                 'work_title': $('#input_work_title').val(),
                 'work_subtitle': $('#input_work_subtitle').val(),
                 'work_year': $('#input_work_year').val(),
-                'work_doi': $('#input_work_doi').val()
+                'work_doi': $('#input_work_doi').val(),
+                'authors': dataAuthors,
+                'journals': dataJournals
             },
             success: function (data) {
                 var work = JSON.parse(data);
@@ -127,17 +216,31 @@ $(document).ready(function () {
                 $('#input_work_subtitle').val('');
                 $('#input_work_year').val('');
                 $('#input_work_doi').val('');
+                modal.data('workId', '');
                 modal.modal('toggle');
 
-                var authors = work.authors === null ? '' : work.authors;
-                var journals = work.journals === null ? '' : work.journals;
+                var authors = '';
+                if (work.authors.length > 0) {
+                    $.each(work.authors, function (i, author) {
+                        if (i > 0) authors += ', ';
+                        authors += author.firstName + ' ' + author.lastName;
+                    });
+                }
+
+                var journals = '';
+                if (work.journals.length > 0) {
+                    $.each(work.journals, function (i, journal) {
+                        if (i > 0) journals += ', ';
+                        journals += journal.journalName;
+                    });
+                }
 
                 $('#table_works').find('tr:last').after(
                     '<tr><td><label><input name="work_include" type="checkbox" value="'
-                    + work.id_work + '" checked></label></td><td>' +
-                    '<a href="/works/view/' + work.id_work + '" class="work-link">'
-                    + work.title + '</a></td><td>' + authors + '</td><td>'
-                    + journals + '</td><td>' + work.doi + '</td></tr>'
+                    + work['id'] + '" checked></label></td><td>' +
+                    '<a href="/works/view/' + work['id'] + '" class="work-link">'
+                    + work['title'] + '</a></td><td>' + authors + '</td><td>'
+                    + journals + '</td><td>' + work['doi'] + '</td></tr>'
                 );
                 modal.find('.alert-warning').addClass('hidden');
             },
@@ -151,7 +254,7 @@ $(document).ready(function () {
     });
 });
 </script>
-<div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
+<div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>" data-work-id="">
     <div class="modal-dialog">
         <div class="modal-content">
             <form role="form" data-toggle="validator">
@@ -176,15 +279,45 @@ $(document).ready(function () {
                         <label for="input_work_subtitle">Work subtitle</label>
                         <input type="text" class="form-control" id="input_work_subtitle" placeholder="Enter a work subtitle" data-minlength="1" maxlength="250">
                     </div>
-
                     <div class="form-group">
                         <label for="input_work_year">Work year</label>
                         <input type="number" class="form-control" id="input_work_year" placeholder="Enter the year of the work" min="1500" max="2200">
                     </div>
+                    <div class="form-group">
+                        <label for="select_work_authors">Authors</label>
+                        <select multiple class="form-control" id="select_work_authors"></select>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="work_add_author_first_name" placeholder="First name">
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="work_add_author_last_name" placeholder="Last name">
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" id="btn_work_add_author" class="btn btn-default">Add Author</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="select_work_journals">Journals</label>
+                        <select multiple class="form-control" id="select_work_journals"></select>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="work_add_journal_name" placeholder="Journal name">
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="work_add_journal_issn" placeholder="ISSN">
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" id="btn_work_add_journal" class="btn btn-default">Add Journal</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" id="btn_work_create" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding work...">Add work</button>
+                    <button type="button" id="btn_work_reset" class="btn btn-default">Reset</button>
+                    <button type="submit" id="btn_work_create" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding Work...">Add Work</button>
                 </div>
             </form>
         </div>
@@ -202,6 +335,7 @@ $(document).ready(function () {
         </tr>
         </thead>
         <tbody>
+            <?php if (is_array($project->getWorks())): ?>
             <?php foreach ($project->getWorks() as $work): ?>
             <?php /** @var \BS\Model\Entity\Work $work */ ?>
                 <tr>
@@ -211,11 +345,12 @@ $(document).ready(function () {
                         </label>
                     </td>
                     <td><a href="/works/view/<?=$work->getId()?>" class="work-link"><?=$work->getTitle()?></a></td>
-                    <td><?=$this->join($work->getAuthors())?></td>
-                    <td><?=$this->join($work->getJournals())?></td>
+                    <td><?=$this->joinEntities($work->getAuthors(), array('firstName', 'lastName'))?></td>
+                    <td><?=$this->joinEntities($work->getJournals(), array('journalName'))?></td>
                     <td><?=$work->getDoi()?></td>
                 </tr>
             <?php endforeach; ?>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>

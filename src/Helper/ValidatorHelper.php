@@ -127,6 +127,25 @@ class ValidatorHelper
                     $postKey,
                     (boolval($postValue) ? 1 : 0)
                 );
+            } elseif ($validation['type'] == 'array') {
+                $validatedFullArray = array();
+                foreach ($postValue as $postArray) {
+                    $validatedArray = $this->validatePostArray($postArray, $validation['structure']);
+                    if ($validatedArray == null) {
+                        return false;
+                    } else {
+                        $validatedFullArray[] = $validatedArray;
+                    }
+                }
+
+                if (count($validatedFullArray) != count($postValue)) {
+                    return false;
+                }
+
+                $this->http->alterPostParam(
+                    $postKey,
+                    $validatedFullArray
+                );
             } elseif ($validation['type'] == 'string') {
                 if (!is_string($postValue)) {
                     return false;
@@ -141,6 +160,39 @@ class ValidatorHelper
         }
 
         return true;
+    }
+
+    /**
+     * Validates an element of a POST array.
+     *
+     * @param array $array element of the POST array to validate
+     * @param array $structure array validation structure
+     * @return array|null
+     */
+    protected function validatePostArray(array $array = array(), array $structure = array())
+    {
+        foreach ($structure as $key => $value) {
+            if (!isset($array[$key])) {
+                continue;
+            }
+
+            // Check type:
+            if (isset($value['type'])) {
+                if ($value['type'] == 'int') {
+                    if (!is_numeric($array[$key])) {
+                        return null;
+                    }
+                    $array[$key] = intval($array[$key]);
+                } elseif ($value['type'] == 'string') {
+                    if (!is_string($array[$key])) {
+                        return null;
+                    }
+                    $array[$key] = trim(htmlspecialchars($array[$key]));
+                }
+            }
+        }
+
+        return $array;
     }
 
     /**

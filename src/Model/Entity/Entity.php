@@ -152,6 +152,24 @@ abstract class Entity implements IEntity, \JsonSerializable
     }
 
     /**
+     * Returns this Entity instance as an array.
+     *
+     * @return array Entity instance as array
+     */
+    public function toArray()
+    {
+        $array = get_object_vars($this);
+        unset($array['_parent'], $array['_index']);
+        array_walk_recursive($array, function (&$property) {
+            if ($property instanceof Entity) {
+                $property = $property->toArray();
+            }
+        });
+
+        return $array;
+    }
+
+    /**
      * Specify data which should be serialized to JSON
      * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
@@ -160,6 +178,6 @@ abstract class Entity implements IEntity, \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return \json_encode(get_object_vars($this));
+        return json_encode($this->toArray());
     }
 }

@@ -13,6 +13,8 @@
 namespace BS\Controller;
 
 
+use BS\Model\Entity\Author;
+use BS\Model\Entity\Journal;
 use BS\Model\Entity\Project;
 use BS\Model\Entity\Work;
 use BS\Helper\ValidatorHelper;
@@ -47,9 +49,49 @@ class WorkController extends AbstractController
     }
 
     /**
+     * URL: /works/request/doi/{doi}
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function requestDoiWorkAction()
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+
+        // If HTTP method is not POST, send bad request response.
+        if (!$this->http->getRequestInfo('request_method') == 'post') {
+            return new JsonResponse(
+                array('error' => 'Wrong request.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Validate Ajax request.
+        $validationInfo = array(
+            'work_doi' => array(
+                'type' => 'string',
+                'required' => true,
+                'min' => 2,
+                'max' => 250
+            ),
+        );
+
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Ajax request is validated, create project entity in database.
+        $work = Work::readByDoi($this->http->getPostParam('work_doi'));
+
+        return new JsonResponse($work);
+    }
+
+    /**
      * URL: /works/new
      * Methods: POST
-     * @return Response instance
+     * @return JsonResponse instance
      */
     public function newWorkAction()
     {
@@ -67,6 +109,9 @@ class WorkController extends AbstractController
         $validationInfo = array(
             'project_id' => array(
                 'required' => true,
+                'type' => 'int'
+            ),
+            'work_id' => array(
                 'type' => 'int'
             ),
             'work_title' => array(
@@ -88,6 +133,34 @@ class WorkController extends AbstractController
                 'type' => 'string',
                 'max' => 250
             ),
+            'journals' => array(
+                'type' => 'array',
+                'structure' => array(
+                    'id' => array(
+                        'type' => 'int'
+                    ),
+                    'journal_name' => array(
+                        'type' => 'string'
+                    ),
+                    'issn' => array(
+                        'type' => 'string'
+                    )
+                )
+            ),
+            'authors' => array(
+                'type' => 'array',
+                'structure' => array(
+                    'id' => array(
+                        'type' => 'int'
+                    ),
+                    'first_name' => array(
+                        'type' => 'string'
+                    ),
+                    'last_name' => array(
+                        'type' => 'string'
+                    )
+                )
+            )
         );
         if (!ValidatorHelper::instance()->validate($validationInfo)) {
             return new JsonResponse(
@@ -96,16 +169,60 @@ class WorkController extends AbstractController
             );
         }
 
-        // Ajax request is validated, create project entity in database.
-        $work = new Work(
-            null,
-            $this->http->getPostParam('work_title'),
-            $this->http->getPostParam('work_subtitle'),
-            $this->http->getPostParam('work_year'),
-            $this->http->getPostParam('work_doi')
-        );
+        // Ajax request is validated, read or create project entity in database.
+        $work = null;
+        if ($this->http->hasPostParam('work_doi')) {
+            $work = Work::readByDoi($this->http->getPostParam('work_doi'));
+        }
+
+        if ($work === null) {
+            $work = new Work(
+                null,
+                $this->http->getPostParam('work_title'),
+                $this->http->getPostParam('work_subtitle'),
+                $this->http->getPostParam('work_year'),
+                $this->http->getPostParam('work_doi')
+            );
+            $work->create();
+        }
+
+        $authors = $this->http->getPostParam('authors');
+        if (is_array($authors)) {
+            foreach ($authors as $author) {
+                if (isset($author['id'])) {
+                    $work->addAuthorId($author['id']);
+                } else {
+                    // Check, if we find the author by name, otherwise we need to create an author.
+                    $newAuthor = Author::readByFirstLastName($author['first_name'], $author['last_name']);
+                    if ($newAuthor == null) {
+                        $newAuthor = new Author(null, $author['first_name'], $author['last_name']);
+                        $newAuthor->create();
+                    }
+
+                    $work->addAuthorId($newAuthor->getId());
+                }
+            }
+        }
+
+        $journals = $this->http->getPostParam('journals');
+        if (is_array($journals)) {
+            foreach ($journals as $journal) {
+                if (isset($journal['id'])) {
+                    $work->addJournalId($journal['id']);
+                } else {
+                    // Check, if we find the journal by ISSN, otherwise we need to create a journal.
+                    $newJournal = Journal::readByIssn($journal['issn']);
+                    if ($newJournal == null) {
+                        $newJournal = new Journal(null, $journal['journal_name'], $journal['issn']);
+                        $newJournal->create();
+                    }
+
+                    $work->addJournalId($newJournal->getId());
+                }
+            }
+        }
+
         $project = Project::read($this->http->getPostParam('project_id'));
-        $work->create();
         $project->addWorkId($work->getId());
         $project->update();
 
