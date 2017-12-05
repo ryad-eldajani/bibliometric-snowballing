@@ -76,7 +76,10 @@ $(document).ready(function () {
 
     // If we have no data available yet, disable button "Start Snowballing Analysis".
     if ($('.dataTables_empty').length) {
-        $('#btn_start_snowballing').addClass('disabled');
+        $('#btn_start_snowballing')
+            .addClass('btn-disabled disabled')
+            .removeClass('btn-primary')
+            .prop('disabled', true);
     }
 
     // API call for DOI.
@@ -250,6 +253,13 @@ $(document).ready(function () {
                     + work['title'] + '</a></td><td>' + authors + '</td><td>'
                     + journals + '</td><td>' + work['doi'] + '</td></tr>'
                 );
+
+                // Enable button "Start Snowballing Analysis".
+                $('#btn_start_snowballing')
+                    .addClass('btn-primary')
+                    .removeClass('btn-disabled disabled')
+                    .prop('disabled', false);
+
                 modal.find('.alert-warning').addClass('hidden');
             },
             error: function (xhr) {
@@ -330,6 +340,30 @@ $(document).ready(function () {
                     <button type="submit" id="btn_work_create" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding Work...">Add Work</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+<div id="snowballing_modal" class="modal fade modal-centered" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Processing Snowballing...</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <span class="bold">Progress:</span>
+                    <span id="progress_text">7/10 references processed.</span>
+                </p>
+                <div class="progress">
+                    <div id="progress_gauge" class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
+                        <span class="sr-only">70% Complete</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
         </div>
     </div>
 </div>

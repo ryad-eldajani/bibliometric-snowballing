@@ -103,3 +103,19 @@ legend.legend {
 #btn_start_snowballing {
     width: 100%;
 }
+.modal-centered {
+    text-align: center;
+    padding: 0!important;
+}
+.modal-centered:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px;
+}
+.modal-dialog-centered {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
