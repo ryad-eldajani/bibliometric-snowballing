@@ -74,6 +74,11 @@ $(document).ready(function () {
         .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
         .append(filterInput);
 
+    // If we have no data available yet, disable button "Start Snowballing Analysis".
+    if ($('.dataTables_empty').length) {
+        $('#btn_start_snowballing').addClass('disabled');
+    }
+
     // API call for DOI.
     $('#btn_work_doi_autofill').on('click', function(e) {
         var $this = $(this);
@@ -202,6 +207,12 @@ $(document).ready(function () {
                 'journals': dataJournals
             },
             success: function (data) {
+                // If we have no row yet, remove "no data available" row.
+                var dtEmpty = $('.dataTables_empty');
+                if (dtEmpty.length) {
+                    dtEmpty.remove();
+                }
+
                 var work = JSON.parse(data);
                 $this.button('reset');
                 $('#input_work_title').val('');
@@ -352,5 +363,12 @@ $(document).ready(function () {
             <?php endif; ?>
         </tbody>
     </table>
+    <div class="container">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-6">
+            <button class="btn btn-primary" id="btn_start_snowballing" data-toggle="modal" data-target="#snowballing_modal">Start Snowballing Analysis</button>
+        </div>
+        <div class="col-sm-3"></div>
+    </div>
 </div>
 <?php endif ?>
