@@ -74,33 +74,17 @@ $(document).ready(function () {
         .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
         .append(filterInput);
 
-    // API call for DOI, when DOI is filled out and nothing else
-    $('#input_work_doi').on('blur', function(e) {
-        e.preventDefault();
+    // API call for DOI.
+    $('#btn_work_doi_autofill').on('click', function(e) {
         var $this = $(this);
+        var doi = $('#input_work_doi');
         var modal = $('#new_work_modal');
-        var allInputEmpty = true;
-
-        // Request, if only DOI is filled
-        if ($this.val().trim() === '') {
-            return;
-        }
-
-        modal.find('input').not($this).each(function() {
-            if ($(this).val() !== '') {
-                allInputEmpty = false;
-            }
-        });
-
-        if (!allInputEmpty) {
-            return;
-        }
-
+        $this.button('loading');
         $.ajax({
             type: 'POST',
             url: '/works/request/doi',
             data: {
-                'work_doi': $this.val()
+                'work_doi': doi.val()
             },
             success: function (data) {
                 var work = JSON.parse(data);
@@ -127,10 +111,13 @@ $(document).ready(function () {
                         attr: {'data-issn': journal.issn}
                     }));
                 });
+                $('form').validator('validate');
+                $this.button('reset');
                 modal.find('.alert').addClass('hidden');
             },
             error: function (xhr) {
                 console.log(xhr.responseText);
+                $this.button('reset');
                 modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
@@ -221,6 +208,8 @@ $(document).ready(function () {
                 $('#input_work_subtitle').val('');
                 $('#input_work_year').val('');
                 $('#input_work_doi').val('');
+                $('#select_work_authors').empty();
+                $('#select_work_journals').empty();
                 modal.data('workId', '');
                 modal.modal('toggle');
 
@@ -272,12 +261,14 @@ $(document).ready(function () {
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
-                    <div class="alert alert-info">
-                        <span class="bold">Hint:</span> When you only enter a DOI we will try to fill the remaining information automatically!
-                    </div>
                     <div class="form-group">
                         <label for="input_work_doi">Document Object Identifier (DOI)</label>
-                        <input type="text" class="form-control" id="input_work_doi" placeholder="Enter a DOI" data-minlength="1" maxlength="250">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="input_work_doi" placeholder="Enter a DOI" data-minlength="1" maxlength="250">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" id="btn_work_doi_autofill" type="button" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Loading...">Autofill</button>
+                        </span>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="input_work_title">Work title</label>
