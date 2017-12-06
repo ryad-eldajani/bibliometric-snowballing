@@ -119,3 +119,12 @@ legend.legend {
     text-align: left;
     vertical-align: middle;
 }
+.modal-dialog-full-width {
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#progress_text {
+    padding-bottom: 10px;
+    font-weight: bold;
+}

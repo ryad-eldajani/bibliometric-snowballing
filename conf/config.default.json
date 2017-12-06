@@ -47,6 +47,10 @@
       "controller": "Work/requestDoiWork",
       "methods": ["post"]
     },
+    "/works/request/references": {
+      "controller": "Work/requestDoiReferences",
+      "methods": ["post"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

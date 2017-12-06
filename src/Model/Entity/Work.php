@@ -387,13 +387,12 @@ class Work extends Entity
     {
         /** @var CrossRefApi $api */
         $api = AbstractApi::instance('crossref');
-        $allData = $api->getDoiInformation($doi);
+        $workData = $api->getDoiInformation($doi);
 
-        if (!isset($allData['status']) || $allData['status'] != 'ok') {
+        if ($workData === null) {
             return null;
         }
 
-        $workData = $allData['message'];
         $work = new Work(
             null,
             $workData['title'][0],
@@ -444,7 +443,11 @@ class Work extends Entity
      */
     protected function setAuthorsJournals()
     {
-        if (count($this->journalIds) != count($this->journals)) {
+        if (
+            is_array($this->journalIds)
+            && is_array($this->journals)
+            && count($this->journalIds) != count($this->journals)
+        ) {
             $this->journals = array();
             foreach ($this->journalIds as $journalId) {
                 $journal = Journal::read($journalId);
@@ -452,7 +455,11 @@ class Work extends Entity
             }
         }
 
-        if (count($this->authorIds) != count($this->authors)) {
+        if (
+            is_array($this->authorIds)
+            && is_array($this->authors)
+            && count($this->authorIds) != count($this->authors)
+        ) {
             $this->authors = array();
             foreach ($this->authorIds as $authorId) {
                 $author = Author::read($authorId);

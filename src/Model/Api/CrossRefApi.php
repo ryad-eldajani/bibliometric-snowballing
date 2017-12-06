@@ -24,7 +24,12 @@ class CrossRefApi extends AbstractApi
      */
     public function getDoiInformation($doi)
     {
-        return json_decode($this->requestWorkByDoi($doi), true);
+        $allData = json_decode($this->requestWorkByDoi($doi), true);;
+        if (!isset($allData['status']) || $allData['status'] != 'ok') {
+            return null;
+        }
+
+        return $allData['message'];
     }
 
     /**

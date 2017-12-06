@@ -13,6 +13,8 @@
 namespace BS\Controller;
 
 
+use BS\Model\Api\AbstractApi;
+use BS\Model\Api\CrossRefApi;
 use BS\Model\Entity\Author;
 use BS\Model\Entity\Journal;
 use BS\Model\Entity\Project;
@@ -49,7 +51,7 @@ class WorkController extends AbstractController
     }
 
     /**
-     * URL: /works/request/doi/{doi}
+     * URL: /works/request/doi
      * Methods: POST
      * @return JsonResponse instance
      */
@@ -227,5 +229,66 @@ class WorkController extends AbstractController
         $project->update();
 
         return new JsonResponse($work);
+    }
+
+    /**
+     * URL: /works/request/references
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function requestDoiReferencesAction()
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+
+        // If HTTP method is not POST, send bad request response.
+        if (!$this->http->getRequestInfo('request_method') == 'post') {
+            return new JsonResponse(
+                array('error' => 'Wrong request.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Validate Ajax request.
+        $validationInfo = array(
+            'work_ids' => array(
+                'type' => 'array',
+                'structure' => array(
+                    'work_id' => array(
+                        'type' => 'int'
+                    ),
+                )
+            )
+        );
+
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        $allReferencedWorks = array();
+        foreach ($this->http->getPostParam('work_ids') as $workId) {
+            $work = Work::read($workId['work_id']);
+
+            /** @var CrossRefApi $api */
+            $api = AbstractApi::instance('crossref');
+            $workData = $api->getDoiInformation($work->getDoi());
+
+            if ($workData === null) {
+                continue;
+            }
+
+            if (isset($workData['reference'])) {
+                foreach ($workData['reference'] as $reference) {
+                    $referencedDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
+                    if ($referencedDoi != '' && !in_array($referencedDoi, $allReferencedWorks)) {
+                        $allReferencedWorks[] = $referencedDoi;
+                    }
+                }
+            }
+        }
+
+        return new JsonResponse($allReferencedWorks);
     }
 }

@@ -5,7 +5,8 @@
 <?php $this->layout('layout', ['title' => 'Manage Project', 'subTitle' => $project->getName()]) ?>
 <script type="text/javascript">
 $(document).ready(function () {
-    var table = $('#table_works').DataTable({
+    var tableElement = $('#table_works');
+    var table = tableElement.DataTable({
         columnDefs: [{
             width: '10px',
             targets: 0,
@@ -15,21 +16,21 @@ $(document).ready(function () {
         lengthChange: false,
         buttons: [
             {
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Work" alt="New Work"> New Work',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Work" title="New Work"> New Work',
                 className: 'btn btn-primary btn-outline btn-new-work',
                 action: function (e, dt, node, config) {
                 }
             },
             {
                 extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" alt="Copy to Clipboard"> Clipboard',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
                 exportOptions: {
                     columns: [1, 2, 3, 4]
                 }
             },
             {
                 extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" alt="CSV Export"> CSV',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
                 exportOptions: {
                     columns: [1, 2, 3, 4]
                 }
@@ -43,14 +44,14 @@ $(document).ready(function () {
             },
             {
                 extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" alt="PDF Export"> PDF',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
                 exportOptions: {
                     columns: [1, 2, 3, 4]
                 }
             },
             {
                 extend: 'colvis',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" alt="Show/Hide columns"> Columns'
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
             }
         ]
     });
@@ -65,6 +66,51 @@ $(document).ready(function () {
         }
     });
 
+    var tableAdd = $('#table_works_add').DataTable({
+        columnDefs: [{
+            width: '10px',
+            targets: 0,
+            orderable: false
+        }],
+        scrollY: false,
+        lengthChange: false,
+        searching: false,
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
+                exportOptions: {
+                    columns: [1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'csv',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
+                exportOptions: {
+                    columns: [1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
+                exportOptions: {
+                    columns: [1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
+                exportOptions: {
+                    columns: [1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'colvis',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
+            }
+        ]
+    });
+
     // Modify search input
     $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
     var filter = $('#table_works_filter');
@@ -75,7 +121,7 @@ $(document).ready(function () {
         .append(filterInput);
 
     // If we have no data available yet, disable button "Start Snowballing Analysis".
-    if ($('.dataTables_empty').length) {
+    if (tableElement.find('.dataTables_empty').length) {
         $('#btn_start_snowballing')
             .addClass('btn-disabled disabled')
             .removeClass('btn-primary')
@@ -83,7 +129,7 @@ $(document).ready(function () {
     }
 
     // API call for DOI.
-    $('#btn_work_doi_autofill').on('click', function(e) {
+    $('#btn_work_doi_autofill').click(function() {
         var $this = $(this);
         var doi = $('#input_work_doi');
         var modal = $('#new_work_modal');
@@ -170,7 +216,7 @@ $(document).ready(function () {
     });
 
     // New project button submit click.
-    $('#btn_work_create').click(function (e) {
+    $('#btn_work_create').click(function () {
         e.preventDefault();
         var $this = $(this);
         var modal = $('#new_work_modal');
@@ -211,7 +257,7 @@ $(document).ready(function () {
             },
             success: function (data) {
                 // If we have no row yet, remove "no data available" row.
-                var dtEmpty = $('.dataTables_empty');
+                var dtEmpty = tableElement.find('.dataTables_empty');
                 if (dtEmpty.length) {
                     dtEmpty.remove();
                 }
@@ -265,6 +311,65 @@ $(document).ready(function () {
             error: function (xhr) {
                 $this.button('reset');
                 modal.find('.alert-warning')
+                    .text(JSON.parse(xhr.responseText).error)
+                    .removeClass('hidden');
+            }
+        });
+    });
+
+    $('#snowballing_modal').on('show.bs.modal', function() {
+        var modal = $(this);
+        var selectedWorkIds = [];
+        var spinner = $('#snowballing_spin');
+        var gauge = $('#progress_gauge');
+        var progressText = $('#progress_text');
+
+        gauge
+            .removeClass('progress-bar-success progress-bar-danger')
+            .attr('aria-valuenow', 0)
+            .animate({width: '0%'});
+        spinner.addClass('fa-spin');
+        progressText.text('Initializing...');
+
+        $('#table_works').find('input[type=checkbox]:checked').each(function (i, checkbox) {
+            selectedWorkIds.push({work_id: $(checkbox).val()});
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: '/works/request/references',
+            data: {
+                'work_ids': selectedWorkIds
+            },
+            success: function (data) {
+                if (data.length === 0) {
+                    spinner.removeClass('fa-spin');
+                    progressText.text('Sorry, no references found!');
+                    gauge
+                        .addClass('progress-bar-danger')
+                        .attr('aria-valuenow', 100)
+                        .animate({width: '100%'});
+                    return;
+                }
+                for (var referenceIndex in data) {
+                    (function () {
+                        if (data.hasOwnProperty(referenceIndex)) {
+                            var currentAbsolute = parseInt(referenceIndex) + 1;
+                            var currentPercent = Math.round(currentAbsolute / data.length * 100);
+                            progressText.text('Processing ' + currentAbsolute + '/' + data.length + ' references...');
+                            gauge.attr('aria-valuenow', currentPercent).animate({width: currentPercent + '%'}, function() {
+                                if (currentPercent >= 100) {
+                                    spinner.removeClass('fa-spin');
+                                    gauge.addClass('progress-bar-success');
+                                }
+                            });
+                        }
+                    })();
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                modal.find('.alert')
                     .text(JSON.parse(xhr.responseText).error)
                     .removeClass('hidden');
             }
@@ -344,21 +449,30 @@ $(document).ready(function () {
     </div>
 </div>
 <div id="snowballing_modal" class="modal fade modal-centered" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-full-width">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Processing Snowballing...</h4>
+                <h4 class="modal-title"><i id="snowballing_spin" class='fa fa-circle-o-notch fa-spin'></i> Processing Snowballing...</h4>
             </div>
             <div class="modal-body">
-                <p>
-                    <span class="bold">Progress:</span>
-                    <span id="progress_text">7/10 references processed.</span>
-                </p>
+                <div class="alert alert-warning hidden"></div>
+                <div id="progress_text"></div>
                 <div class="progress">
-                    <div id="progress_gauge" class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:70%">
-                        <span class="sr-only">70% Complete</span>
-                    </div>
+                    <div id="progress_gauge" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sorted hidden" id="table_works_add">
+                        <thead>
+                        <tr>
+                            <th>Add?</th>
+                            <th>Work title</th>
+                            <th>Authors</th>
+                            <th>Journal</th>
+                            <th>DOI</th>
+                        </tr>
+                        </thead>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer">
@@ -371,7 +485,7 @@ $(document).ready(function () {
     <table class="table table-striped table-sorted" id="table_works">
         <thead>
         <tr>
-            <th>Inc.</th>
+            <th>Inc?</th>
             <th>Work title</th>
             <th>Authors</th>
             <th>Journal</th>
