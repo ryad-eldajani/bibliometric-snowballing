@@ -105,7 +105,7 @@ class Session extends \SessionHandler
      */
     public function refresh()
     {
-        return session_regenerate_id(true);
+        return session_regenerate_id();
     }
 
     /**

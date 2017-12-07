@@ -6,7 +6,7 @@
     "password": "password",
     "port": 3306
   },
-  "session_ttl": 60,
+  "session_ttl": 525600,
   "typo3": {
     "directory": "/srv/http/typo3.localhost"
   },
@@ -41,6 +41,10 @@
     },
     "/works/new": {
       "controller": "Work/newWork",
+      "methods": ["post"]
+    },
+    "/works/assign": {
+      "controller": "Work/assignWorks",
       "methods": ["post"]
     },
     "/works/request/doi": {

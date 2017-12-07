@@ -12,6 +12,7 @@ $(document).ready(function () {
             targets: 0,
             orderable: false
         }],
+        order: [[1, 'asc']],
         scrollY: false,
         lengthChange: false,
         buttons: [
@@ -66,15 +67,11 @@ $(document).ready(function () {
         }
     });
 
-    var tableAdd = $('#table_works_add').DataTable({
-        columnDefs: [{
-            width: '10px',
-            targets: 0,
-            orderable: false
-        }],
-        scrollY: false,
-        lengthChange: false,
-        searching: false,
+    var tableAddElement = $('#table_works_add');
+    var tableAdd = tableAddElement.DataTable({
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+        autoWidth: false,
+        order: [[1, 'asc']],
         buttons: [
             {
                 extend: 'copy',
@@ -142,9 +139,7 @@ $(document).ready(function () {
             },
             success: function (data) {
                 var work = JSON.parse(data);
-                console.log(work);
                 if (work === null) return;
-                modal.data('workId', work['id']);
                 $('#input_work_title').val(work['title']);
                 $('#input_work_subtitle').val(work['subTitle']);
                 $('#input_work_year').val(work['workYear']);
@@ -247,7 +242,6 @@ $(document).ready(function () {
             url: '/works/new',
             data: {
                 'project_id': modal.data('projectId'),
-                'work_id': modal.data('workId'),
                 'work_title': $('#input_work_title').val(),
                 'work_subtitle': $('#input_work_subtitle').val(),
                 'work_year': $('#input_work_year').val(),
@@ -256,12 +250,6 @@ $(document).ready(function () {
                 'journals': dataJournals
             },
             success: function (data) {
-                // If we have no row yet, remove "no data available" row.
-                var dtEmpty = tableElement.find('.dataTables_empty');
-                if (dtEmpty.length) {
-                    dtEmpty.remove();
-                }
-
                 var work = JSON.parse(data);
                 $this.button('reset');
                 $('#input_work_title').val('');
@@ -270,12 +258,11 @@ $(document).ready(function () {
                 $('#input_work_doi').val('');
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
-                modal.data('workId', '');
                 modal.modal('toggle');
 
                 var j;
                 var authors = '';
-                if (Object.keys(work.authors).length > 0) {
+                if (work.authors !== null && Object.keys(work.authors).length > 0) {
                     j = 0;
                     $.each(work.authors, function (i, author) {
                         if (j++ > 0) authors += ', ';
@@ -284,7 +271,7 @@ $(document).ready(function () {
                 }
 
                 var journals = '';
-                if (Object.keys(work.journals).length > 0) {
+                if (work.journals !== null && Object.keys(work.journals).length > 0) {
                     j = 0;
                     $.each(work.journals, function (i, journal) {
                         if (j++ > 0) journals += ', ';
@@ -292,13 +279,15 @@ $(document).ready(function () {
                     });
                 }
 
-                $('#table_works').find('tr:last').after(
-                    '<tr><td><label><input name="work_include" type="checkbox" value="'
-                    + work['id'] + '" checked></label></td><td>' +
+                table.row.add([
+                    '<label><input name="work_include" type="checkbox" value="'
+                        + work['id'] + '" checked></label>',
                     '<a href="/works/view/' + work['id'] + '" class="work-link">'
-                    + work['title'] + '</a></td><td>' + authors + '</td><td>'
-                    + journals + '</td><td>' + work['doi'] + '</td></tr>'
-                );
+                        + work['title'] + '</a>',
+                    authors,
+                    journals,
+                    work['doi']
+                ]).draw(false);
 
                 // Enable button "Start Snowballing Analysis".
                 $('#btn_start_snowballing')
@@ -317,22 +306,28 @@ $(document).ready(function () {
         });
     });
 
+    // Snowballing modal dialog show.
     $('#snowballing_modal').on('show.bs.modal', function() {
         var modal = $(this);
         var selectedWorkIds = [];
         var spinner = $('#snowballing_spin');
         var gauge = $('#progress_gauge');
         var progressText = $('#progress_text');
+        var buttonAdd = $('#btn_works_add');
 
+        tableAdd.clear().draw();
         gauge
             .removeClass('progress-bar-success progress-bar-danger')
             .attr('aria-valuenow', 0)
             .animate({width: '0%'});
         spinner.addClass('fa-spin');
         progressText.text('Initializing...');
+        buttonAdd.prop('disabled', true);
 
-        $('#table_works').find('input[type=checkbox]:checked').each(function (i, checkbox) {
-            selectedWorkIds.push({work_id: $(checkbox).val()});
+        table.columns(0).every(function() {
+            this.nodes().to$().find('input[type=checkbox]:checked').each(function (i, checkbox) {
+                selectedWorkIds.push({work_id: $(checkbox).val()});
+            });
         });
 
         $.ajax({
@@ -354,18 +349,106 @@ $(document).ready(function () {
                 for (var referenceIndex in data) {
                     (function () {
                         if (data.hasOwnProperty(referenceIndex)) {
-                            var currentAbsolute = parseInt(referenceIndex) + 1;
-                            var currentPercent = Math.round(currentAbsolute / data.length * 100);
-                            progressText.text('Processing ' + currentAbsolute + '/' + data.length + ' references...');
-                            gauge.attr('aria-valuenow', currentPercent).animate({width: currentPercent + '%'}, function() {
-                                if (currentPercent >= 100) {
-                                    spinner.removeClass('fa-spin');
-                                    gauge.addClass('progress-bar-success');
+                            var references = data;
+                            var currentDoi = references[referenceIndex];
+
+                            // Request current work.
+                            $.ajax({
+                                type: 'POST',
+                                url: '/works/request/doi',
+                                data: {
+                                    'work_doi': currentDoi
+                                },
+                                success: function (data) {
+                                    tableAddElement.removeClass('hidden');
+
+                                    var work = JSON.parse(data);
+                                    if (work === null) return;
+
+                                    var j;
+                                    var authors = '';
+                                    if (work.authors !== null && Object.keys(work.authors).length > 0) {
+                                        j = 0;
+                                        $.each(work.authors, function (i, author) {
+                                            if (j++ > 0) authors += ', ';
+                                            authors += author.firstName + ' ' + author.lastName;
+                                        });
+                                    }
+
+                                    var journals = '';
+                                    if (work.journals !== null && Object.keys(work.journals).length > 0) {
+                                        j = 0;
+                                        $.each(work.journals, function (i, journal) {
+                                            if (j++ > 0) journals += ', ';
+                                            journals += journal.journalName;
+                                        });
+                                    }
+
+                                    tableAdd.row.add([
+                                        '<label><input name="work_include" type="checkbox" value="'
+                                            + work['id'] + '" checked></label>',
+                                        work['title'],
+                                        authors,
+                                        journals,
+                                        work['doi']
+                                    ]).draw(false);
+
+                                    var currentAbsolute = tableAdd.rows().count();
+                                    var currentPercent = Math.round(currentAbsolute / references.length * 100);
+                                    progressText.text(currentAbsolute + '/' + references.length + ' references processed...');
+                                    gauge.attr('aria-valuenow', currentPercent).animate({width: currentPercent + '%'}, function() {
+                                        if (currentPercent >= 100) {
+                                            spinner.removeClass('fa-spin');
+                                            gauge.addClass('progress-bar-success');
+                                            progressText.text('Done!');
+                                            buttonAdd.prop('disabled', false);
+                                        }
+                                    });
+                                },
+                                error: function (xhr) {
+                                    console.log(xhr.responseText);
+                                    modal.find('.alert')
+                                        .text(JSON.parse(xhr.responseText).error)
+                                        .removeClass('hidden');
                                 }
                             });
                         }
                     })();
                 }
+
+                modal.find('.alert').addClass('hidden');
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                modal.find('.alert')
+                    .text(JSON.parse(xhr.responseText).error)
+                    .removeClass('hidden');
+            }
+        });
+    });
+
+    // Snowballing modal button "Add Works" click.
+    $('#btn_works_add').click(function () {
+        var modal = $('#snowballing_modal');
+        var selectedWorkIds = [];
+
+        tableAdd.columns(0).every(function() {
+            this.nodes().to$().find('input[type=checkbox]:checked').each(function (i, checkbox) {
+                selectedWorkIds.push({work_id: $(checkbox).val()});
+            });
+        });
+
+        console.log(selectedWorkIds);
+        $.ajax({
+            type: 'POST',
+            url: '/works/assign',
+            data: {
+                'project_id': modal.data('projectId'),
+                'work_ids': selectedWorkIds
+            },
+            success: function (data) {
+                console.log(data);
+                modal.find('.alert').addClass('hidden');
             },
             error: function (xhr) {
                 console.log(xhr.responseText);
@@ -377,7 +460,7 @@ $(document).ready(function () {
     });
 });
 </script>
-<div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>" data-work-id="">
+<div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
     <div class="modal-dialog">
         <div class="modal-content">
             <form role="form" data-toggle="validator">
@@ -448,12 +531,12 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
-<div id="snowballing_modal" class="modal fade modal-centered" role="dialog">
+<div id="snowballing_modal" class="modal fade modal-centered" role="dialog" data-project-id="<?=$project->getId()?>">
     <div class="modal-dialog modal-dialog-centered modal-dialog-full-width">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><i id="snowballing_spin" class='fa fa-circle-o-notch fa-spin'></i> Processing Snowballing...</h4>
+                <h4 class="modal-title"><i id="snowballing_spin" class='fa bs-icon fa-spin'></i> Processing Snowballing...</h4>
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning hidden"></div>
@@ -462,7 +545,7 @@ $(document).ready(function () {
                     <div id="progress_gauge" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-sorted hidden" id="table_works_add">
+                    <table class="table table-striped table-sorted" id="table_works_add">
                         <thead>
                         <tr>
                             <th>Add?</th>
@@ -472,11 +555,14 @@ $(document).ready(function () {
                             <th>DOI</th>
                         </tr>
                         </thead>
+                        <tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" id="btn_works_add" class="btn btn-primary" disabled data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding Works...">Add Works</button>
             </div>
         </div>
     </div>

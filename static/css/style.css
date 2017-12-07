@@ -128,3 +128,19 @@ legend.legend {
     padding-bottom: 10px;
     font-weight: bold;
 }
+.bs-icon {
+    background: url("/static/gfx/glyphicons/glyphicons/png/glyphicons-508-cluster.png") no-repeat;
+    padding-right: 15px;
+    display: inline-block;
+    background-size: 15px 15px;
+    width: 15px;
+    height: 15px;
+}
+#table_works,
+#table_works_add {
+    width: 100%;
+}
+#table_works th:first-child,
+#table_works_add th:first-child {
+    width: 10px!important;
+}

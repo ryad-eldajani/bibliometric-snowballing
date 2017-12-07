@@ -25,8 +25,8 @@ use BS\Model\User\UserManager;
  * @method string|null getName()
  * @method int|null getUserId()
  * @method int|null getCreatedAt()
- * @method int[]|null getWorkIds()
- * @method array<int|Work>|null getWorks()
+ * @method int[] getWorkIds()
+ * @method array<int|Work> getWorks()
  * @method void setName(string $name)
  * @method void setUserId(int $userId)
  * @method void setWorkIds(int[] $workIds)
@@ -55,14 +55,14 @@ class Project extends Entity
     protected $createdAt = null;
 
     /**
-     * @var int[]|null array of work identifiers
+     * @var int[] array of work identifiers
      */
-    protected $workIds = null;
+    protected $workIds = array();
 
     /**
-     * @var array<int|Work>|null list of ID => Work entities
+     * @var array<int|Work> list of ID => Work entities
      */
-    protected $works = null;
+    protected $works = array();
 
     /**
      * Project constructor.
@@ -71,14 +71,14 @@ class Project extends Entity
      * @param string|null $name project name
      * @param string|null $createdAt creation timestamp
      * @param int|null $userId user identifier
-     * @param null|array $workIds array of work identifiers
+     * @param int[] $workIds array of work identifiers
      */
     public function __construct(
         $id = null,
         $name = null,
         $createdAt = null,
         $userId = null,
-        array $workIds = null
+        array $workIds = array()
     ) {
         parent::__construct();
         $this->id = $id;
@@ -197,8 +197,8 @@ class Project extends Entity
             $sqlParams = array($this->id, $workId);
             Database::instance()->updateOrDelete($sql, $sqlParams);
         }
-        $this->workIds = null;
-        $this->works = null;
+        $this->workIds = array();
+        $this->works = array();
     }
 
     /**
@@ -214,10 +214,7 @@ class Project extends Entity
         }
 
         // If works are already fetched, return.
-        if (
-            is_array($this->works)
-            && count($this->workIds) == count($this->works)
-        ) {
+        if (count($this->workIds) == count($this->works)) {
             return $this->works;
         }
 
@@ -262,6 +259,8 @@ class Project extends Entity
      */
     public function addWorkId($workId)
     {
-        $this->workIds[] = $workId;
+        if (!in_array($workId, $this->workIds)) {
+            $this->workIds[] = $workId;
+        }
     }
 }

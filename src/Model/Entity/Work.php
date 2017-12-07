@@ -27,8 +27,8 @@ use BS\Model\Db\Database;
  * @method string|null getSubTitle()
  * @method int|null getWorkYear()
  * @method string|null getDoi()
- * @method int[]|null getAuthorIds()
- * @method int[]|null getJournalIds()
+ * @method int[] getAuthorIds()
+ * @method int[] getJournalIds()
  */
 class Work extends Entity
 {
@@ -58,24 +58,24 @@ class Work extends Entity
     protected $doi = null;
 
     /**
-     * @var int[]|null array of author identifiers
+     * @var int[] array of author identifiers
      */
     protected $authorIds = null;
 
     /**
-     * @var int[]|null array of journal identifiers
+     * @var int[] array of journal identifiers
      */
     protected $journalIds = null;
 
     /**
-     * @var array<int|Author>|null $authors list of ID => Author entities
+     * @var array<int|Author> $authors list of ID => Author entities
      */
-    protected $authors = null;
+    protected $authors = array();
 
     /**
-     * @var array<int|Journal>|null $journals list of ID => Journal entities
+     * @var array<int|Journal> $journals list of ID => Journal entities
      */
-    protected $journals = null;
+    protected $journals = array();
 
     /**
      * Work constructor.
@@ -85,8 +85,8 @@ class Work extends Entity
      * @param string|null $subTitle work subtitle
      * @param int|null $workYear year of this work
      * @param string|null $doi document object identifier (DOI) of this work
-     * @param array|null $authorIds array of author identifiers
-     * @param array|null $journalIds array of journal identifiers
+     * @param int[] $authorIds array of author identifiers
+     * @param int[] $journalIds array of journal identifiers
      */
     public function __construct(
         $id = null,
@@ -94,8 +94,8 @@ class Work extends Entity
         $subTitle = null,
         $workYear = null,
         $doi = null,
-        array $authorIds = null,
-        array $journalIds = null
+        array $authorIds = array(),
+        array $journalIds = array()
     ) {
         parent::__construct();
         $this->id = $id;
@@ -116,9 +116,9 @@ class Work extends Entity
     public static function read($id = null)
     {
         $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
-                  (SELECT GROUP_CONCAT(wj.id_work) FROM work_journal wj WHERE wj.id_work = w.id_work)
+                  (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
-                  (SELECT GROUP_CONCAT(wa.id_work) FROM work_author wa WHERE wa.id_work = w.id_work)
+                  (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
                   AS author_ids
                 FROM work w';
         $sqlParams = array();
@@ -268,14 +268,14 @@ class Work extends Entity
             $sqlParams = array($this->id, $journalId);
             Database::instance()->updateOrDelete($sql, $sqlParams);
         }
-        $this->journalIds = null;
-        $this->journals = null;
+        $this->journalIds = array();
+        $this->journals = array();
     }
 
     /**
      * Returns the author entities as a ID -> IEntity list.
      *
-     * @return array<int|Author>|null array of entities
+     * @return array<int|Author> array of entities
      */
     public function getAuthors()
     {
@@ -285,10 +285,7 @@ class Work extends Entity
         }
 
         // If works are already fetched, return.
-        if (
-            is_array($this->authors)
-            && count($this->authorIds) == count($this->authors)
-        ) {
+        if (count($this->authorIds) == count($this->authors)) {
             return $this->authors;
         }
 
@@ -302,7 +299,6 @@ class Work extends Entity
             return null;
         }
 
-        $this->authors = array();
         foreach ($sqlResult as $record) {
             $authorId = DataTypeHelper::instance()->get($record['id_author'], 'int');
 
@@ -327,7 +323,7 @@ class Work extends Entity
     /**
      * Returns the author entities as a ID -> IEntity list.
      *
-     * @return array<int|Journal>|null array of entities
+     * @return array<int|Journal> array of entities
      */
     public function getJournals()
     {
@@ -337,10 +333,7 @@ class Work extends Entity
         }
 
         // If works are already fetched, return.
-        if (
-            is_array($this->journals)
-            && count($this->journalIds) == count($this->journals)
-        ) {
+        if (count($this->journalIds) == count($this->journals)) {
             return $this->journals;
         }
 
@@ -354,7 +347,6 @@ class Work extends Entity
             return null;
         }
 
-        $this->journals = array();
         foreach ($sqlResult as $record) {
             $journalId = DataTypeHelper::instance()->get($record['id_journal'], 'int');
 
@@ -443,24 +435,14 @@ class Work extends Entity
      */
     protected function setAuthorsJournals()
     {
-        if (
-            is_array($this->journalIds)
-            && is_array($this->journals)
-            && count($this->journalIds) != count($this->journals)
-        ) {
-            $this->journals = array();
+        if (count($this->journalIds) != count($this->journals)) {
             foreach ($this->journalIds as $journalId) {
                 $journal = Journal::read($journalId);
                 $this->journals[(string)$journal->getId()] = $journal;
             }
         }
 
-        if (
-            is_array($this->authorIds)
-            && is_array($this->authors)
-            && count($this->authorIds) != count($this->authors)
-        ) {
-            $this->authors = array();
+        if (count($this->authorIds) != count($this->authors)) {
             foreach ($this->authorIds as $authorId) {
                 $author = Author::read($authorId);
                 $this->authors[(string)$author->getId()] = $author;

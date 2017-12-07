@@ -91,6 +91,69 @@ class WorkController extends AbstractController
     }
 
     /**
+     * URL: /works/assign
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function assignWorksAction()
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+
+        // If HTTP method is not POST, send bad request response.
+        if (!$this->http->getRequestInfo('request_method') == 'post') {
+            return new JsonResponse(
+                array('error' => 'Wrong request.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // Validate Ajax request.
+        $validationInfo = array(
+            'project_id' => array(
+                'required' => true,
+                'type' => 'int'
+            ),
+            'work_ids' => array(
+                'type' => 'array',
+                'structure' => array(
+                    'work_id' => array(
+                        'type' => 'int'
+                    ),
+                )
+            )
+        );
+
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        $project = Project::read($this->http->getPostParam('project_id'));
+
+        // If project is not existent/user not owner of this project.
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project unknown.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        $allWorks = array();
+        foreach ($this->http->getPostParam('work_ids') as $workId) {
+            $work = Work::read($workId['work_id']);
+            if (!in_array((string)$work->getId(), array_keys($allWorks))) {
+                $allWorks[(string)$work->getId()] = $work->toArray();
+                $project->addWorkId($work->getId());
+            }
+        }
+        $project->update();
+
+        return new JsonResponse($allWorks);
+    }
+
+    /**
      * URL: /works/new
      * Methods: POST
      * @return JsonResponse instance
@@ -111,9 +174,6 @@ class WorkController extends AbstractController
         $validationInfo = array(
             'project_id' => array(
                 'required' => true,
-                'type' => 'int'
-            ),
-            'work_id' => array(
                 'type' => 'int'
             ),
             'work_title' => array(

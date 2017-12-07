@@ -16,10 +16,10 @@ namespace BS\Controller;
 use BS\Model\App;
 use BS\Model\Db\Database;
 use BS\Model\Http\Http;
+use BS\Model\Http\JsonResponse;
 use BS\Model\Http\RedirectResponse;
 use BS\Model\Http\Response;
 use BS\Model\User\UserManager;
-use Model\Http\JsonResponse;
 
 abstract class AbstractController implements IController
 {

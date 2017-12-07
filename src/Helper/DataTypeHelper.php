@@ -85,12 +85,12 @@ class DataTypeHelper
      * @param string[]|null $items strings to be converted
      * @param string $dataType desired data types
      * @param bool $strict if true strings must be valid
-     * @return bool|mixed array of variables if converted
+     * @return mixed array of variables if converted
      */
     public function getArray($items = null, $dataType = 'int', $strict = true)
     {
         if ($items === null || (count($items) == 1 && $items[0] == '')) {
-            return null;
+            return array();
         }
 
         $convertedItems = array();
