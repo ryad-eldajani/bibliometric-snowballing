@@ -6,20 +6,20 @@ $(document).ready(function () {
         lengthChange: false,
         buttons: [
             {
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Project" alt="New Project"> New Project',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Project" title="New Project"> New Project',
                 className: 'btn btn-primary btn-outline btn-new-project',
                 action: function (e, dt, node, config) {}
             },
             {
                 extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" alt="Copy to Clipboard"> Clipboard',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
                 exportOptions: {
                     columns: [0, 1, 2]
                 }
             },
             {
                 extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" alt="CSV Export"> CSV',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
                 exportOptions: {
                     columns: [0, 1, 2]
                 }
@@ -33,14 +33,14 @@ $(document).ready(function () {
             },
             {
                 extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" alt="PDF Export"> PDF',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
                 exportOptions: {
                     columns: [0, 1, 2]
                 }
             },
             {
                 extend: 'colvis',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" alt="Show/Hide columns"> Columns'
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
             }
         ]
     });
@@ -75,19 +75,17 @@ $(document).ready(function () {
             url: '/projects/new',
             data: {'project_name': $('#input_project_name').val()},
             success: function (data) {
-                var table = $('#table_projects');
-                if (table.length === 0) {
-                    location.reload();
-                }
-
                 var project = JSON.parse(data);
                 $this.button('reset');
                 $('#input_project_name').val('');
+                modal.find('.alert').addClass('hidden');
                 modal.modal('toggle');
 
-                table.find('tr:last').after(
-                    '<tr><td><a href="/projects/view/' + project.id + '"  class="project-link">' + project.name + '</a></td><td>0</td>'
-                    + '<td>' + timestampToDate(project.createdAt) + '</td><td><div class="dropdown">'
+                table.row.add([
+                    '<a href="/projects/view/' + project.id + '"  class="project-link">' + project.name + '</a>',
+                    0,
+                    timestampToDate(project.createdAt),
+                    '<div class="dropdown">'
                     + '<button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">'
                     + '<i class="fa fa-cog"></i><span class="caret"></span></button><ul class="dropdown-menu"><li>'
                     + '<a href="#" data-toggle="modal" data-target="#rename_project_modal" data-project-id="'
@@ -96,9 +94,8 @@ $(document).ready(function () {
                     + '<a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="'
                     + project.id + '" data-project-name="' + project.name + '">'
                     + '<span class="glyphicon glyphicon-trash"></span> Delete</a>'
-                    + '</li></ul></div></td></tr>'
-                );
-                modal.find('.alert').addClass('hidden');
+                    + '</li></ul></div>'
+                ]).draw(false);
             },
             error: function (xhr) {
                 modal.find('.alert')

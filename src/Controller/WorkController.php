@@ -143,12 +143,18 @@ class WorkController extends AbstractController
         $allWorks = array();
         foreach ($this->http->getPostParam('work_ids') as $workId) {
             $work = Work::read($workId['work_id']);
-            if (!in_array((string)$work->getId(), array_keys($allWorks))) {
+            if (
+                !$project->hasWorkId($work->getId())
+                && !in_array((string)$work->getId(), array_keys($allWorks))
+            ) {
                 $allWorks[(string)$work->getId()] = $work->toArray();
                 $project->addWorkId($work->getId());
             }
         }
-        $project->update();
+        
+        if (count($allWorks) > 0) {
+            $project->update();
+        }
 
         return new JsonResponse($allWorks);
     }

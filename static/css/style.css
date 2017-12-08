@@ -1,6 +1,9 @@
 body {
     font-family: Arial, sans-serif;
 }
+.main-container {
+    padding-bottom: 50px;
+}
 .navbar .navbar-brand:before {
     background-image: url("/static/gfx/glyphicons/glyphicons/png/glyphicons-508-cluster.png");
     background-size: 18px 18px;

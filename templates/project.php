@@ -145,18 +145,18 @@ $(document).ready(function () {
                 $('#input_work_year').val(work['workYear']);
                 $.each(work.authors, function (i, author) {
                     $('#select_work_authors').append($('<option>', {
-                        value: author.id,
-                        text : author.firstName + ' ' + author.lastName,
+                        value: author['id'],
+                        text : author['firstName'] + ' ' + author['lastName'],
                         attr: {
-                            'data-firstname': author.firstName,
-                            'data-lastname': author.lastName
+                            'data-firstname': author['firstName'],
+                            'data-lastname': author['lastName']
                         }
                     }));
                 });
                 $.each(work.journals, function (i, journal) {
                     $('#select_work_journals').append($('<option>', {
-                        value: journal.id,
-                        text : journal.journalName,
+                        value: journal['id'],
+                        text : journal['journalName'],
                         attr: {'data-issn': journal.issn}
                     }));
                 });
@@ -168,7 +168,7 @@ $(document).ready(function () {
                 console.log(xhr.responseText);
                 $this.button('reset');
                 modal.find('.alert')
-                    .text(JSON.parse(xhr.responseText).error)
+                    .text('Sorry, an error occurred while requesting. Please try again later.')
                     .removeClass('hidden');
             }
         });
@@ -211,7 +211,7 @@ $(document).ready(function () {
     });
 
     // New project button submit click.
-    $('#btn_work_create').click(function () {
+    $('#btn_work_create').click(function (e) {
         e.preventDefault();
         var $this = $(this);
         var modal = $('#new_work_modal');
@@ -250,15 +250,23 @@ $(document).ready(function () {
                 'journals': dataJournals
             },
             success: function (data) {
-                var work = JSON.parse(data);
                 $this.button('reset');
+                var work = JSON.parse(data);
                 $('#input_work_title').val('');
                 $('#input_work_subtitle').val('');
                 $('#input_work_year').val('');
                 $('#input_work_doi').val('');
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
+
                 modal.modal('toggle');
+                modal.find('.alert-warning').addClass('hidden');
+
+                // Enable button "Start Snowballing Analysis".
+                $('#btn_start_snowballing')
+                    .addClass('btn-primary')
+                    .removeClass('btn-disabled disabled')
+                    .prop('disabled', false);
 
                 var j;
                 var authors = '';
@@ -266,7 +274,8 @@ $(document).ready(function () {
                     j = 0;
                     $.each(work.authors, function (i, author) {
                         if (j++ > 0) authors += ', ';
-                        authors += author.firstName + ' ' + author.lastName;
+                        authors += author['firstName']
+                            + ' ' + author['lastName'];
                     });
                 }
 
@@ -275,7 +284,7 @@ $(document).ready(function () {
                     j = 0;
                     $.each(work.journals, function (i, journal) {
                         if (j++ > 0) journals += ', ';
-                        journals += journal.journalName;
+                        journals += journal['journalName'];
                     });
                 }
 
@@ -288,19 +297,11 @@ $(document).ready(function () {
                     journals,
                     work['doi']
                 ]).draw(false);
-
-                // Enable button "Start Snowballing Analysis".
-                $('#btn_start_snowballing')
-                    .addClass('btn-primary')
-                    .removeClass('btn-disabled disabled')
-                    .prop('disabled', false);
-
-                modal.find('.alert-warning').addClass('hidden');
             },
-            error: function (xhr) {
+            error: function () {
                 $this.button('reset');
                 modal.find('.alert-warning')
-                    .text(JSON.parse(xhr.responseText).error)
+                    .text('Sorry, an error occurred while requesting. Please try again later.')
                     .removeClass('hidden');
             }
         });
@@ -339,7 +340,7 @@ $(document).ready(function () {
             success: function (data) {
                 if (data.length === 0) {
                     spinner.removeClass('fa-spin');
-                    progressText.text('Sorry, no references found!');
+                    progressText.text('Sorry, no usable references found!');
                     gauge
                         .addClass('progress-bar-danger')
                         .attr('aria-valuenow', 100)
@@ -371,7 +372,8 @@ $(document).ready(function () {
                                         j = 0;
                                         $.each(work.authors, function (i, author) {
                                             if (j++ > 0) authors += ', ';
-                                            authors += author.firstName + ' ' + author.lastName;
+                                            authors += author['firstName'] + ' '
+                                                + author['lastName'];
                                         });
                                     }
 
@@ -380,7 +382,7 @@ $(document).ready(function () {
                                         j = 0;
                                         $.each(work.journals, function (i, journal) {
                                             if (j++ > 0) journals += ', ';
-                                            journals += journal.journalName;
+                                            journals += journal['journalName'];
                                         });
                                     }
 
@@ -408,7 +410,7 @@ $(document).ready(function () {
                                 error: function (xhr) {
                                     console.log(xhr.responseText);
                                     modal.find('.alert')
-                                        .text(JSON.parse(xhr.responseText).error)
+                                        .text('Sorry, an error occurred while requesting. Please try again later.')
                                         .removeClass('hidden');
                                 }
                             });
@@ -421,7 +423,7 @@ $(document).ready(function () {
             error: function (xhr) {
                 console.log(xhr.responseText);
                 modal.find('.alert')
-                    .text(JSON.parse(xhr.responseText).error)
+                    .text('Sorry, an error occurred while requesting. Please try again later.')
                     .removeClass('hidden');
             }
         });
@@ -429,6 +431,7 @@ $(document).ready(function () {
 
     // Snowballing modal button "Add Works" click.
     $('#btn_works_add').click(function () {
+        var $this = $(this);
         var modal = $('#snowballing_modal');
         var selectedWorkIds = [];
 
@@ -438,7 +441,8 @@ $(document).ready(function () {
             });
         });
 
-        console.log(selectedWorkIds);
+        $this.button('loading');
+
         $.ajax({
             type: 'POST',
             url: '/works/assign',
@@ -447,13 +451,53 @@ $(document).ready(function () {
                 'work_ids': selectedWorkIds
             },
             success: function (data) {
-                console.log(data);
+                $this.button('reset');
                 modal.find('.alert').addClass('hidden');
+                modal.modal('toggle');
+
+                if (data.length === 0) {
+                    return;
+                }
+
+                for (var referenceIndex in data) {
+                    if (data.hasOwnProperty(referenceIndex)) {
+                        var work = data[referenceIndex];
+                        var j;
+                        var authors = '';
+                        if (work.authors !== null && Object.keys(work.authors).length > 0) {
+                            j = 0;
+                            $.each(work.authors, function (i, author) {
+                                if (j++ > 0) authors += ', ';
+                                authors += author['firstName']
+                                    + ' ' + author['lastName'];
+                            });
+                        }
+
+                        var journals = '';
+                        if (work.journals !== null && Object.keys(work.journals).length > 0) {
+                            j = 0;
+                            $.each(work.journals, function (i, journal) {
+                                if (j++ > 0) journals += ', ';
+                                journals += journal['journalName'];
+                            });
+                        }
+
+                        table.row.add([
+                            '<label><input name="work_include" type="checkbox" value="'
+                            + work['id'] + '" checked></label>',
+                            '<a href="/works/view/' + work['id'] + '" class="work-link">'
+                            + work['title'] + '</a>',
+                            authors,
+                            journals,
+                            work['doi']
+                        ]).draw(false);
+                    }
+                }
             },
             error: function (xhr) {
                 console.log(xhr.responseText);
                 modal.find('.alert')
-                    .text(JSON.parse(xhr.responseText).error)
+                    .text('Sorry, an error occurred while requesting. Please try again later.')
                     .removeClass('hidden');
             }
         });

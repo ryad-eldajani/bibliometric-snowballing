@@ -1,4 +1,7 @@
 {
+  "url": "http://bibliometric-snowballing.rocks/",
+  "mail": "mail@mail.com",
+  "useragent": "BibliometricSnowballing/1.0 ({url}; mailto: {mail})",
   "db": {
     "database": "biblio",
     "username": "biblio",

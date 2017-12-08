@@ -259,8 +259,19 @@ class Project extends Entity
      */
     public function addWorkId($workId)
     {
-        if (!in_array($workId, $this->workIds)) {
+        if (!$this->hasWorkId($workId)) {
             $this->workIds[] = $workId;
         }
+    }
+
+    /**
+     * Returns true, if a work ID is already given.
+     *
+     * @param int $workId work ID to check.
+     * @return bool true, if work ID is given
+     */
+    public function hasWorkId($workId)
+    {
+        return in_array($workId, $this->workIds);
     }
 }

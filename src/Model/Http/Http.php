@@ -262,6 +262,18 @@ class Http
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt(
+            $curl,
+            CURLOPT_USERAGENT,
+            str_replace(
+                array('{url}', '{mail}'),
+                array(
+                    App::instance()->getConfig('url'),
+                    App::instance()->getConfig('mail')
+                ),
+                App::instance()->getConfig('useragent')
+            )
+        );
 
         // If we have values to be posted (possible in POST, DELETE, PUT),
         // raw encode the POST values by using "http_build_query()".

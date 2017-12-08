@@ -37,7 +37,7 @@
 <?php if (isset($message)): ?>
     <?php $this->insert('parts/message') ?>
 <?php endif ?>
-<div class="container">
+<div class="container main-container">
     <div class="row">
         <?=$this->section('content')?>
     </div>
