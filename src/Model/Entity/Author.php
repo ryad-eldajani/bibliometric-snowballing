@@ -21,8 +21,8 @@ use BS\Model\Db\Database;
  *
  * @package BS\Model\Entity
  * @method int|string|null getId()
- * @method string|null getFirstName()
- * @method string|null getLastName()
+ * @method string getFirstName()
+ * @method string getLastName()
  */
 class Author extends Entity
 {
@@ -32,26 +32,26 @@ class Author extends Entity
     protected $id = null;
 
     /**
-     * @var string|null $firstName first name of author
+     * @var string $firstName first name of author
      */
-    protected $firstName = null;
+    protected $firstName = '';
 
     /**
-     * @var string|null $lastName last name of author
+     * @var string $lastName last name of author
      */
-    protected $lastName = null;
+    protected $lastName = '';
 
     /**
      * Author constructor.
      *
      * @param int|null $id author identifier
-     * @param string|null $firstName first name of author
-     * @param string|null $lastName last name of author
+     * @param string $firstName first name of author
+     * @param string $lastName last name of author
      */
     public function __construct(
         $id = null,
-        $firstName = null,
-        $lastName = null
+        $firstName = '',
+        $lastName = ''
     ) {
         parent::__construct();
         $this->id = $id;

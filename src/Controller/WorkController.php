@@ -348,8 +348,12 @@ class WorkController extends AbstractController
             if (isset($workData['reference'])) {
                 foreach ($workData['reference'] as $reference) {
                     $referencedDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
-                    if ($referencedDoi != '' && !in_array($referencedDoi, $allReferencedWorks)) {
-                        $allReferencedWorks[] = $referencedDoi;
+                    if ($referencedDoi != '') {
+                        if (!in_array($referencedDoi, $allReferencedWorks)) {
+                            $allReferencedWorks[$referencedDoi] = 1;
+                        } else {
+                            $allReferencedWorks[$referencedDoi]++;
+                        }
                     }
                 }
             }

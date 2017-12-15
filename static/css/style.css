@@ -147,3 +147,13 @@ legend.legend {
 #table_works_add th:first-child {
     width: 10px!important;
 }
+.tab-content {
+    margin-top: 10px;
+}
+ul.nav-tabs li a[href="#tab_selection"] {
+    font-weight: bold;
+}
+.blur1 {
+    -webkit-filter: blur(1px);
+    filter: blur(1px);
+}

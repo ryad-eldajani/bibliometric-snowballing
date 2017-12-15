@@ -21,8 +21,8 @@ use BS\Model\Db\Database;
  *
  * @package BS\Model\Entity
  * @method int|string|null getId()
- * @method string|null getJournalName()
- * @method string|null getIssn()
+ * @method string getJournalName()
+ * @method string getIssn()
  */
 class Journal extends Entity
 {
@@ -32,26 +32,26 @@ class Journal extends Entity
     protected $id = null;
 
     /**
-     * @var string|null $journalName journal name
+     * @var string $journalName journal name
      */
-    protected $journalName = null;
+    protected $journalName = '';
 
     /**
-     * @var string|null $issn ISSN of journal
+     * @var string $issn ISSN of journal
      */
-    protected $issn = null;
+    protected $issn = '';
 
     /**
      * Author constructor.
      *
      * @param int|null $id journal identifier
-     * @param string|null $journalName journal name
-     * @param string|null $issn ISSN of journal
+     * @param string $journalName journal name
+     * @param string $issn ISSN of journal
      */
     public function __construct(
         $id = null,
-        $journalName = null,
-        $issn = null
+        $journalName = '',
+        $issn = ''
     ) {
         parent::__construct();
         $this->id = $id;

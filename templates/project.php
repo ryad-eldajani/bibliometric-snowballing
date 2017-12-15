@@ -108,6 +108,129 @@ $(document).ready(function () {
         ]
     });
 
+    var tableAddWorksElement = $('#table_works_add_works');
+    var tableAddWorks = tableAddWorksElement.DataTable({
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+        autoWidth: false,
+        order: [[0, 'asc']],
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'csv',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'colvis',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
+            }
+        ]
+    });
+
+    var tableAddAuthorsElement = $('#table_works_add_authors');
+    var tableAddAuthors = tableAddAuthorsElement.DataTable({
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+        autoWidth: false,
+        order: [[0, 'asc']],
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'csv',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'colvis',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
+            }
+        ]
+    });
+
+    var tableAddJournalsElement = $('#table_works_add_journals');
+    var tableAddJournals = tableAddJournalsElement.DataTable({
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+        autoWidth: false,
+        order: [[0, 'asc']],
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'csv',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'colvis',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/filter.png" alt="Show/Hide columns" title="Show/Hide columns"> Columns'
+            }
+        ]
+    });
+
     // Modify search input
     $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
     var filter = $('#table_works_filter');
@@ -347,75 +470,136 @@ $(document).ready(function () {
                         .animate({width: '100%'});
                     return;
                 }
-                for (var referenceIndex in data) {
-                    (function () {
-                        if (data.hasOwnProperty(referenceIndex)) {
-                            var references = data;
-                            var currentDoi = references[referenceIndex];
+                var stats = {
+                    sumWorks: 0,
+                    works: {},
+                    sumAuthors: 0,
+                    authors: {},
+                    sumJournals: 0,
+                    journals: {}
+                };
+                var countDois = Object.keys(data).length;
 
-                            // Request current work.
-                            $.ajax({
-                                type: 'POST',
-                                url: '/works/request/doi',
-                                data: {
-                                    'work_doi': currentDoi
-                                },
-                                success: function (data) {
-                                    tableAddElement.removeClass('hidden');
+                if (countDois > 0) {
+                    stats.sumWorks = countDois;
 
-                                    var work = JSON.parse(data);
-                                    if (work === null) return;
-
-                                    var j;
-                                    var authors = '';
-                                    if (work.authors !== null && Object.keys(work.authors).length > 0) {
-                                        j = 0;
-                                        $.each(work.authors, function (i, author) {
-                                            if (j++ > 0) authors += ', ';
-                                            authors += author['firstName'] + ' '
-                                                + author['lastName'];
-                                        });
+                    for (var key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            (function(currentDoi, countDois, countCurrentDoi, stats) {
+                                if (stats.works.hasOwnProperty(currentDoi)) {
+                                    stats.works[currentDoi].count++;
+                                } else {
+                                    stats.works[currentDoi] = {
+                                        count: 1,
+                                        share: 0
                                     }
-
-                                    var journals = '';
-                                    if (work.journals !== null && Object.keys(work.journals).length > 0) {
-                                        j = 0;
-                                        $.each(work.journals, function (i, journal) {
-                                            if (j++ > 0) journals += ', ';
-                                            journals += journal['journalName'];
-                                        });
-                                    }
-
-                                    tableAdd.row.add([
-                                        '<label><input name="work_include" type="checkbox" value="'
-                                            + work['id'] + '" checked></label>',
-                                        work['title'],
-                                        authors,
-                                        journals,
-                                        work['doi']
-                                    ]).draw(false);
-
-                                    var currentAbsolute = tableAdd.rows().count();
-                                    var currentPercent = Math.round(currentAbsolute / references.length * 100);
-                                    progressText.text(currentAbsolute + '/' + references.length + ' references processed...');
-                                    gauge.attr('aria-valuenow', currentPercent).animate({width: currentPercent + '%'}, function() {
-                                        if (currentPercent >= 100) {
-                                            spinner.removeClass('fa-spin');
-                                            gauge.addClass('progress-bar-success');
-                                            progressText.text('Done!');
-                                            buttonAdd.prop('disabled', false);
-                                        }
-                                    });
-                                },
-                                error: function (xhr) {
-                                    console.log(xhr.responseText);
-                                    modal.find('.alert')
-                                        .text('Sorry, an error occurred while requesting. Please try again later.')
-                                        .removeClass('hidden');
                                 }
-                            });
+
+                                // Request current work.
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/works/request/doi',
+                                    data: {
+                                        'work_doi': currentDoi
+                                    },
+                                    complete: function(data) {
+                                        tableAddElement.removeClass('hidden');
+
+                                        var work = JSON.parse(data.responseJSON);
+                                        if (work === null) return;
+
+                                        var j;
+                                        var authors = '';
+                                        if (work.authors !== null && Object.keys(work.authors).length > 0) {
+                                            j = 0;
+                                            for (var authorKey in work.authors) {
+                                                if (work.authors.hasOwnProperty(authorKey)) {
+                                                    var author = work.authors[authorKey];
+                                                    var currentAuthor = author['firstName'] + ' ' + author['lastName'];
+                                                    if (j++ > 0) authors += ', ';
+                                                    authors += currentAuthor;
+
+                                                    if (stats.authors.hasOwnProperty(currentAuthor)) {
+                                                        stats.authors[currentAuthor].count++;
+                                                    } else {
+                                                        stats.authors[currentAuthor] = {
+                                                            count: 1,
+                                                            share: 0
+                                                        };
+                                                    }
+                                                    stats.sumAuthors++;
+                                                }
+                                            }
+                                        }
+
+                                        var journals = '';
+                                        if (work.journals !== null && Object.keys(work.journals).length > 0) {
+                                            j = 0;
+                                            for (var journalsKey in work.journals) {
+                                                if (work.journals.hasOwnProperty(journalsKey)) {
+                                                    var journal = work.journals[journalsKey];
+                                                    var journalName = journal['journalName'];
+                                                    if (j++ > 0) journals += ', ';
+                                                    journals += journalName;
+
+                                                    if (stats.journals.hasOwnProperty(journalName)) {
+                                                        stats.journals[journalName].count++;
+                                                    } else {
+                                                        stats.journals[journalName] = {
+                                                            count: 1,
+                                                            share: 0
+                                                        };
+                                                    }
+                                                    stats.sumJournals++;
+                                                }
+                                            }
+                                        }
+
+                                        tableAdd.row.add([
+                                            '<label><input name="work_include" type="checkbox" value="'
+                                            + work['id'] + '" checked></label>',
+                                            work['title'],
+                                            authors,
+                                            journals,
+                                            work['doi']
+                                        ]).draw(false);
+
+                                        var currentAbsolute = tableAdd.rows().count();
+                                        var currentPercent = Math.round(currentAbsolute / countDois * 100);
+                                        if (currentAbsolute < countDois) {
+                                            progressText.text(currentAbsolute + '/' + countDois + ' references handled (' + currentPercent + '%)...');
+                                        } else {
+                                            progressText.text(currentAbsolute + '/' + countDois + ' references handled. Performing post processing...');
+                                        }
+
+                                        gauge.attr('aria-valuenow', currentPercent).animate({width: currentPercent + '%'}, function() {
+                                            if (currentPercent >= 100) {
+                                                spinner.removeClass('fa-spin');
+                                                gauge.addClass('progress-bar-success');
+                                                progressText.text('Done!');
+                                                buttonAdd.prop('disabled', false);
+
+                                                handleStatistics(stats.works, stats.sumWorks, tableAddWorks);
+                                                handleStatistics(stats.authors, stats.sumAuthors, tableAddAuthors);
+                                                handleStatistics(stats.journals, stats.sumJournals, tableAddJournals);
+
+                                                tableAddElement.removeClass('blur1');
+                                                tableAddWorksElement.removeClass('blur1');
+                                                tableAddAuthorsElement.removeClass('blur1');
+                                                tableAddJournalsElement.removeClass('blur1');
+                                            }
+                                        });
+                                    },
+                                    error: function(xhr) {
+                                        console.log(xhr.responseText);
+                                        modal.find('.alert')
+                                            .text('Sorry, an error occurred while requesting. Please try again later.')
+                                            .removeClass('hidden');
+                                    }
+                                });
+                            })(key, countDois, data[key], stats);
                         }
-                    })();
+                    }
                 }
 
                 modal.find('.alert').addClass('hidden');
@@ -588,20 +772,110 @@ $(document).ready(function () {
                 <div class="progress">
                     <div id="progress_gauge" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-sorted" id="table_works_add">
-                        <thead>
-                        <tr>
-                            <th>Add?</th>
-                            <th>Work title</th>
-                            <th>Authors</th>
-                            <th>Journal</th>
-                            <th>DOI</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#tab_selection">Selection</a></li>
+                    <li><a data-toggle="tab" href="#tab_works">Works</a></li>
+                    <li><a data-toggle="tab" href="#tab_authors">Authors</a></li>
+                    <li><a data-toggle="tab" href="#tab_journals">Journals</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="tab_selection" class="tab-pane fade in active">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sorted blur1" id="table_works_add">
+                                <thead>
+                                <tr>
+                                    <th>Add?</th>
+                                    <th>Work title</th>
+                                    <th>Authors</th>
+                                    <th>Journal</th>
+                                    <th>DOI</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="tab_works" class="tab-pane fade">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sorted blur1" id="table_works_add_works">
+                                <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Work title</th>
+                                    <th># Citations</th>
+                                    <th>Share</th>
+                                    <th>Aggregated share</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="tab_authors" class="tab-pane fade">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sorted blur1" id="table_works_add_authors">
+                                <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Author name</th>
+                                    <th># Citations</th>
+                                    <th>Share</th>
+                                    <th>Aggregated share</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="tab_journals" class="tab-pane fade">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sorted blur1" id="table_works_add_journals">
+                                <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Journal name</th>
+                                    <th># Citations</th>
+                                    <th>Share</th>
+                                    <th>Aggregated share</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
