@@ -140,15 +140,20 @@ legend.legend {
     height: 15px;
 }
 #table_works,
-#table_works_add {
+#table_works_add,
+#table_works_add_works,
+#table_works_add_authors,
+#table_works_add_journals {
     width: 100%;
+}
+#table_works_add_works th:nth-child(3),
+#table_works_add_authors th:nth-child(3),
+#table_works_add_journals th:nth-child(3) {
+    white-space: nowrap;
 }
 #table_works th:first-child,
 #table_works_add th:first-child {
     width: 10px!important;
-}
-.tab-content {
-    margin-top: 10px;
 }
 ul.nav-tabs li a[href="#tab_selection"] {
     font-weight: bold;
@@ -156,4 +161,7 @@ ul.nav-tabs li a[href="#tab_selection"] {
 .blur1 {
     -webkit-filter: blur(1px);
     filter: blur(1px);
+}
+#snowballing_tabs {
+    margin-top: 10px;
 }
