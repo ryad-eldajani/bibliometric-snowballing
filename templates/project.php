@@ -2,11 +2,12 @@
     <?php (new \BS\Model\Http\RedirectResponse('/404'))->send(); ?>
 <?php else: ?>
 <?php /** @var \BS\Model\Entity\Project $project */ ?>
-<?php $this->layout('layout', ['title' => 'Manage Project', 'subTitle' => $project->getName()]) ?>
+<?php $this->layout('layout', ['title' => $project->getName()]) ?>
 <script type="text/javascript">
 $(document).ready(function () {
-    var tableElement = $('#table_works');
-    var table = tableElement.DataTable({
+    var table = $('#table_works').DataTable({
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
         columnDefs: [{
             width: '10px',
             targets: 0,
@@ -14,12 +15,16 @@ $(document).ready(function () {
         }],
         order: [[1, 'asc']],
         scrollY: false,
-        lengthChange: false,
         buttons: [
             {
                 text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Work" title="New Work"> New Work',
                 className: 'btn btn-primary btn-outline btn-new-work',
-                action: function (e, dt, node, config) {
+                action: function () {
+                    var modal = $('#new_work_modal');
+                    modal.modal('show');
+                    modal.on('shown.bs.modal', function () {
+                        $(this).find('#input_work_doi').focus();
+                    });
                 }
             },
             {
@@ -57,24 +62,41 @@ $(document).ready(function () {
             }
         ]
     });
-    table.buttons().container().appendTo('#table_works_wrapper .col-sm-6:eq(0)');
-    table.on('buttons-action', function (e, button) {
-        if (button.text().indexOf('New Work') !== -1) {
-            var modal = $('#new_work_modal');
-            modal.modal('show');
-            modal.on('shown.bs.modal', function () {
-                $(this).find('#input_work_doi').focus();
-            });
-        }
-    });
-
-    var tableAddElement = $('#table_works_add');
-    var tableAdd = tableAddElement.DataTable({
+    var checkAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-153-check.png" alt="Check all" title="Check all"> Check all</span>';
+    var uncheckAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-154-unchecked.png" alt="Uncheck all" title="Uncheck all"> Uncheck all</span>';
+    var tableAdd = $('#table_works_add').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
         autoWidth: false,
         order: [[1, 'asc']],
+        columnDefs: [{
+            width: '10px',
+            targets: 0,
+            orderable: false
+        }],
         buttons: [
+            {
+                text: checkAll,
+                className: 'btn btn-outline',
+                action: function (e, dt, node) {
+                    // Checks or unchecks the checkboxes in first column.
+                    var checkUncheck = function(toggle) {
+                        dt.column(0).nodes().each(function(e) {
+                            $(e).find('input').prop('checked', toggle);
+                        });
+                    };
+
+                    // If "Check" is found in text of this button node, uncheck
+                    // all checkboxes, otherwise check all checkboxes.
+                    if (node.text().indexOf('Check') !== -1) {
+                        checkUncheck(false);
+                        node.html(uncheckAll);
+                    } else {
+                        checkUncheck(true);
+                        node.html(checkAll);
+                    }
+                }
+            },
             {
                 extend: 'copy',
                 text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
@@ -111,8 +133,7 @@ $(document).ready(function () {
         ]
     });
 
-    var tableAddWorksElement = $('#table_works_add_works');
-    var tableAddWorks = tableAddWorksElement.DataTable({
+    var tableAddWorks = $('#table_works_add_works').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
         autoWidth: false,
@@ -141,8 +162,7 @@ $(document).ready(function () {
         ]
     });
 
-    var tableAddAuthorsElement = $('#table_works_add_authors');
-    var tableAddAuthors = tableAddAuthorsElement.DataTable({
+    var tableAddAuthors = $('#table_works_add_authors').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
         autoWidth: false,
@@ -183,8 +203,7 @@ $(document).ready(function () {
         ]
     });
 
-    var tableAddJournalsElement = $('#table_works_add_journals');
-    var tableAddJournals = tableAddJournalsElement.DataTable({
+    var tableAddJournals = $('#table_works_add_journals').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
         autoWidth: false,
@@ -225,21 +244,43 @@ $(document).ready(function () {
         ]
     });
 
-    // Modify search input
-    $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
-    var filter = $('#table_works_filter');
-    var filterInput = filter.find('label>input').detach().attr('placeholder', 'Search Works');
-    filter.parent()
-        .removeClass('col-sm-6').addClass('col-sm-2 input-group')
-        .html('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
-        .append(filterInput);
+    // Modify data table options (filter, buttons, ...).
+    var tables = [table, tableAdd, tableAddWorks, tableAddAuthors, tableAddJournals];
+    for (var tableIndex in tables) {
+        var currentTable = tables[tableIndex];
+        $(currentTable.table().container()).find('.row:eq(0)').children().each(function(j) {
+            $(this).removeClass('col-sm-6').addClass('col-sm-2');
 
-    // If we have no data available yet, disable button "Start Snowballing Analysis".
-    if (tableElement.find('.dataTables_empty').length) {
+            if (j === 0) {
+                // Length selector.
+                var lengthSelect = $(this).find('label>select').detach();
+                var lengthSelectIcon = $('<span class="input-group-addon"><i class="glyphicon glyphicon-eye-open"></i></span>');
+                $(this).find('label').addClass('input-group').empty()
+                    .append(lengthSelect, lengthSelectIcon);
+
+                // Insert table buttons.
+                currentTable.buttons().container().insertAfter($(this)).addClass('col-sm-8');
+            } else if (j === 1) {
+                // Filter (search) input.
+                var filter = $(this).find('div:eq(0)');
+                var filterInput = filter.find('label>input').detach().attr('placeholder', 'Search');
+                var filterInputIcon = $('<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>')
+                    .on('click', function() {
+                        $(this).parent().find('input').focus();
+                    });
+                filter.parent().removeClass('col-sm-6').addClass('col-sm-2 input-group')
+                    .empty()
+                    .append(filterInputIcon, filterInput);
+            }
+        });
+    }
+
+    // If we have data available, enable button "Start Snowballing Analysis".
+    if (table.rows().count() > 0) {
         $('#btn_start_snowballing')
-            .addClass('btn-disabled disabled')
-            .removeClass('btn-primary')
-            .prop('disabled', true);
+            .removeClass('btn-disabled disabled')
+            .addClass('btn-primary')
+            .prop('disabled', false);
     }
 
     // API call for DOI.
@@ -499,8 +540,6 @@ $(document).ready(function () {
                                         'work_doi': currentDoi
                                     },
                                     complete: function(data) {
-                                        tableAddElement.removeClass('hidden');
-
                                         var work = JSON.parse(data['responseJSON']);
                                         if (work === null) return;
 
@@ -921,7 +960,7 @@ $(document).ready(function () {
     <div class="container">
         <div class="col-sm-3"></div>
         <div class="col-sm-6">
-            <button class="btn btn-primary" id="btn_start_snowballing" data-toggle="modal" data-target="#snowballing_modal">Start Snowballing Analysis</button>
+            <button class="btn btn-disabled disabled" disabled id="btn_start_snowballing" data-toggle="modal" data-target="#snowballing_modal">Start Snowballing Analysis</button>
         </div>
         <div class="col-sm-3"></div>
     </div>
