@@ -73,6 +73,14 @@
     "/profile": {
       "controller": "User/viewProfile",
       "methods": ["get"]
+    },
+    "/contact": {
+      "controller": "Static/viewContact",
+      "methods": ["get"]
+    },
+    "/about": {
+      "controller": "Static/viewAbout",
+      "methods": ["get"]
     }
   },
   "apis": {
