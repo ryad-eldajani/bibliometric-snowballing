@@ -1,14 +1,30 @@
 <?php $this->layout('layout', ['title' => 'Manage Projects', 'subTitle' => 'Please manage your projects.']) ?>
 <script type="text/javascript">
 $(document).ready(function () {
+    var tableProjectsEmpty = $('<p>No projects available yet.</p><button class="btn btn-primary">Create new Project</button>').on('click', function() {
+        var modal = $('#new_project_modal');
+        modal.modal('show');
+        modal.on('shown.bs.modal', function() {
+            $(this).find('input').focus();
+        });
+    });
     var table = $('#table_projects').DataTable({
         scrollY: false,
         lengthChange: false,
+        language: {
+            emptyTable: tableProjectsEmpty
+        },
         buttons: [
             {
                 text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-add-2.png" alt="New Project" title="New Project"> New Project',
                 className: 'btn btn-primary btn-outline btn-new-project',
-                action: function (e, dt, node, config) {}
+                action: function () {
+                    var modal = $('#new_project_modal');
+                    modal.modal('show');
+                    modal.on('shown.bs.modal', function() {
+                        $(this).find('input').focus();
+                    });
+                }
             },
             {
                 extend: 'copy',
@@ -45,15 +61,6 @@ $(document).ready(function () {
         ]
     });
     table.buttons().container().appendTo('#table_projects_wrapper .col-sm-6:eq(0)');
-    table.on('buttons-action', function (e, button) {
-        if (button.text().indexOf('New Project') !== -1) {
-            var modal = $('#new_project_modal');
-            modal.modal('show');
-            modal.on('shown.bs.modal', function() {
-                $(this).find('input').focus();
-            });
-        }
-    });
 
     // Modify search input
     $('.dt-buttons').parent().removeClass('col-sm-6').addClass('col-sm-10');
@@ -81,21 +88,21 @@ $(document).ready(function () {
                 modal.find('.alert').addClass('hidden');
                 modal.modal('toggle');
 
-                table.row.add([
-                    '<a href="/projects/view/' + project.id + '"  class="project-link">' + project.name + '</a>',
+                var newRow = table.row.add([
+                    '<a href="/projects/view/' + project['id'] + '"  class="project-link">' + project['name'] + '</a>',
                     0,
-                    timestampToDate(project.createdAt),
-                    '<div class="dropdown">'
-                    + '<button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">'
-                    + '<i class="fa fa-cog"></i><span class="caret"></span></button><ul class="dropdown-menu"><li>'
-                    + '<a href="#" data-toggle="modal" data-target="#rename_project_modal" data-project-id="'
-                    + project.id + '" data-project-name="' + project.name + '">'
-                    + '<span class="glyphicon glyphicon-pencil"></span> Rename</a></li><li>'
-                    + '<a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" data-project-id="'
-                    + project.id + '" data-project-name="' + project.name + '">'
-                    + '<span class="glyphicon glyphicon-trash"></span> Delete</a>'
-                    + '</li></ul></div>'
-                ]).draw(false);
+                    timestampToDate(project['createdAt']),
+                    '<div class="dropdown"><button class="btn btn-primary dropdown-toggle dropdown-option" type="button" ' +
+                    'data-toggle="dropdown"><i class="fa fa-cog"></i><span class="caret"></span></button>' +
+                    '<ul class="dropdown-menu"><li><a href="#" id="rename_project_toggle" data-toggle="modal" ' +
+                    'data-target="#rename_project_modal" data-project-id="' + project['id'] + '" data-project-name="'
+                    + project['name'] + '"><span class="glyphicon glyphicon-pencil"></span>Rename</a></li><li>' +
+                    '<a href="#" class="color-danger" data-toggle="modal" data-target="#delete_project_modal" ' +
+                    'data-project-id="' + project['id'] + '" data-project-name="' + project['name'] + '">' +
+                    '<span class="glyphicon glyphicon-trash"></span> Delete </a> </li></ul></div>'
+                ]);
+                $(newRow.node()).attr('id', 'tr_project_id_' + project['id']);
+                newRow.draw();
             },
             error: function (xhr) {
                 modal.find('.alert')
@@ -110,8 +117,8 @@ $(document).ready(function () {
         var data = $(e.relatedTarget).data();
         $('.modal-body', this)
             .html('<div class="alert alert-warning hidden"></div><p class="color-danger bold">Do you really want to delete the following project?</p>')
-            .append(document.createTextNode(data.projectName));
-        $('#btn_delete_project').data('projectId', data.projectId);
+            .append(document.createTextNode(data['projectName']));
+        $('#btn_delete_project').data('projectId', data['projectId']);
     });
 
     // Delete project button submit click.
@@ -127,7 +134,7 @@ $(document).ready(function () {
             success: function (data) {
                 $this.button('reset');
                 modal.find('.alert').addClass('hidden');
-                $('#tr_project_id_' + JSON.parse(data.project_id)).remove();
+                table.row('#tr_project_id_' + JSON.parse(data['project_id'])).remove().draw();
                 modal.modal('toggle');
             },
             error: function (xhr) {
@@ -143,8 +150,8 @@ $(document).ready(function () {
     $('#rename_project_modal').on('show.bs.modal', function(e) {
         var data = $(e.relatedTarget).data();
         var input = $('#input_project_name_rename');
-        input.val(data.projectName);
-        input.data('projectId', data.projectId);
+        input.val(data['projectName']);
+        input.data('projectId', data['projectId']);
     }).on('shown.bs.modal', function() {
         $(this).find('#input_project_name_rename').focus();
     });
@@ -170,8 +177,8 @@ $(document).ready(function () {
                 modal.modal('toggle');
                 $('#tr_project_id_' + project.id)
                     .find('a.project-link')
-                    .text(project.name);
-                $('#rename_project_toggle').data('projectName', project.name);
+                    .text(project['name']);
+                $('#rename_project_toggle').data('projectName', project['name']);
                 modal.find('.alert').addClass('hidden');
             },
             error: function (xhr) {
@@ -189,13 +196,13 @@ $(document).ready(function () {
             <form role="form" data-toggle="validator">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Create new project</h4>
+                    <h4 class="modal-title">Create new Project</h4>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
                     <div class="form-group">
-                        <label for="input_project_name">Project name</label>
-                        <input type="text" class="form-control" id="input_project_name" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
+                        <label for="input_project_name">Project Name</label>
+                        <input type="text" class="form-control" id="input_project_name" placeholder="Enter a new Project Name" data-minlength="1" maxlength="250" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -211,7 +218,7 @@ $(document).ready(function () {
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title color-danger">Delete project</h4>
+                <h4 class="modal-title color-danger">Delete Project</h4>
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning hidden"></div>
@@ -229,13 +236,13 @@ $(document).ready(function () {
             <form role="form" data-toggle="validator">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Rename project</h4>
+                    <h4 class="modal-title">Rename Project</h4>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
                     <div class="form-group">
                         <label for="input_project_name_rename">Project name</label>
-                        <input type="text" class="form-control" id="input_project_name_rename" placeholder="Enter a new project name" data-minlength="1" maxlength="250" required>
+                        <input type="text" class="form-control" id="input_project_name_rename" placeholder="Enter a new Project Name" data-minlength="1" maxlength="250" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -246,18 +253,18 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
-<?php if (isset($projects)): ?>
 <div class="table-responsive">
     <table class="table table-striped table-sorted" id="table_projects">
         <thead>
         <tr>
-            <th>Project name</th>
-            <th>Number of objects</th>
+            <th>Project Name</th>
+            <th>Number of Objects</th>
             <th>Created</th>
             <th>Options</th>
         </tr>
         </thead>
         <tbody>
+        <?php if (isset($projects) && is_array($projects) && count($projects) > 0): ?>
         <?php foreach ($projects as $project): ?>
         <?php /** @var \BS\Model\Entity\Project $project */ ?>
         <tr id="tr_project_id_<?=$project->getId()?>">
@@ -286,14 +293,7 @@ $(document).ready(function () {
             </td>
         </tr>
         <?php endforeach ?>
+        <?php endif ?>
         </tbody>
     </table>
 </div>
-<?php else: ?>
-<div class="col-sm-12">
-    <p>No projects available yet.</p>
-    <p>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#new_project_modal">Create first project</button>
-    </p>
-</div>
-<?php endif ?>
