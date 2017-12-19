@@ -75,8 +75,8 @@
       "methods": ["get"]
     },
     "/contact": {
-      "controller": "Static/viewContact",
-      "methods": ["get"]
+      "controller": "Contact/contact",
+      "methods": ["get", "post"]
     },
     "/about": {
       "controller": "Static/viewAbout",

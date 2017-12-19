@@ -55,3 +55,6 @@ phpunit.phar
 
 # Bibliometric Snowballing specific files
 conf/config.json
+
+# .well-known directory for Let's Encrypt
+.well-known/

@@ -15,17 +15,27 @@ namespace BS\Controller;
 
 use BS\Model\Http\Response;
 
-class StaticController extends AbstractController
+class ContactController extends AbstractController
 {
     /**
-     * URL: /about
-     * Methods: GET
+     * URL: /contact
+     * Methods: GET, POST
      * @return Response instance
      */
-    public function viewAboutAction()
+    public function contactAction()
     {
+        $message = null;
+
+        // If HTTP method is POST, try to send an email.
+        if ($this->http->getRequestInfo('request_method') == 'post') {
+            $message = array(
+                'message' => 'Contact us is not implemented yet. Please try again later.',
+                'messageType' => 'warning'
+            );
+        }
+
         return new Response(
-            $this->app->renderTemplate('about')
+            $this->app->renderTemplate('contact', $message)
         );
     }
 }
