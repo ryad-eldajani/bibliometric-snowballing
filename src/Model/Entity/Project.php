@@ -186,17 +186,17 @@ class Project extends Entity
             return;
         }
 
+        // Delete work_project references.
+        $sql = 'DELETE FROM work_project WHERE id_project = ?';
+        $sqlParams = array($this->id);
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+
+        // Delete project itself.
         $sql = 'DELETE FROM project WHERE id_project = ?';
         $sqlParams = array($this->id);
         Database::instance()->updateOrDelete($sql, $sqlParams);
-        $this->id = null;
 
-        // Delete work IDs.
-        foreach ($this->workIds as $workId) {
-            $sql = 'DELETE FROM work_project WHERE id_project = ? AND id_work = ?';
-            $sqlParams = array($this->id, $workId);
-            Database::instance()->updateOrDelete($sql, $sqlParams);
-        }
+        $this->id = null;
         $this->workIds = array();
         $this->works = array();
     }
