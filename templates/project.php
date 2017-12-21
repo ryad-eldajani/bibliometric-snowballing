@@ -465,8 +465,13 @@ $(document).ready(function () {
         });
     });
 
-    // Snowballing modal dialog show.
-    $('#snowballing_modal').on('show.bs.modal', function() {
+    // Snowballing modal dialog hide and show.
+    $('#snowballing_modal')
+        .on('hide.bs.modal', function() {
+            // Set "Check All" to first button.
+            tableAdd.buttons(0).nodes(0).html(checkAll);
+        })
+        .on('show.bs.modal', function() {
         var modal = $(this);
         var selectedWorkIds = [];
         var spinner = $('#snowballing_spin');
@@ -743,7 +748,7 @@ $(document).ready(function () {
                 <div class="modal-body">
                     <div class="alert alert-warning hidden"></div>
                     <div class="form-group">
-                        <label for="input_work_doi">Document Object Identifier (DOI)</label>
+                        <label for="input_work_doi">Digital Object Identifier (DOI)</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_work_doi" placeholder="Enter a DOI" data-minlength="1" maxlength="250">
                             <span class="input-group-btn">
@@ -803,8 +808,8 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
-<div id="snowballing_modal" class="modal fade modal-centered" role="dialog" data-project-id="<?=$project->getId()?>">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-full-width">
+<div id="snowballing_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
+    <div class="modal-dialog modal-dialog-full-width">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
