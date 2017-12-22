@@ -87,7 +87,7 @@ final class DataTypeHelperTest extends TestCase
         );
 
         $this->assertEquals(
-            null,
+            array(),
             $this->helper->getArray(
                 null,
                 'int',
@@ -96,7 +96,7 @@ final class DataTypeHelperTest extends TestCase
         );
 
         $this->assertEquals(
-            null,
+            array(),
             $this->helper->getArray(
                 array(''),
                 'int',

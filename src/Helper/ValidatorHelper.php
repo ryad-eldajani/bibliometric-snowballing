@@ -156,6 +156,10 @@ class ValidatorHelper
                     $postKey,
                     trim(htmlspecialchars($postValue))
                 );
+            } elseif ($validation['type'] == 'email') {
+                if (!MailHelper::instance()->validateEmailAddress($postValue)) {
+                    return false;
+                }
             }
         }
 

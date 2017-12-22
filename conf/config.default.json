@@ -9,6 +9,14 @@
     "password": "password",
     "port": 3306
   },
+  "smtp": {
+    "hostname": "127.0.0.1",
+    "username": "username",
+    "password": "password",
+    "auth": true,
+    "tls": false,
+    "port": 25
+  },
   "session_ttl": 525600,
   "typo3": {
     "directory": "/srv/http/typo3.localhost"

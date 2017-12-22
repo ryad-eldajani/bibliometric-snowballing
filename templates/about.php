@@ -1,5 +1,6 @@
 <?php $this->layout('layout', ['title' => 'About Bibliometric Snowballing', 'subTitle' => 'About the Bibliometric Snowballing project.']) ?>
 <div class="container">
+    <?=$this->parseMarkdown(file_get_contents('README.md'))?>
     <h1>Legal Disclosure</h1>
     <p>Imprint according to &sect; 5 Telemediengesetz (TMG)<p>
     <h2>Institution:</h2>
@@ -39,8 +40,5 @@
     on our web pages requires the prior consent of the respective owner of the rights. Individual reproductions of a work
     are allowed only for private use, so must not serve either directly or indirectly for earnings. Unauthorized utilization
     of copyrighted works is punishable (&sect; 106 of the copyright law).
-    <p>
-        <a href="/">Back to Login</a>
-    </p>
 </div>
 

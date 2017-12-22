@@ -31,6 +31,7 @@ class TemplateHelper implements ExtensionInterface
         $engine->registerFunction('date', [$this, 'dateFormat']);
         $engine->registerFunction('join', [$this, 'joinArray']);
         $engine->registerFunction('joinEntities', [$this, 'joinEntities']);
+        $engine->registerFunction('parseMarkdown', [$this, 'parseMarkdown']);
     }
 
     /**
@@ -73,6 +74,14 @@ class TemplateHelper implements ExtensionInterface
         return $array !== null ? implode($separator, $array) : '';
     }
 
+    /**
+     * Joins an array of entites with properties.
+     *
+     * @param array|null $entities entities
+     * @param array $properties properties
+     * @param string $separator separator
+     * @return string joined string
+     */
     public function joinEntities(array $entities = null, array $properties = array(), $separator = ', ')
     {
         if (!is_array($entities)) {
@@ -98,5 +107,16 @@ class TemplateHelper implements ExtensionInterface
         }
 
         return $output;
+    }
+
+    /**
+     * Parses markdown content.
+     *
+     * @param string $markdown markdown content
+     * @return string parsed markdown
+     */
+    public function parseMarkdown($markdown)
+    {
+        return (new \parsedown\Parsedown())->text($markdown);
     }
 }

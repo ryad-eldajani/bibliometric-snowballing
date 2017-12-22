@@ -4,6 +4,9 @@ graduates for their literature review using a bibliometric snowballing
 searching and analyzing method.
 
 Following open-source (friendly) components are used:
+* [Plates][plates]
+* [PHPMailer][phpmailer]
+* [Parsedown][parsedown]
 * [Bootstrap 3][bootstrap]
 * [jQuery 3][jquery]
 * [popper.js][popperjs]
@@ -13,6 +16,9 @@ Following open-source (friendly) components are used:
 * [Open Icon Library][open_icon_library]
 * [Font Awesome][font_awesome]
 
+[plates]: https://github.com/thephpleague/plates
+[phpmailer]: https://github.com/PHPMailer/PHPMailer
+[parsedown]: https://github.com/erusev/parsedown
 [bootstrap]: https://github.com/twbs/bootstrap
 [jquery]: https://github.com/jquery/jquery
 [popperjs]: https://github.com/FezVrasta/popper.js

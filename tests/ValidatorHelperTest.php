@@ -56,7 +56,8 @@ final class ValidatorHelperTest extends TestCase
                     'g' => '0',
                     'h' => '',
                     'i' => 'aaaaaaaaaaaaaaaaaa',
-                    'j' => ' <script>alert("!");</script>  '
+                    'j' => ' <script>alert("!");</script>  ',
+                    'k' => 'a@b.com'
                 )
             )
         );
@@ -133,7 +134,12 @@ final class ValidatorHelperTest extends TestCase
             $this->helper->validate(array('j' => array('type' => 'string')))
         );
         $this->assertEquals('&lt;script&gt;alert(&quot;!&quot;);&lt;/script&gt;', $this->http->getPostParam('j'));
-
+        $this->assertFalse(
+            $this->helper->validate(array('i' => array('type' => 'email')))
+        );
+        $this->assertTrue(
+            $this->helper->validate(array('k' => array('type' => 'email')))
+        );
     }
 
     /**
