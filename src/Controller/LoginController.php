@@ -13,6 +13,7 @@
 namespace BS\Controller;
 
 
+use BS\Helper\ValidatorHelper;
 use BS\Model\Http\RedirectResponse;
 use BS\Model\Http\Response;
 
@@ -34,19 +35,40 @@ class LoginController extends AbstractController
 
         // If HTTP method is POST, try to login.
         if ($this->http->getRequestInfo('request_method') == 'post') {
-            // If login succeeds, redirect to /, otherwise show login again
-            // with message.
-            if ($this->userManager->login(
+            $validationInfo = array(
+                'username' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 250
+                ),
+                'password' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 250
+                ),
+            );
+            if (!ValidatorHelper::instance()->validate($validationInfo)) {
+                $message = array(
+                    'message' => 'Please provide all required information.',
+                    'messageType' => 'warning'
+                );
+            } else {
+                // If login succeeds, redirect to /, otherwise show login again
+                // with message.
+                if ($this->userManager->login(
                     $this->http->getPostParam('username'),
                     $this->http->getPostParam('password')
                 )
-            ) {
-                return new RedirectResponse('/');
-            } else {
-                $message = array(
-                    'message' => 'Username and password did not match, please retry.',
-                    'messageType' => 'warning'
-                );
+                ) {
+                    return new RedirectResponse('/');
+                } else {
+                    $message = array(
+                        'message' => 'Username and password did not match, please retry.',
+                        'messageType' => 'warning'
+                    );
+                }
             }
         }
 
