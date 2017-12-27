@@ -28,6 +28,12 @@ $(document).ready(function () {
                 }
             },
             {
+                text: '<img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-508-cluster.png" alt="Show Graph" title="Show Graph"> Graph',
+                action: function () {
+                    $('#show_graph_modal').modal('show');
+                }
+            },
+            {
                 extend: 'copy',
                 text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
                 exportOptions: {
@@ -735,6 +741,64 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Graph modal dialog.
+    $('#show_graph_modal').on('show.bs.modal', function() {
+        // TODO: Set real graph data:
+        var data = {
+            "nodes": [
+                {
+                    "id": "n0",
+                    "label": "A node",
+                    "x": 0,
+                    "y": 0,
+                    "size": 3
+                },
+                {
+                    "id": "n1",
+                    "label": "Another node",
+                    "x": 3,
+                    "y": 1,
+                    "size": 2
+                },
+                {
+                    "id": "n2",
+                    "label": "And a last one",
+                    "x": 1,
+                    "y": 3,
+                    "size": 1
+                }
+            ],
+            "edges": [
+                {
+                    "id": "e0",
+                    "source": "n0",
+                    "target": "n1"
+                },
+                {
+                    "id": "e1",
+                    "source": "n1",
+                    "target": "n2"
+                },
+                {
+                    "id": "e2",
+                    "source": "n2",
+                    "target": "n0"
+                }
+            ]
+        };
+
+        s = new sigma({
+            graph: data,
+            container: 'sigma_container',
+            settings: {
+                defaultNodeColor: '#ec5148'
+            }
+        });
+
+        s.refresh();
+        s.startForceAtlas2();
+    });
 });
 </script>
 <div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
@@ -928,6 +992,23 @@ $(document).ready(function () {
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 <button type="submit" id="btn_works_add" class="btn btn-primary" disabled data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding Works...">Add Works</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="show_graph_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Graph</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning hidden"></div>
+                <div id="sigma_container" class="sigma-container"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

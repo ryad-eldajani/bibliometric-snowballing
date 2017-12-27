@@ -29,6 +29,7 @@ use BS\Model\Db\Database;
  * @method string|null getDoi()
  * @method int[] getAuthorIds()
  * @method int[] getJournalIds()
+ * @method int[] getWorkDois()
  */
 class Work extends Entity
 {
@@ -68,6 +69,11 @@ class Work extends Entity
     protected $journalIds = null;
 
     /**
+     * @var string[] array of referenced work DOIs
+     */
+    protected $workDois = array();
+
+    /**
      * @var array<int|Author> $authors list of ID => Author entities
      */
     protected $authors = array();
@@ -87,6 +93,7 @@ class Work extends Entity
      * @param string|null $doi document object identifier (DOI) of this work
      * @param int[] $authorIds array of author identifiers
      * @param int[] $journalIds array of journal identifiers
+     * @param int[] $workDois array of work DOIs
      */
     public function __construct(
         $id = null,
@@ -95,7 +102,8 @@ class Work extends Entity
         $workYear = null,
         $doi = null,
         array $authorIds = array(),
-        array $journalIds = array()
+        array $journalIds = array(),
+        array $workDois = array()
     ) {
         parent::__construct();
         $this->id = $id;
@@ -105,6 +113,7 @@ class Work extends Entity
         $this->doi = $doi;
         $this->authorIds = $authorIds;
         $this->journalIds = $journalIds;
+        $this->workDois = $workDois;
     }
 
     /**
@@ -119,7 +128,9 @@ class Work extends Entity
                   (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
-                  AS author_ids
+                  AS author_ids,
+                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q WHERE q.id_work = w.id_work)
+                  AS work_dois
                 FROM work w';
         $sqlParams = array();
 
@@ -149,7 +160,8 @@ class Work extends Entity
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
                 $record['doi'],
                 DataTypeHelper::instance()->getArray(explode(',', $record['author_ids']), 'int'),
-                DataTypeHelper::instance()->getArray(explode(',', $record['journal_ids']), 'int')
+                DataTypeHelper::instance()->getArray(explode(',', $record['journal_ids']), 'int'),
+                DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'string')
             );
             $work->setAuthorsJournals();
             static::addToCache($work);
@@ -200,6 +212,15 @@ class Work extends Entity
                 Database::instance()->insert($sql, $sqlParams);
             }
         }
+
+        // Create work DOIs.
+        if (count($this->workDois) > 0) {
+            foreach ($this->workDois as $workDoi) {
+                $sql = 'INSERT INTO quote (id_work, doi_work_quoted) VALUES (?, ?)';
+                $sqlParams = array($this->id, $workDoi);
+                Database::instance()->insert($sql, $sqlParams);
+            }
+        }
     }
 
     /**
@@ -236,6 +257,13 @@ class Work extends Entity
             $sqlParams = array($this->id, $journalId);
             Database::instance()->updateOrDelete($sql, $sqlParams);
         }
+
+        // Update work IDs.
+        foreach ($this->workDois as $workDoi) {
+            $sql = 'REPLACE INTO quote (id_work, doi_work_quoted) VALUES (?, ?)';
+            $sqlParams = array($this->id, $workDoi);
+            Database::instance()->updateOrDelete($sql, $sqlParams);
+        }
     }
 
     /**
@@ -248,28 +276,30 @@ class Work extends Entity
             return;
         }
 
-        $sql = 'DELETE FROM work WHERE id_work = ?';
+        // Delete author IDs.
+        $sql = 'DELETE FROM work_author WHERE id_work = ?';
         $sqlParams = array($this->id);
         Database::instance()->updateOrDelete($sql, $sqlParams);
-        $this->id = null;
-
-        // Delete author IDs.
-        foreach ($this->authorIds as $authorId) {
-            $sql = 'DELETE FROM work_author WHERE id_work = ? AND id_author = ?';
-            $sqlParams = array($this->id, $authorId);
-            Database::instance()->updateOrDelete($sql, $sqlParams);
-        }
         $this->authorIds = null;
         $this->authors = null;
 
         // Delete journal IDs.
-        foreach ($this->journalIds as $journalId) {
-            $sql = 'DELETE FROM work_journal WHERE id_work = ? AND id_journal = ?';
-            $sqlParams = array($this->id, $journalId);
-            Database::instance()->updateOrDelete($sql, $sqlParams);
-        }
+        $sql = 'DELETE FROM work_journal WHERE id_work = ?';
+        $sqlParams = array($this->id);
+        Database::instance()->updateOrDelete($sql, $sqlParams);
         $this->journalIds = array();
         $this->journals = array();
+
+        // Delete work IDs.
+        $sql = 'DELETE FROM quote WHERE id_work = ?';
+        $sqlParams = array($this->id);
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+        $this->workDois = array();
+
+        $sql = 'DELETE FROM work WHERE id_work = ?';
+        $sqlParams = array($this->id);
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+        $this->id = null;
     }
 
     /**
@@ -426,6 +456,15 @@ class Work extends Entity
             $work->journalIds[] = $journal->getId();
         }
 
+        // Create references.
+        if (isset($workData['reference'])) {
+            foreach ($workData['reference'] as $referenceData) {
+                if (isset($referenceData['DOI'])) {
+                    $work->workDois[] = $referenceData['DOI'];
+                }
+            }
+        }
+
         $work->create();
         return $work;
     }
@@ -462,7 +501,9 @@ class Work extends Entity
                   (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
-                  AS author_ids
+                  AS author_ids,
+                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q WHERE q.id_work = w.id_work)
+                  AS work_dois
                 FROM work w WHERE doi = ?';
         $sqlParams = array($doi);
 
@@ -481,7 +522,8 @@ class Work extends Entity
             DataTypeHelper::instance()->get($sqlResult[0]['work_year'], 'int'),
             $sqlResult[0]['doi'],
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['author_ids']), 'int'),
-            DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['journal_ids']), 'int')
+            DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['journal_ids']), 'int'),
+            DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['work_dois']), 'string')
         );
         static::addToCache($work);
         $work->setAuthorsJournals();

@@ -28,6 +28,8 @@
     <script type="text/javascript" src="/static/js/buttons.html5.min.js"></script>
     <script type="text/javascript" src="/static/js/buttons.print.min.js"></script>
     <script type="text/javascript" src="/static/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="/static/js/sigmajs/sigma.min.js"></script>
+    <script type="text/javascript" src="/static/js/sigmajs/plugins/sigma.layout.forceAtlas2.min.js"></script>
     <?php endif ?>
     <script type="text/javascript" src="/static/js/script.js"></script>
 </head>

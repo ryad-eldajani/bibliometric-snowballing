@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS `work` (
 
 CREATE TABLE IF NOT EXISTS `quote` (
   `id_work` INT NOT NULL,
-  `id_work_quoted` INT NOT NULL,
-  PRIMARY KEY (`id_work`, `id_work_quoted`)
+  `doi_work_quoted` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id_work`, `doi_work_quoted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `work_journal` (
