@@ -177,4 +177,52 @@ class LoginController extends AbstractController
             $this->app->renderTemplate('register', $message)
         );
     }
+
+    /**
+     * URL: /password_reset
+     * Methods: GET, POST
+     * @return Response instance
+     */
+    public function passwordResetAction()
+    {
+        $message = null;
+
+        // If HTTP method is POST, try to register.
+        if ($this->http->getRequestInfo('request_method') == 'post') {
+            $validationInfo = array(
+                'username' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 250
+                ),
+                'email' => array(
+                    'required' => true,
+                    'type' => 'email',
+                    'min' => 1,
+                    'max' => 250
+                )
+            );
+            if (!ValidatorHelper::instance()->validate($validationInfo)) {
+                $message = array(
+                    'message' => 'Please provide all required information.',
+                    'messageType' => 'warning'
+                );
+            } else {
+                $this->userManager->passwordReset(
+                    $this->http->getPostParam('username'),
+                    $this->http->getPostParam('email')
+                );
+
+                $message = array(
+                    'message' => 'A new password has been sent to your email address. Please follow the instructions in the email.',
+                    'messageType' => 'success'
+                );
+            }
+        }
+
+        return new Response(
+            $this->app->renderTemplate('password_reset', $message)
+        );
+    }
 }

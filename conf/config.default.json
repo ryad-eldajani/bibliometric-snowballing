@@ -82,6 +82,10 @@
       "controller": "Login/register",
       "methods": ["get", "post"]
     },
+    "/password_reset": {
+      "controller": "Login/passwordReset",
+      "methods": ["get", "post"]
+    },
     "/profile": {
       "controller": "User/viewProfile",
       "methods": ["get"]

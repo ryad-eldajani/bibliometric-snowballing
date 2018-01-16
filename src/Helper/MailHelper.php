@@ -81,8 +81,20 @@ class MailHelper
      */
     public function sendToAdmin($subject, $message)
     {
+        $this->sendToAddress($subject, $message, App::instance()->getConfig('mail'));
+    }
+
+    /**
+     * Sends an email to the admin configured in config.json (key: mail).
+     *
+     * @param string $subject subject
+     * @param string $message message
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    public function sendToAddress($subject, $message, $address)
+    {
         $this->mailer->clearAllRecipients();
-        $this->mailer->addAddress(App::instance()->getConfig('mail'));
+        $this->mailer->addAddress($address);
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
         $this->mailer->send();
