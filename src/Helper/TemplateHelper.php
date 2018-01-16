@@ -32,6 +32,7 @@ class TemplateHelper implements ExtensionInterface
         $engine->registerFunction('join', [$this, 'joinArray']);
         $engine->registerFunction('joinEntities', [$this, 'joinEntities']);
         $engine->registerFunction('parseMarkdown', [$this, 'parseMarkdown']);
+        $engine->registerFunction('postParam', [$this, 'getHttpPostParam']);
     }
 
     /**
@@ -118,5 +119,18 @@ class TemplateHelper implements ExtensionInterface
     public function parseMarkdown($markdown)
     {
         return (new \parsedown\Parsedown())->text($markdown);
+    }
+
+    /**
+     * Returns a HTTP POST parameter value as string.
+     *
+     * @param string $param HTTP POST parameter key
+     * @return string HTTP POST parameter value or empty string
+     */
+    public function getHttpPostParam($param)
+    {
+        return Http::instance()->hasPostParam($param)
+            ? Http::instance()->getPostParam($param)
+            : '';
     }
 }

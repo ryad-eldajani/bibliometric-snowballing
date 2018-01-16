@@ -78,6 +78,10 @@
       "controller": "Login/logout",
       "methods": ["get"]
     },
+    "/register": {
+      "controller": "Login/register",
+      "methods": ["get", "post"]
+    },
     "/profile": {
       "controller": "User/viewProfile",
       "methods": ["get"]

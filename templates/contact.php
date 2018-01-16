@@ -6,7 +6,7 @@
             <div class="col-sm-3"></div>
             <div class="input-group col-sm-6">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                <input type="text" class="form-control" id="name" name="name" maxlength="250" placeholder="Your Name">
+                <input type="text" class="form-control" id="name" name="name" maxlength="250" value="<?=$this->postParam('name')?>" placeholder="Your Name">
             </div>
             <div class="col-sm-3"></div>
         </div>
@@ -14,7 +14,7 @@
             <div class="col-sm-3"></div>
             <div class="input-group col-sm-6">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
-                <input id="email" type="email" class="form-control" name="email" maxlength="250" placeholder="Your Email">
+                <input id="email" type="email" class="form-control" name="email" value="<?=$this->postParam('email')?>" maxlength="250" placeholder="Your Email">
             </div>
             <div class="col-sm-3"></div>
         </div>
@@ -22,7 +22,7 @@
             <div class="col-sm-3"></div>
             <div class="input-group col-sm-6">
                 <label for="message">Your message:</label>
-                <textarea class="form-control" rows="5" id="message" name="message" maxlength="1000"></textarea>
+                <textarea class="form-control" rows="5" id="message" name="message" maxlength="1000"><?=$this->postParam('message')?></textarea>
             </div>
             <div class="col-sm-3"></div>
         </div>

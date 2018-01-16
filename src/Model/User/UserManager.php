@@ -86,6 +86,63 @@ class UserManager
     }
 
     /**
+     * Returns a TYPO3 SaltingInstance.
+     *
+     * @param null|string $password Password for SaltingInstance
+     * @return null|\TYPO3\CMS\Saltedpasswords\Salt\SaltInterface SaltingInstance or null
+     */
+    protected function getSaltingInstance($password = null)
+    {
+        if (\TYPO3\CMS\Saltedpasswords\Utility\SaltedPasswordsUtility::isUsageEnabled('FE')) {
+            $saltingInstance = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance($password);
+            if (is_object($saltingInstance)) {
+                return $saltingInstance;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Registers a new user.
+     *
+     * @param string $username Username for new user
+     * @param string $password Password for new user
+     * @param string $email Email address of user
+     * @param string $country Origin country of user
+     * @param string $university University of user
+     * @return bool|string True, if new user is registered, otherwise string with error message.
+     */
+    public function register($username, $password, $email, $country, $university = '')
+    {
+        if ($this->getUserInformation($username) !== null) {
+            return 'Username already given.';
+        }
+
+        $saltingInstance = $this->getSaltingInstance();
+        if ($saltingInstance === null) {
+            return 'Due to technical issues, registration is temporary unavailable. '
+                    . 'Please try again later or <a href="/contact">contact us</a>.';
+        }
+
+        $saltedPassword = $saltingInstance->getHashedPassword($password);
+        $userInformation = array(
+            'username' => $username,
+            'password' => $saltedPassword,
+            'email' => $email,
+            'country' => $country,
+            'company' => $university
+        );
+
+        if (!$this->setUserInformation(null, $userInformation)) {
+            return 'Due to technical issues, registration is temporary unavailable. '
+                . 'Please try again later or <a href="/contact">contact us</a>.';
+        }
+
+        return true;
+    }
+
+    /**
      * Logs out a user.
      */
     public function logout()
@@ -99,9 +156,11 @@ class UserManager
     }
 
     /**
-     * @param $key
-     * @param null $username
-     * @return mixed|null
+     * Returns user information by parameter.
+     *
+     * @param string $key Parameter key
+     * @param null|string $username Username or null for currently logged in user
+     * @return mixed|null Parameter value or null
      */
     public function getUserParam($key, $username = null)
     {
@@ -145,6 +204,58 @@ class UserManager
     }
 
     /**
+     * Sets user information.
+     *
+     * @param null|int $userId User ID or null for new users
+     * @param array $userInformation User information
+     * @return bool True, if user information is inserted/updated
+     */
+    protected function setUserInformation($userId = null, $userInformation = array())
+    {
+        if ($userId === null) {
+            // Set default values for TYPO3 relation 'fe_users'.
+            $sqlParams = array(
+                $userInformation['username'],
+                $userInformation['password'],
+                $userInformation['company']
+            );
+            $sqlParams[] = 2;            // pid
+            $sqlParams[] = time();       // tstamp
+            $sqlParams[] = 1;            // usergroup
+            $sqlParams[] = 0;            // disable
+            $sqlParams[] = 0;            // starttime
+            $sqlParams[] = 0;            // endtime
+            $sqlParams[] = 0;            // deleted
+            $sqlParams[] = 1;            // cruser_id
+            $sqlParams[] = time();       // crdate
+            $sqlParams[] = 0;            // lastonline
+            $sqlParams[] = 0;            // is_online
+
+            return is_numeric(Database::instance()->insert(
+                'INSERT INTO fe_users (username, password, company, pid, tstamp, usergroup, disable, '
+                . 'starttime, endtime, deleted, cruser_id, crdate, lastlogin, is_online) VALUES '
+                . '(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                $sqlParams,
+                Database::CONNECTION_TYPO3
+            ));
+        } else {
+            // Set update values for TYPO3 relation 'fe_users'.
+            $sqlParams = array(
+                $userInformation['password'],
+                $userInformation['company'],
+                $userId
+            );
+            Database::instance()->updateOrDelete(
+                'UPDATE fe_users SET password = ?, company = ? WHERE uid = ?',
+                $sqlParams,
+                Database::CONNECTION_TYPO3
+            );
+
+            return true;
+        }
+    }
+
+    /**
      * Checks the credentials for a username and password.
      *
      * @param string $username Username
@@ -158,14 +269,11 @@ class UserManager
             return false;
         }
 
-        $success = false;
-        if (\TYPO3\CMS\Saltedpasswords\Utility\SaltedPasswordsUtility::isUsageEnabled('FE')) {
-            $saltingInstance = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance($userInfo['password']);
-            if (is_object($saltingInstance)) {
-                $success = $saltingInstance->checkPassword($password, $userInfo['password']);
-            }
+        $saltingInstance = $this->getSaltingInstance($userInfo['password']);
+        if ($saltingInstance === null) {
+            return false;
         }
 
-        return $success;
+        return $saltingInstance->checkPassword($password, $userInfo['password']);
     }
 }

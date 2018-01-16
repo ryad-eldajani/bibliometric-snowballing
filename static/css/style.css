@@ -162,6 +162,9 @@ ul.nav-tabs li a[href="#tab_selection"] {
     -webkit-filter: blur(1px);
     filter: blur(1px);
 }
+.max-width {
+    width: 100%;
+}
 #snowballing_tabs {
     margin-top: 10px;
 }
