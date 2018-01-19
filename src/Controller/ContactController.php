@@ -30,7 +30,7 @@ class ContactController extends AbstractController
         $message = null;
 
         // If HTTP method is POST, try to send an email.
-        if ($this->http->getRequestInfo('request_method') == 'post') {
+        if ($this->isPostRequest()) {
 
             // Validate posted values.
             $validationInfo = array(

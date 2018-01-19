@@ -66,6 +66,26 @@ abstract class AbstractController implements IController
     }
 
     /**
+     * Returns true, if request has method POST.
+     *
+     * @return bool True, if request has method POST
+     */
+    protected function isPostRequest()
+    {
+        return $this->http->getRequestInfo('request_method') == 'post';
+    }
+
+    /**
+     * Returns true, if user is logged in.
+     *
+     * @return bool True, if user is logged in
+     */
+    protected function isUserLoggedIn()
+    {
+        return $this->userManager->isLoggedIn();
+    }
+
+    /**
      * Checks, if the user is logged in. If the user is not logged in
      * a JsonResponse with error will be sent.
      */
@@ -74,6 +94,19 @@ abstract class AbstractController implements IController
         if (!$this->userManager->isLoggedIn()) {
             (new JsonResponse(
                 array('error' => 'Not logged in.'),
+                Response::HTTP_STATUS_BAD_REQUEST)
+            )->send();
+        }
+    }
+
+    /**
+     * If HTTP method is not POST, send bad request response.
+     */
+    protected function wrongJsonResponseIfNotPost()
+    {
+        if (!$this->isPostRequest()) {
+            (new JsonResponse(
+                array('error' => 'Wrong request.'),
                 Response::HTTP_STATUS_BAD_REQUEST)
             )->send();
         }

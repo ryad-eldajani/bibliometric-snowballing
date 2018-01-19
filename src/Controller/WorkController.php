@@ -58,14 +58,7 @@ class WorkController extends AbstractController
     public function requestDoiWorkAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(
@@ -98,14 +91,7 @@ class WorkController extends AbstractController
     public function assignWorksAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(
@@ -167,14 +153,7 @@ class WorkController extends AbstractController
     public function newWorkAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(
@@ -305,14 +284,7 @@ class WorkController extends AbstractController
     public function requestDoiReferencesAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(

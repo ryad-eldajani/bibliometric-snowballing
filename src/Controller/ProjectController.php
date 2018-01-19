@@ -71,14 +71,7 @@ class ProjectController extends AbstractController
     public function newProjectAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(
@@ -116,14 +109,7 @@ class ProjectController extends AbstractController
     public function deleteProjectAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(
@@ -166,14 +152,7 @@ class ProjectController extends AbstractController
     public function renameProjectAction()
     {
         $this->errorJsonResponseIfNotLoggedIn();
-
-        // If HTTP method is not POST, send bad request response.
-        if (!$this->http->getRequestInfo('request_method') == 'post') {
-            return new JsonResponse(
-                array('error' => 'Wrong request.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
+        $this->wrongJsonResponseIfNotPost();
 
         // Validate Ajax request.
         $validationInfo = array(

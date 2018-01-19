@@ -41,14 +41,14 @@ class UserController extends AbstractController
     public function registerAction()
     {
         // If user is logged in, redirect to projects
-        if ($this->userManager->isLoggedIn()) {
+        if ($this->isUserLoggedIn()) {
             return new RedirectResponse('/projects');
         }
 
         $message = null;
 
         // If HTTP method is POST, try to register.
-        if ($this->http->getRequestInfo('request_method') == 'post') {
+        if ($this->isPostRequest()) {
             $validationInfo = array(
                 'username' => array(
                     'required' => true,
@@ -133,7 +133,7 @@ class UserController extends AbstractController
         $message = null;
 
         // If HTTP method is POST, try to register.
-        if ($this->http->getRequestInfo('request_method') == 'post') {
+        if ($this->isPostRequest()) {
             $validationInfo = array(
                 'username' => array(
                     'required' => true,
