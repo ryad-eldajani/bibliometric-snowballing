@@ -139,6 +139,9 @@ legend.legend {
     width: 15px;
     height: 15px;
 }
+fieldset.profile {
+    margin-bottom: 1em;
+}
 #table_works,
 #table_works_add,
 #table_works_add_works,

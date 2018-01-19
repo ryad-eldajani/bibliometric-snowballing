@@ -161,6 +161,43 @@ class UserManager
     }
 
     /**
+     * Updates the profile.
+     *
+     * @return bool|string True, if the user data is updated, otherwise string with error message.
+     */
+    public function updateProfile()
+    {
+        $userInformation = array(
+            'email' => Http::instance()->getPostParam('email'),
+            'country' => Http::instance()->getPostParam('country'),
+            'company' => Http::instance()->getPostParam('university')
+        );
+
+        // Change password if new password is at least 6 characters long.
+        $newPassword = Http::instance()->getPostParam('new_password');
+        $newPasswordConfirm = Http::instance()->getPostParam('new_password_confirm');
+        if (strlen($newPassword) >= 6) {
+            if ($newPassword !== $newPasswordConfirm) {
+                return 'New password do not match. Your profile has not been updated.';
+            }
+
+            $saltedPassword = $this->getSaltedPassword($newPassword);
+            if ($saltedPassword === null) {
+                return 'Due to technical issues, registration is temporary unavailable. '
+                    . 'Please try again later or <a href="/contact">contact us</a>.';
+            }
+            $userInformation['password'] = $saltedPassword;
+        }
+
+        if (!$this->setUserInformation(null, $userInformation)) {
+            return 'Due to technical issues, registration is temporary unavailable. '
+                . 'Please try again later or <a href="/contact">contact us</a>.';
+        }
+
+        return true;
+    }
+
+    /**
      * Logs out a user.
      */
     public function logout()
@@ -230,6 +267,11 @@ class UserManager
      */
     protected function setUserInformation($userId = null, $userInformation = array())
     {
+        // If $userId is null, try to load from session.
+        if ($userId === null) {
+            $userId = $this->getUserParam('uid');
+        }
+
         // Set SQL parameters based on values from $userInformation.
         $sqlParams = array_values($userInformation);
 
@@ -255,6 +297,12 @@ class UserManager
                 Database::CONNECTION_TYPO3
             ));
         } else {
+            // Update parameters in current request.
+            $username = $this->getUserParam('username');
+            foreach ($userInformation as $key => $value) {
+                $this->userInformation[$username][$key] = $value;
+            }
+
             // Add user ID to SQL parameters for WHERE clause.
             $sqlParams[] = $userId;
             Database::instance()->updateOrDelete(

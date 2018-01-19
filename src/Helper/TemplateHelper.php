@@ -15,6 +15,7 @@ namespace BS\Helper;
 
 use BS\Model\Entity\Entity;
 use BS\Model\Http\Http;
+use BS\Model\User\UserManager;
 use League\Plates\Engine;
 use League\Plates\Extension\ExtensionInterface;
 
@@ -33,6 +34,7 @@ class TemplateHelper implements ExtensionInterface
         $engine->registerFunction('joinEntities', [$this, 'joinEntities']);
         $engine->registerFunction('parseMarkdown', [$this, 'parseMarkdown']);
         $engine->registerFunction('postParam', [$this, 'getHttpPostParam']);
+        $engine->registerFunction('userParam', [$this, 'getUserParam']);
     }
 
     /**
@@ -132,5 +134,17 @@ class TemplateHelper implements ExtensionInterface
         return Http::instance()->hasPostParam($param)
             ? Http::instance()->getPostParam($param)
             : '';
+    }
+
+    /**
+     * Returns a user parameter if available.
+     *
+     * @param string $param user parameter key
+     * @return string user parameter value or empty string
+     */
+    public function getUserParam($param)
+    {
+        $value = UserManager::instance()->getUserParam($param);
+        return isset($value) ? $value : '';
     }
 }

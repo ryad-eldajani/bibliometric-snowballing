@@ -28,8 +28,82 @@ class UserController extends AbstractController
     {
         $this->redirectIfNotLoggedIn();
 
+        $message = null;
+
+        // If this is a POST request, alter user parameters.
+        if ($this->isPostRequest()) {
+            $validationInfo = array(
+                'current_password' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 6,
+                    'max' => 30
+                ),
+                'new_password' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'min' => 0,
+                    'max' => 30
+                ),
+                'new_password_confirm' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'min' => 0,
+                    'max' => 30
+                ),
+                'email' => array(
+                    'required' => false,
+                    'type' => 'email',
+                    'min' => 1,
+                    'max' => 250
+                ),
+                'country' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 40
+                ),
+                'university' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'min' => 0,
+                    'max' => 80
+                ),
+            );
+            if (!ValidatorHelper::instance()->validate($validationInfo)) {
+                $message = array(
+                    'message' => 'Please provide all required information.',
+                    'messageType' => 'warning'
+                );
+            } else if (!$this->userManager->checkCredentials(
+                    $this->userManager->getUserParam('username'),
+                    $this->http->getPostParam('current_password')
+                )
+            ) {
+                // Current password is invalid
+                $message = array(
+                    'message' => 'Your current password is invalid. Please try again, or <a href="/password_reset">reset your password</a>.',
+                    'messageType' => 'danger'
+                );
+            } else {
+                $profileUpdate = $this->userManager->updateProfile();
+                if ($profileUpdate === true) {
+                    // Profile update succeeds
+                    $message = array(
+                        'message' => 'Your profile has been updated.',
+                        'messageType' => 'success'
+                    );
+                } else {
+                    $message = array(
+                        'message' => $profileUpdate,
+                        'messageType' => 'danger'
+                    );
+                }
+            }
+        }
+
         return new Response(
-            $this->app->renderTemplate('profile')
+            $this->app->renderTemplate('profile', $message)
         );
     }
 
