@@ -15,6 +15,7 @@ namespace BS\Model\User;
 use BS\Helper\MailHelper;
 use BS\Model\App;
 use BS\Model\Db\Database;
+use BS\Model\Http\Http;
 use BS\Model\Http\Session;
 
 class UserManager
@@ -133,6 +134,7 @@ class UserManager
     public function register($username, $password, $email, $country, $university = '')
     {
         if ($this->getUserInformation($username) !== null) {
+            Http::instance()->alterPostParam('username', '');
             return 'Username already given.';
         }
 

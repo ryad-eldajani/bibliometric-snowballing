@@ -79,16 +79,16 @@
       "methods": ["get"]
     },
     "/register": {
-      "controller": "Login/register",
+      "controller": "User/register",
       "methods": ["get", "post"]
     },
     "/password_reset": {
-      "controller": "Login/passwordReset",
+      "controller": "User/passwordReset",
       "methods": ["get", "post"]
     },
     "/profile": {
-      "controller": "User/viewProfile",
-      "methods": ["get"]
+      "controller": "User/profile",
+      "methods": ["get", "post"]
     },
     "/contact": {
       "controller": "Contact/contact",
