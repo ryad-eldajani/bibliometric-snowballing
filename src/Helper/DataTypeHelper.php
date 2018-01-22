@@ -73,6 +73,8 @@ class DataTypeHelper
                 return filter_var($item, FILTER_VALIDATE_BOOLEAN);
             }
             return boolval($item);
+        } elseif ($dataType == 'string') {
+            return $item;
         }
 
         return false;

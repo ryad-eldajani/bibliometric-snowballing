@@ -65,6 +65,11 @@ class Project extends Entity
     protected $works = array();
 
     /**
+     * @var array graph for visualization (needs to be built with getGraph()
+     */
+    protected $graph = array('nodes' => array(), 'edges' => array());
+
+    /**
      * Project constructor.
      *
      * @param int|null $id project identifier
@@ -218,7 +223,10 @@ class Project extends Entity
             return $this->works;
         }
 
-        $sql = 'SELECT * FROM work w, work_project wp
+        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(w.created_at) as created_at,
+                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q
+                  WHERE q.doi_work = w.doi) AS work_dois
+                FROM work w, work_project wp
                 WHERE w.id_work = wp.id_work AND wp.id_project = ?';
         $sqlParams = array($this->id);
 
@@ -243,7 +251,9 @@ class Project extends Entity
                 $record['title'],
                 $record['subtitle'],
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
-                $record['doi']
+                $record['doi'],
+                DataTypeHelper::instance()->get($sqlResult[0]['created_at'], 'int'),
+                DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'int')
             );
             Work::addToCache($work);
             $this->works[(string)$workId] = $work;
@@ -273,5 +283,72 @@ class Project extends Entity
     public function hasWorkId($workId)
     {
         return in_array($workId, $this->workIds);
+    }
+
+    /**
+     * Builds and returns the graph for visualization.
+     *
+     * @return array graph
+     */
+    public function getGraph()
+    {
+        // Iterate over all works in project.
+        foreach ($this->getWorks() as $work) {
+            /** @var Work $work */
+            $doi = $work->getDoi();
+            if ($doi === null) {
+                continue;
+            }
+
+            $this->addNodeToGraphIfNotExistent($doi, $work->getTitle());
+
+            // Iterate over all referenced work DOIs.
+            foreach ($work->getWorkDois() as $workDoi) {
+                $this->addNodeToGraphIfNotExistent($workDoi, $workDoi);
+                $this->addEdgeToGraphIfNotExistent($doi, $workDoi);
+            }
+        }
+
+        return $this->graph;
+    }
+
+    /**
+     * Adds a node to the graph, if not existent.
+     *
+     * @param string $doi DOI of node
+     * @param string $label optional label
+     */
+    protected function addNodeToGraphIfNotExistent($doi, $label = '')
+    {
+        for ($i = 0; $i < count($this->graph['nodes']); $i++) {
+            if ($this->graph['nodes'][$i]['id'] == $doi) {
+                // Update label if necessary (e.g. when previous DOI reference was added, and now the full work
+                // information is given).
+                if ($this->graph['nodes'][$i]['label'] != $label) {
+                    $this->graph['nodes'][$i]['label'] = $label;
+                }
+
+                return;
+            }
+        }
+
+        $this->graph['nodes'][] = array('id' => $doi, 'label' => $label);
+    }
+
+    /**
+     * Adds an edge to the graph, if not existent.
+     *
+     * @param string $from from DOI
+     * @param string $to to DOI
+     */
+    protected function addEdgeToGraphIfNotExistent($from, $to)
+    {
+        for ($i = 0; $i < count($this->graph['edges']); $i++) {
+            if ($this->graph['edges'][$i]['from'] == $from && $this->graph['edges'][$i]['to'] == $to) {
+                return;
+            }
+        }
+
+        $this->graph['edges'][] = array('from' => $from, 'to' => $to);
     }
 }

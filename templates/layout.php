@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/buttons.bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/dataTables.fontAwesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/vis.min.css">
     <?php endif ?>
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
     <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
@@ -28,8 +29,7 @@
     <script type="text/javascript" src="/static/js/buttons.html5.min.js"></script>
     <script type="text/javascript" src="/static/js/buttons.print.min.js"></script>
     <script type="text/javascript" src="/static/js/buttons.colVis.min.js"></script>
-    <script type="text/javascript" src="/static/js/sigmajs/sigma.min.js"></script>
-    <script type="text/javascript" src="/static/js/sigmajs/plugins/sigma.layout.forceAtlas2.min.js"></script>
+    <script type="text/javascript" src="/static/js/vis.min.js"></script>
     <?php endif ?>
     <script type="text/javascript" src="/static/js/script.js"></script>
 </head>

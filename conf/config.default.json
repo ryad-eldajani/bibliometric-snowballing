@@ -66,6 +66,10 @@
       "controller": "Work/requestDoiReferences",
       "methods": ["post"]
     },
+    "/works/request/graph/{projectId}": {
+      "controller": "Work/requestGraph",
+      "methods": ["get"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]

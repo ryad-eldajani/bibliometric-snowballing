@@ -171,9 +171,8 @@ ul.nav-tabs li a[href="#tab_selection"] {
 #snowballing_tabs {
     margin-top: 10px;
 }
-
-#sigma_container {
-    max-width: 400px;
-    height: 400px;
+#visualization_container {
+    max-width: 600px;
+    height: 600px;
     margin: auto;
 }

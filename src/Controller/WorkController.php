@@ -333,4 +333,23 @@ class WorkController extends AbstractController
 
         return new JsonResponse($allReferencedWorks);
     }
+
+    /**
+     * URL: /works/request/graph
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return JsonResponse instance
+     */
+    public function requestGraphAction(array $params = array())
+    {
+        $project = Project::read($params['projectId']);
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        return new JsonResponse($project->getGraph());
+    }
 }

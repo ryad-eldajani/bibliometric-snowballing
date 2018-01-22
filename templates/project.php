@@ -744,60 +744,43 @@ $(document).ready(function () {
 
     // Graph modal dialog.
     $('#show_graph_modal').on('show.bs.modal', function() {
-        // TODO: Set real graph data:
-        var data = {
-            "nodes": [
-                {
-                    "id": "n0",
-                    "label": "A node",
-                    "x": 0,
-                    "y": 0,
-                    "size": 3
-                },
-                {
-                    "id": "n1",
-                    "label": "Another node",
-                    "x": 3,
-                    "y": 1,
-                    "size": 2
-                },
-                {
-                    "id": "n2",
-                    "label": "And a last one",
-                    "x": 1,
-                    "y": 3,
-                    "size": 1
+        var $this = $(this);
+        $.ajax({
+            type: 'GET',
+            url: '/works/request/graph/' + $this.data('projectId'),
+            success: function (data) {
+                if (data.length === 0) {
+                    return;
                 }
-            ],
-            "edges": [
-                {
-                    "id": "e0",
-                    "source": "n0",
-                    "target": "n1"
-                },
-                {
-                    "id": "e1",
-                    "source": "n1",
-                    "target": "n2"
-                },
-                {
-                    "id": "e2",
-                    "source": "n2",
-                    "target": "n0"
-                }
-            ]
-        };
 
-        s = new sigma({
-            graph: data,
-            container: 'sigma_container',
-            settings: {
-                defaultNodeColor: '#ec5148'
+                var options = {
+                    layout: {
+                        hierarchical: {
+                            direction: 'LR'
+                        }
+                    },
+                    nodes: {
+                        shape: 'box',
+                        margin: 10,
+                        widthConstraint: {
+                            maximum: 300
+                        }
+                    },
+                    physics: {
+                        enabled: false
+                    }
+                };
+
+                var container = document.getElementById('visualization_container');
+                var network = new vis.Network(container, data, options);
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                $this.find('.alert')
+                    .text('Sorry, an error occurred while requesting. Please try again later.')
+                    .removeClass('hidden');
             }
         });
-
-        s.refresh();
-        s.startForceAtlas2();
     });
 });
 </script>
@@ -1005,7 +988,7 @@ $(document).ready(function () {
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning hidden"></div>
-                <div id="sigma_container" class="sigma-container"></div>
+                <div id="visualization_container"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
