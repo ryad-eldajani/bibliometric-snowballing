@@ -22,6 +22,7 @@ use BS\Model\Entity\Work;
 use BS\Helper\ValidatorHelper;
 use BS\Model\Http\Response;
 use BS\Model\Http\JsonResponse;
+use BS\Model\Http\SvgResponse;
 
 class WorkController extends AbstractController
 {
@@ -339,6 +340,7 @@ class WorkController extends AbstractController
                     if ($referencedDoi != '') {
                         if (!in_array($referencedDoi, $allReferencedWorks)) {
                             $allReferencedWorks[$referencedDoi] = 1;
+                            Work::insertDoiReference($work->getDoi(), $referencedDoi);
                         } else {
                             $allReferencedWorks[$referencedDoi]++;
                         }
@@ -351,7 +353,7 @@ class WorkController extends AbstractController
     }
 
     /**
-     * URL: /works/request/graph
+     * URL: /works/request/graph/{projectId}
      * Methods: GET
      * @param array $params variable URL params
      * @return JsonResponse instance
@@ -367,5 +369,32 @@ class WorkController extends AbstractController
         }
 
         return new JsonResponse($project->getGraph());
+    }
+
+    /**
+     * URL: /works/request/graph_svg/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return SvgResponse|JsonResponse instance
+     */
+    public function requestSvgGraphAction(array $params = array())
+    {
+        $project = Project::read($params['projectId']);
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        $svgXml = $project->getGraphAsSvg();
+        if ($svgXml !== null) {
+            return new SvgResponse($svgXml, $project->getName() . '.svg');
+        }
+
+        return new JsonResponse(
+            array('error' => 'Server error while computing SVG.'),
+            Response::HTTP_STATUS_SERVER_ERROR
+        );
     }
 }

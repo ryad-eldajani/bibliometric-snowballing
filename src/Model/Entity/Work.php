@@ -129,7 +129,7 @@ class Work extends Entity
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
                   AS author_ids,
-                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q WHERE q.doi_work = w.doi)
+                  (SELECT GROUP_CONCAT(LOWER(q.doi_work_quoted)) FROM quote q WHERE q.doi_work = w.doi)
                   AS work_dois
                 FROM work w';
         $sqlParams = array();
@@ -158,7 +158,7 @@ class Work extends Entity
                 $record['title'],
                 $record['subtitle'],
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
-                $record['doi'],
+                strtolower($record['doi']),
                 DataTypeHelper::instance()->getArray(explode(',', $record['author_ids']), 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['journal_ids']), 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'string')
@@ -216,13 +216,26 @@ class Work extends Entity
         // Create work DOIs.
         if (count($this->workDois) > 0) {
             foreach ($this->workDois as $workDoi) {
-                if ((string)$this->doi != '') {
-                    $sql = 'INSERT INTO quote (doi_work, doi_work_quoted) VALUES (?, ?)';
-                    $sqlParams = array($this->doi, $workDoi);
-                    Database::instance()->insert($sql, $sqlParams);
-                }
+                Work::insertDoiReference($this->doi, $workDoi);
             }
         }
+    }
+
+    /**
+     * Inserts a DOI reference into the database.
+     *
+     * @param string $fromDoi source DOI
+     * @param string $toDoi target DOI
+     */
+    public static function insertDoiReference($fromDoi, $toDoi)
+    {
+        if ((string)$fromDoi == '' || (string)$toDoi == '') {
+            return;
+        }
+
+        $sql = 'INSERT IGNORE INTO quote (doi_work, doi_work_quoted) VALUES (?, ?)';
+        $sqlParams = array(strtolower($fromDoi), strtolower($toDoi));
+        Database::instance()->insert($sql, $sqlParams);
     }
 
     /**
@@ -262,11 +275,7 @@ class Work extends Entity
 
         // Update work IDs.
         foreach ($this->workDois as $workDoi) {
-            if ((string)$this->doi != '') {
-                $sql = 'REPLACE INTO quote (doi_work, doi_work_quoted) VALUES (?, ?)';
-                $sqlParams = array($this->id, $workDoi);
-                Database::instance()->updateOrDelete($sql, $sqlParams);
-            }
+            Work::insertDoiReference($this->doi, $workDoi);
         }
     }
 
@@ -293,14 +302,6 @@ class Work extends Entity
         Database::instance()->updateOrDelete($sql, $sqlParams);
         $this->journalIds = array();
         $this->journals = array();
-
-        // Delete work IDs.
-        if ((string)$this->doi != '') {
-            $sql = 'DELETE FROM quote WHERE doi_work = ?';
-            $sqlParams = array($this->doi);
-            Database::instance()->updateOrDelete($sql, $sqlParams);
-            $this->workDois = array();
-        }
 
         $sql = 'DELETE FROM work WHERE id_work = ?';
         $sqlParams = array($this->id);
@@ -426,29 +427,31 @@ class Work extends Entity
             $workData['title'][0],
             isset($workData['subtitle'][0]) ? $workData['subtitle'][0] : '',
             $workData['created']['date-parts'][0][0],
-            $workData['DOI']
+            strtolower($workData['DOI'])
         );
 
         // Create authors.
-        foreach ($workData['author'] as $authorData) {
-            if (!$author = Author::readByFirstLastName(
-                $authorData['given'],
-                $authorData['family']
-            )) {
-                $author = new Author(
-                    null,
+        if (isset($workData['author']) && is_array($workData['author']) && count($workData['author']) > 0 ) {
+            foreach ($workData['author'] as $authorData) {
+                if (!$author = Author::readByFirstLastName(
                     $authorData['given'],
                     $authorData['family']
-                );
-                $author->create();
-            }
+                )) {
+                    $author = new Author(
+                        null,
+                        $authorData['given'],
+                        $authorData['family']
+                    );
+                    $author->create();
+                }
 
-            $work->authors[(string)$author->getId()] = $author;
-            $work->authorIds[] = $author->getId();
+                $work->authors[(string)$author->getId()] = $author;
+                $work->authorIds[] = $author->getId();
+            }
         }
 
         // Create journal.
-        if ($workData['type'] == 'journal-article') {
+        if (isset($workData['type']) && $workData['type'] == 'journal-article') {
             if (!$journal = Journal::readByIssn($workData['ISSN'][0])) {
                 $journal = new Journal(
                     null,
@@ -463,10 +466,10 @@ class Work extends Entity
         }
 
         // Create references.
-        if (isset($workData['reference'])) {
+        if (isset($workData['reference']) && count($workData['reference']) > 0) {
             foreach ($workData['reference'] as $referenceData) {
                 if (isset($referenceData['DOI'])) {
-                    $work->workDois[] = $referenceData['DOI'];
+                    $work->workDois[] = strtolower($referenceData['DOI']);
                 }
             }
         }
@@ -499,16 +502,17 @@ class Work extends Entity
      * Read a work entity and returns it if existent, otherwise null.
      *
      * @param string $doi DOI of this entity
+     * @param bool $fromApi if true,
      * @return Work|null Work instance or null
      */
-    public static function readByDoi($doi)
+    public static function readByDoi($doi, $fromApi = true)
     {
         $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
                   (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
                   AS author_ids,
-                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q WHERE q.doi_work = w.doi)
+                  (SELECT GROUP_CONCAT(LOWER(q.doi_work_quoted)) FROM quote q WHERE q.doi_work = w.doi)
                   AS work_dois
                 FROM work w WHERE doi = ?';
         $sqlParams = array($doi);
@@ -518,6 +522,10 @@ class Work extends Entity
 
         // If we do not have exactly one result, try to fetch information from API.
         if (count($sqlResult) != 1) {
+            // If
+            if (!$fromApi) {
+                return null;
+            }
             return static::readWorkFromApiByDoi($doi);
         }
 
@@ -526,7 +534,7 @@ class Work extends Entity
             $sqlResult[0]['title'],
             $sqlResult[0]['subtitle'],
             DataTypeHelper::instance()->get($sqlResult[0]['work_year'], 'int'),
-            $sqlResult[0]['doi'],
+            strtolower($sqlResult[0]['doi']),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['author_ids']), 'int'),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['journal_ids']), 'int'),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['work_dois']), 'string')

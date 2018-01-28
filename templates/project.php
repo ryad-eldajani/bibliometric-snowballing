@@ -424,7 +424,7 @@ $(document).ready(function () {
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
 
-                if (textStatus !== 'OK') {
+                if (textStatus === 'nocontent') {
                     modal.find('.alert-warning')
                         .text('Work already assigned.')
                         .removeClass('hidden');
@@ -767,23 +767,34 @@ $(document).ready(function () {
                 var options = {
                     layout: {
                         hierarchical: {
-                            direction: 'LR'
+                            direction: 'LR',
+                            levelSeparation: 500
                         }
                     },
                     nodes: {
                         shape: 'box',
                         margin: 10,
                         widthConstraint: {
-                            maximum: 300
+                            maximum: 200
                         }
-                    },
-                    physics: {
-                        enabled: false
                     }
                 };
 
                 var container = document.getElementById('visualization_container');
                 var network = new vis.Network(container, data, options);
+                network.once('stabilized', function() {
+                    network.moveTo({ scale : 0.25 });
+                });
+
+                $this.find('.modal-dialog').animate({
+                    width: ($(document).width() - 50)
+                }, {
+                    complete: function() {
+                        $this.find('.modal-body').animate({
+                            height: $(document).height()-335
+                        });
+                    }
+                });
             },
             error: function (xhr) {
                 console.log(xhr.responseText);
@@ -1002,6 +1013,7 @@ $(document).ready(function () {
                 <div id="visualization_container"></div>
             </div>
             <div class="modal-footer">
+                <a href="/works/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to SVG</a>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>

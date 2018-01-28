@@ -23,6 +23,7 @@ class Response
     const HTTP_STATUS_SERVER_ERROR = 500;
     const CONTENT_TYPE_HTML = 'text/html';
     const CONTENT_TYPE_JSON = 'application/json';
+    const CONTENT_TYPE_SVG = 'image/svg+xml';
 
     /**
      * @var string $contentType HTTP content type
@@ -155,7 +156,7 @@ class Response
         if (is_array($this->customParameters)) {
             foreach ($this->customParameters as $parameterKey => $parameterValue) {
                 header(
-                    'BS-' . (string)$parameterKey . ': '
+                    (string)$parameterKey . ': '
                     . (string)$parameterValue
                 );
             }

@@ -172,7 +172,7 @@ ul.nav-tabs li a[href="#tab_selection"] {
     margin-top: 10px;
 }
 #visualization_container {
-    max-width: 600px;
-    height: 600px;
+    width: 100%;
+    height: 100%;
     margin: auto;
 }

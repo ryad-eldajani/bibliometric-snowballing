@@ -160,27 +160,6 @@ class Http
     }
 
     /**
-     * Sends a HTTP redirect.
-     *
-     * @param string $path URL path to redirect to
-     * @param null|array $parameters optional parameters
-     */
-    public function redirect($path, $parameters = null)
-    {
-        if (is_array($parameters)) {
-            foreach ($parameters as $parameterKey => $parameterValue) {
-                header(
-                    'BS-' . (string)$parameterKey . ': '
-                    . (string)$parameterValue
-                );
-            }
-        }
-
-        header('Location: ' . $this->requestInfo['base_path'] . $path);
-        exit();
-    }
-
-    /**
      * Getter for the request information.
      *
      * @param string|null $path optional path for the specific request information

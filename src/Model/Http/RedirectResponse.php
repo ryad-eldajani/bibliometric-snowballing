@@ -47,7 +47,7 @@ class RedirectResponse extends Response
         if (is_array($this->customParameters)) {
             foreach ($this->customParameters as $parameterKey => $parameterValue) {
                 header(
-                    'BS-' . (string)$parameterKey . ': '
+                    (string)$parameterKey . ': '
                     . (string)$parameterValue
                 );
             }

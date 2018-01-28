@@ -12,6 +12,7 @@ Following open-source (friendly) components are used:
 * [popper.js][popperjs]
 * [Glyphicons][glyphicons]
 * [DataTables][datatables]
+* [vis.js][visjs]
 * [Bootstrap 3 Validator][b3_validator]
 * [Open Icon Library][open_icon_library]
 * [Font Awesome][font_awesome]
@@ -27,3 +28,4 @@ Following open-source (friendly) components are used:
 [b3_validator]: https://github.com/1000hz/bootstrap-validator
 [open_icon_library]: https://sourceforge.net/projects/openiconlibrary/
 [font_awesome]: http://fontawesome.io/
+[visjs]: https://github.com/almende/vis

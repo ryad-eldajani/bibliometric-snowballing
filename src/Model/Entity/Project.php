@@ -229,7 +229,7 @@ class Project extends Entity
         }
 
         $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(wp.created_at) as created_at,
-                  (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q
+                  (SELECT GROUP_CONCAT(LOWER(q.doi_work_quoted)) FROM quote q
                   WHERE q.doi_work = w.doi) AS work_dois
                 FROM work w, work_project wp
                 WHERE w.id_work = wp.id_work AND wp.id_project = ?';
@@ -258,7 +258,7 @@ class Project extends Entity
                 $record['title'],
                 $record['subtitle'],
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
-                $record['doi'],
+                strtolower($record['doi']),
                 DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'int')
             );
             Work::addToCache($work);
@@ -322,7 +322,11 @@ class Project extends Entity
 
             // Iterate over all referenced work DOIs.
             foreach ($work->getWorkDois() as $workDoi) {
-                $this->addNodeToGraphIfNotExistent($workDoi, $workDoi);
+                $referencedWork = Work::readByDoi($workDoi, false);
+                $this->addNodeToGraphIfNotExistent(
+                    $workDoi,
+                    $referencedWork !== null ? $referencedWork->getTitle() : $workDoi
+                );
                 $this->addEdgeToGraphIfNotExistent($doi, $workDoi);
             }
         }
@@ -367,7 +371,52 @@ class Project extends Entity
             }
         }
 
-        $this->graph['edges'][] = array('from' => $from, 'to' => $to);
+        $this->graph['edges'][] = array('from' => $from, 'to' => $to, 'arrows' => 'to');
+    }
+
+    /**
+     * Returns the graph as SVG XML.
+     *
+     * @return null|string SVG XML or null
+     */
+    public function getGraphAsSvg()
+    {
+        $graph = $this->getGraph();
+
+        $nodeIds = array();
+        $nodeLabels = array();
+        for ($i = 0; $i < count($graph['nodes']); $i++) {
+            $nodeId = 'node' . $i;
+            $nodeIds[$nodeId] = $graph['nodes'][$i]['id'];
+            $nodeLabels[$nodeId] = $graph['nodes'][$i]['label'];
+        }
+
+        $edges = array();
+        foreach ($graph['edges'] as $edge) {
+            $edges[$edge['from']][] = $edge['to'];
+        }
+
+        $dot = 'digraph {rankdir=LR;';
+        foreach ($nodeIds as $nodeId => $nodeDoi) {
+            $dot .= $nodeId . '[label="' . $nodeLabels[$nodeId] . '" shape=rectangle];' . PHP_EOL;
+            if (isset($edges[$nodeDoi]) && count($edges[$nodeDoi]) > 0) {
+                $dot .= $nodeId . ' -> { ';
+                foreach ($edges[$nodeDoi] as $edge) {
+                    $dot .= array_search($edge, $nodeIds) . ' ';
+                }
+                $dot .= '};';
+            }
+        }
+
+        $dot .= '}';
+
+        $tempFileName = tempnam('/tmp', uniqid());
+        file_put_contents($tempFileName, $dot);
+        $svgXml = array();
+        exec('dot -Tsvg ' . $tempFileName, $svgXml);
+        unlink($tempFileName);
+
+        return is_array($svgXml) && count($svgXml) > 0 ? join('', $svgXml) : null;
     }
 
     /**

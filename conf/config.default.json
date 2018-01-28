@@ -70,6 +70,10 @@
       "controller": "Work/requestGraph",
       "methods": ["get"]
     },
+    "/works/request/graph_svg/{projectId}": {
+      "controller": "Work/requestSvgGraph",
+      "methods": ["get"]
+    },
     "/404": {
       "controller": "Index/notFound",
       "methods": ["get"]
