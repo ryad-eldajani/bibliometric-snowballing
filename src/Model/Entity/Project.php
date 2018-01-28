@@ -223,7 +223,7 @@ class Project extends Entity
             return $this->works;
         }
 
-        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(w.created_at) as created_at,
+        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(wp.created_at) as created_at,
                   (SELECT GROUP_CONCAT(q.doi_work_quoted) FROM quote q
                   WHERE q.doi_work = w.doi) AS work_dois
                 FROM work w, work_project wp

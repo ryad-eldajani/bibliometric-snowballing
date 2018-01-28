@@ -1,7 +1,7 @@
 # This SQL file updates the Bibliometric Snowballing relations when created
 # before 2017-Dec-27.
 
-ALTER TABLE `work` ADD `created_at` DATETIME DEFAULT NOW();
+ALTER TABLE `work_project` ADD `created_at` DATETIME DEFAULT NOW();
 
 DELETE FROM `quote`;
 ALTER TABLE `quote` DROP FOREIGN KEY `fk_quote_id_work_quoted`;
