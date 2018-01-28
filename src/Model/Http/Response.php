@@ -16,6 +16,7 @@ namespace BS\Model\Http;
 class Response
 {
     const HTTP_STATUS_OK = 200;
+    const HTTP_STATUS_NO_CONTENT = 204;
     const HTTP_STATUS_REDIRECT = 302;
     const HTTP_STATUS_BAD_REQUEST = 400;
     const HTTP_STATUS_NOT_FOUND = 404;

@@ -27,7 +27,6 @@ use BS\Model\Db\Database;
  * @method string|null getSubTitle()
  * @method int|null getWorkYear()
  * @method string|null getDoi()
- * @method int|null getCreatedAt()
  * @method int[] getAuthorIds()
  * @method int[] getJournalIds()
  * @method int[] getWorkDois()
@@ -58,11 +57,6 @@ class Work extends Entity
      * @var string|null $doi document object identifier (DOI) of this work
      */
     protected $doi = null;
-
-    /**
-     * @var int|null $createdAt creation timestamp
-     */
-    protected $createdAt = null;
 
     /**
      * @var int[] array of author identifiers
@@ -97,7 +91,6 @@ class Work extends Entity
      * @param string|null $subTitle work subtitle
      * @param int|null $workYear year of this work
      * @param string|null $doi document object identifier (DOI) of this work
-     * @param string|null $createdAt creation timestamp
      * @param int[] $authorIds array of author identifiers
      * @param int[] $journalIds array of journal identifiers
      * @param int[] $workDois array of work DOIs
@@ -108,7 +101,6 @@ class Work extends Entity
         $subTitle = null,
         $workYear = null,
         $doi = null,
-        $createdAt = null,
         array $authorIds = array(),
         array $journalIds = array(),
         array $workDois = array()
@@ -119,7 +111,6 @@ class Work extends Entity
         $this->subTitle = $subTitle;
         $this->workYear = $workYear;
         $this->doi = $doi;
-        $this->createdAt = $createdAt;
         $this->authorIds = $authorIds;
         $this->journalIds = $journalIds;
         $this->workDois = $workDois;
@@ -133,7 +124,7 @@ class Work extends Entity
      */
     public static function read($id = null)
     {
-        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(w.created_at) as created_at,
+        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
                   (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
@@ -168,7 +159,6 @@ class Work extends Entity
                 $record['subtitle'],
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
                 $record['doi'],
-                DataTypeHelper::instance()->get($record['created_at'], 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['author_ids']), 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['journal_ids']), 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'string')
@@ -513,7 +503,7 @@ class Work extends Entity
      */
     public static function readByDoi($doi)
     {
-        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi, UNIX_TIMESTAMP(w.created_at) as created_at,
+        $sql = 'SELECT w.id_work, w.title, w.subtitle, w.work_year, w.doi,
                   (SELECT GROUP_CONCAT(wj.id_journal) FROM work_journal wj WHERE wj.id_work = w.id_work)
                   AS journal_ids,
                   (SELECT GROUP_CONCAT(wa.id_author) FROM work_author wa WHERE wa.id_work = w.id_work)
@@ -537,7 +527,6 @@ class Work extends Entity
             $sqlResult[0]['subtitle'],
             DataTypeHelper::instance()->get($sqlResult[0]['work_year'], 'int'),
             $sqlResult[0]['doi'],
-            DataTypeHelper::instance()->get($sqlResult[0]['created_at'], 'int'),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['author_ids']), 'int'),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['journal_ids']), 'int'),
             DataTypeHelper::instance()->getArray(explode(',', $sqlResult[0]['work_dois']), 'string')

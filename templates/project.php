@@ -304,6 +304,8 @@ $(document).ready(function () {
             success: function (data) {
                 var work = JSON.parse(data);
                 if (work === null) return;
+                $('#select_work_authors').empty();
+                $('#select_work_journals').empty();
                 $('#input_work_title').val(work['title']);
                 $('#input_work_subtitle').val(work['subTitle']);
                 $('#input_work_year').val(work['workYear']);
@@ -413,9 +415,8 @@ $(document).ready(function () {
                 'authors': dataAuthors,
                 'journals': dataJournals
             },
-            success: function (data) {
+            success: function (data, textStatus) {
                 $this.button('reset');
-                var work = JSON.parse(data);
                 $('#input_work_title').val('');
                 $('#input_work_subtitle').val('');
                 $('#input_work_year').val('');
@@ -423,6 +424,14 @@ $(document).ready(function () {
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
 
+                if (textStatus !== 'OK') {
+                    modal.find('.alert-warning')
+                        .text('Work already assigned.')
+                        .removeClass('hidden');
+                    return;
+                }
+
+                var work = JSON.parse(data);
                 modal.modal('toggle');
                 modal.find('.alert-warning').addClass('hidden');
 
@@ -459,6 +468,7 @@ $(document).ready(function () {
                         + work['title'] + '</a>',
                     authors,
                     journals,
+                    timestampToDate((new Date()).getTime(), true),
                     work['doi']
                 ]).draw(false);
             },
@@ -728,6 +738,7 @@ $(document).ready(function () {
                             + work['title'] + '</a>',
                             authors,
                             journals,
+                            timestampToDate(work['created_at']),
                             work['doi']
                         ]).draw(false);
                     }
@@ -1001,14 +1012,14 @@ $(document).ready(function () {
         <thead>
         <tr>
             <th>Inc?</th>
-            <th>Work title</th>
+            <th>Work Title</th>
             <th>Authors</th>
             <th>Journal</th>
+            <th>Added</th>
             <th>DOI</th>
         </tr>
         </thead>
         <tbody>
-            <?php if (is_array($project->getWorks())): ?>
             <?php foreach ($project->getWorks() as $work): ?>
             <?php /** @var \BS\Model\Entity\Work $work */ ?>
                 <tr>
@@ -1020,10 +1031,10 @@ $(document).ready(function () {
                     <td><a href="/works/view/<?=$work->getId()?>" class="work-link"><?=$work->getTitle()?></a></td>
                     <td><?=$this->joinEntities($work->getAuthors(), array('firstName', 'lastName'))?></td>
                     <td><?=$this->joinEntities($work->getJournals(), array('journalName'))?></td>
+                    <td><?=$this->date($project->getWorkCreatedAt($work), 'd.m.Y / h:i')?></td>
                     <td><?=$work->getDoi()?></td>
                 </tr>
             <?php endforeach; ?>
-            <?php endif; ?>
         </tbody>
     </table>
     <div class="container">

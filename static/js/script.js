@@ -2,19 +2,25 @@
  * Converts a Unix timestamp to DD.MM.YYYY formatted date.
  *
  * @param {number} timestamp Unix timestamp
- * @returns {string} date in DD.MM.YYYY format
+ * @param {boolean} full also time if true
+ * @returns {string} date in DD.MM.YYYY (/ HH:MM) format
  */
-var timestampToDate = function(timestamp) {
+var timestampToDate = function(timestamp, full) {
     var date = new Date(timestamp);
 
     var year = date.getFullYear();
     var month = date.getMonth() + 1;
     var day = date.getDate();
+    var min = date.getMinutes();
+    var hour = date.getHours();
 
     month = (month < 10 ? '0' : '') + month;
     day = (day < 10 ? '0' : '') + day;
+    hour = (hour < 10 ? '0' : '') + hour;
+    min = (min < 10 ? '0' : '') + min;
 
-    return day + '.' + month + '.' + year;
+    return day + '.' + month + '.' + year
+        + (full ? ' / ' + hour + ':' + min : '');
 };
 
 /**

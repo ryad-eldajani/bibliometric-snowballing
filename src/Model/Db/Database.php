@@ -177,7 +177,7 @@ class Database
 
             return $resultArray;
         } catch (DbException $e) {
-            return null;
+            return array();
         }
     }
 

@@ -65,6 +65,11 @@ class Project extends Entity
     protected $works = array();
 
     /**
+     * @var array <int|int> list Work IDs => timestamp created
+     */
+    protected $workCreated = array();
+
+    /**
      * @var array graph for visualization (needs to be built with getGraph()
      */
     protected $graph = array('nodes' => array(), 'edges' => array());
@@ -173,9 +178,9 @@ class Project extends Entity
         $sqlParams = array($this->userId, $this->name, $this->id);
         Database::instance()->updateOrDelete($sql, $sqlParams);
 
-        // Update work IDs.
+        // Insert (only new) work IDs.
         foreach ($this->workIds as $workId) {
-            $sql = 'REPLACE INTO work_project (id_project, id_work) VALUES (?, ?)';
+            $sql = 'INSERT IGNORE INTO work_project (id_project, id_work) VALUES (?, ?)';
             $sqlParams = array($this->id, $workId);
             Database::instance()->updateOrDelete($sql, $sqlParams);
         }
@@ -209,13 +214,13 @@ class Project extends Entity
     /**
      * Returns the work entities as a ID -> IEntity list.
      *
-     * @return array|null array of entities
+     * @return array array of entities
      */
     public function getWorks()
     {
         // If no ID is set, this entity does not exist in the database.
         if (!isset($this->id)) {
-            return null;
+            return array();
         }
 
         // If works are already fetched, return.
@@ -239,10 +244,12 @@ class Project extends Entity
         $this->works = array();
         foreach ($sqlResult as $record) {
             $workId = DataTypeHelper::instance()->get($record['id_work'], 'int');
+            $workProjectCreatedAt = DataTypeHelper::instance()->get($record['created_at'], 'int');
 
             // If work entity is already in cache, use entity from cache.
             if ($work = Work::getCache($workId)) {
                 $this->works[(string)$workId] = $work;
+                $this->workCreated[(string)$workId] = $workProjectCreatedAt;
                 continue;
             }
 
@@ -252,11 +259,11 @@ class Project extends Entity
                 $record['subtitle'],
                 DataTypeHelper::instance()->get($record['work_year'], 'int'),
                 $record['doi'],
-                DataTypeHelper::instance()->get($sqlResult[0]['created_at'], 'int'),
                 DataTypeHelper::instance()->getArray(explode(',', $record['work_dois']), 'int')
             );
             Work::addToCache($work);
             $this->works[(string)$workId] = $work;
+            $this->workCreated[(string)$workId] = $workProjectCreatedAt;
         }
 
         return $this->works;
@@ -283,6 +290,17 @@ class Project extends Entity
     public function hasWorkId($workId)
     {
         return in_array($workId, $this->workIds);
+    }
+
+    /**
+     * Returns true, if a work entity is already given.
+     *
+     * @param Work $work work entity to check
+     * @return bool true, if work ID is given
+     */
+    public function hasWork(Work $work)
+    {
+        return $work->getId() !== null && $this->hasWorkId($work->getId());
     }
 
     /**
@@ -350,5 +368,22 @@ class Project extends Entity
         }
 
         $this->graph['edges'][] = array('from' => $from, 'to' => $to);
+    }
+
+    /**
+     * Returns the creation timestamp of a work-project record.
+     *
+     * @param Work $work work entity
+     * @return int|null timestamp or null, if work not found
+     */
+    public function getWorkCreatedAt(Work $work)
+    {
+        foreach ($this->workCreated as $workId => $created) {
+            if ($work->getId() == $workId) {
+                return $created;
+            }
+        }
+
+        return null;
     }
 }

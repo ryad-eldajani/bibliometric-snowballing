@@ -134,6 +134,7 @@ class WorkController extends AbstractController
                 && !in_array((string)$work->getId(), array_keys($allWorks))
             ) {
                 $allWorks[(string)$work->getId()] = $work->toArray();
+                $allWorks[(string)$work->getId()]['created_at'] = time();
                 $project->addWorkId($work->getId());
             }
         }
@@ -216,6 +217,15 @@ class WorkController extends AbstractController
             );
         }
 
+
+        $project = Project::read($this->http->getPostParam('project_id'));
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project unknown.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
         // Ajax request is validated, read or create project entity in database.
         $work = null;
         if ($this->http->hasPostParam('work_doi')) {
@@ -231,6 +241,13 @@ class WorkController extends AbstractController
                 $this->http->getPostParam('work_doi')
             );
             $work->create();
+        }
+
+        if ($project->hasWork($work)) {
+            return new JsonResponse(
+                array('error' => 'Work already assigned.'),
+                Response::HTTP_STATUS_NO_CONTENT
+            );
         }
 
         $authors = $this->http->getPostParam('authors');
@@ -269,7 +286,6 @@ class WorkController extends AbstractController
             }
         }
 
-        $project = Project::read($this->http->getPostParam('project_id'));
         $project->addWorkId($work->getId());
         $project->update();
 
