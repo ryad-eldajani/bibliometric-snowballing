@@ -321,6 +321,14 @@ class WorkController extends AbstractController
             );
         }
 
+        $project = Project::read($this->http->getPostParam('project_id'));
+        if (!$project instanceof Project) {
+            return new JsonResponse(
+                array('error' => 'Project unknown.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
         $allReferencedWorks = array();
         foreach ($this->http->getPostParam('work_ids') as $workId) {
             $work = Work::read($workId['work_id']);
@@ -337,6 +345,11 @@ class WorkController extends AbstractController
                 foreach ($workData['reference'] as $reference) {
                     $referencedDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
                     if ($referencedDoi != '') {
+                        // If the current project already has this work, continue.
+                        if ($project->hasWorkWithDoi($referencedDoi)) {
+                            continue;
+                        }
+
                         if (!in_array($referencedDoi, $allReferencedWorks)) {
                             $allReferencedWorks[$referencedDoi] = 1;
                             Work::insertDoiReference($work->getDoi(), $referencedDoi);

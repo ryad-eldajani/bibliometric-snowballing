@@ -525,12 +525,13 @@ $(document).ready(function () {
             type: 'POST',
             url: '/works/request/references',
             data: {
-                'work_ids': selectedWorkIds
+                'work_ids': selectedWorkIds,
+                'project_id': modal.data('projectId')
             },
             success: function (data) {
                 if (data.length === 0) {
                     spinner.removeClass('fa-spin');
-                    progressText.text('Sorry, no usable references found!');
+                    progressText.text('Sorry, no new or usable references found!');
                     gauge
                         .addClass('progress-bar-danger')
                         .attr('aria-valuenow', 100)
@@ -782,9 +783,6 @@ $(document).ready(function () {
                     }
                 };
 
-                var container = document.getElementById('visualization_container');
-                var network = new vis.Network(container, data, options);
-
                 $this.find('.modal-dialog').animate({
                     width: $(window).innerWidth() - 50
                 }, {
@@ -793,8 +791,7 @@ $(document).ready(function () {
                             height: $(window).innerHeight() - 170
                         }, {
                             complete: function() {
-                                network.fit();
-                                network.redraw();
+                                new vis.Network(document.getElementById('visualization_container'), data, options);
                                 loader.hide();
                             }
                         });

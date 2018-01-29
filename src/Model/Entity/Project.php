@@ -209,7 +209,7 @@ class Project extends Entity
     /**
      * Returns the work entities as a ID -> IEntity list.
      *
-     * @return array array of entities
+     * @return array<int|Work> array of ID => work entities
      */
     public function getWorks()
     {
@@ -296,6 +296,24 @@ class Project extends Entity
     public function hasWork(Work $work)
     {
         return $work->getId() !== null && $this->hasWorkId($work->getId());
+    }
+
+    /**
+     * Returns true, if work with DOI is in project.
+     *
+     * @param string $doi DOI to check
+     * @return bool true, if work with DOI is in project
+     */
+    public function hasWorkWithDoi($doi)
+    {
+        foreach ($this->getWorks() as $work) {
+            /** @var Work $work */
+            if ($work->getDoi() == strtolower($doi)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
