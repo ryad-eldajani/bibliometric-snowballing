@@ -70,11 +70,6 @@ class Project extends Entity
     protected $workCreated = array();
 
     /**
-     * @var array graph for visualization (needs to be built with getGraph()
-     */
-    protected $graph = array('nodes' => array(), 'edges' => array());
-
-    /**
      * Project constructor.
      *
      * @param int|null $id project identifier
@@ -301,122 +296,6 @@ class Project extends Entity
     public function hasWork(Work $work)
     {
         return $work->getId() !== null && $this->hasWorkId($work->getId());
-    }
-
-    /**
-     * Builds and returns the graph for visualization.
-     *
-     * @return array graph
-     */
-    public function getGraph()
-    {
-        // Iterate over all works in project.
-        foreach ($this->getWorks() as $work) {
-            /** @var Work $work */
-            $doi = $work->getDoi();
-            if ($doi === null) {
-                continue;
-            }
-
-            $this->addNodeToGraphIfNotExistent($doi, $work->getTitle());
-
-            // Iterate over all referenced work DOIs.
-            foreach ($work->getWorkDois() as $workDoi) {
-                $referencedWork = Work::readByDoi($workDoi, false);
-                $this->addNodeToGraphIfNotExistent(
-                    $workDoi,
-                    $referencedWork !== null ? $referencedWork->getTitle() : $workDoi
-                );
-                $this->addEdgeToGraphIfNotExistent($doi, $workDoi);
-            }
-        }
-
-        return $this->graph;
-    }
-
-    /**
-     * Adds a node to the graph, if not existent.
-     *
-     * @param string $doi DOI of node
-     * @param string $label optional label
-     */
-    protected function addNodeToGraphIfNotExistent($doi, $label = '')
-    {
-        for ($i = 0; $i < count($this->graph['nodes']); $i++) {
-            if ($this->graph['nodes'][$i]['id'] == $doi) {
-                // Update label if necessary (e.g. when previous DOI reference was added, and now the full work
-                // information is given).
-                if ($this->graph['nodes'][$i]['label'] != $label) {
-                    $this->graph['nodes'][$i]['label'] = $label;
-                }
-
-                return;
-            }
-        }
-
-        $this->graph['nodes'][] = array('id' => $doi, 'label' => $label);
-    }
-
-    /**
-     * Adds an edge to the graph, if not existent.
-     *
-     * @param string $from from DOI
-     * @param string $to to DOI
-     */
-    protected function addEdgeToGraphIfNotExistent($from, $to)
-    {
-        for ($i = 0; $i < count($this->graph['edges']); $i++) {
-            if ($this->graph['edges'][$i]['from'] == $from && $this->graph['edges'][$i]['to'] == $to) {
-                return;
-            }
-        }
-
-        $this->graph['edges'][] = array('from' => $from, 'to' => $to, 'arrows' => 'to');
-    }
-
-    /**
-     * Returns the graph as SVG XML.
-     *
-     * @return null|string SVG XML or null
-     */
-    public function getGraphAsSvg()
-    {
-        $graph = $this->getGraph();
-
-        $nodeIds = array();
-        $nodeLabels = array();
-        for ($i = 0; $i < count($graph['nodes']); $i++) {
-            $nodeId = 'node' . $i;
-            $nodeIds[$nodeId] = $graph['nodes'][$i]['id'];
-            $nodeLabels[$nodeId] = $graph['nodes'][$i]['label'];
-        }
-
-        $edges = array();
-        foreach ($graph['edges'] as $edge) {
-            $edges[$edge['from']][] = $edge['to'];
-        }
-
-        $dot = 'digraph {rankdir=LR;';
-        foreach ($nodeIds as $nodeId => $nodeDoi) {
-            $dot .= $nodeId . '[label="' . $nodeLabels[$nodeId] . '" shape=rectangle];' . PHP_EOL;
-            if (isset($edges[$nodeDoi]) && count($edges[$nodeDoi]) > 0) {
-                $dot .= $nodeId . ' -> { ';
-                foreach ($edges[$nodeDoi] as $edge) {
-                    $dot .= array_search($edge, $nodeIds) . ' ';
-                }
-                $dot .= '};';
-            }
-        }
-
-        $dot .= '}';
-
-        $tempFileName = tempnam('/tmp', uniqid());
-        file_put_contents($tempFileName, $dot);
-        $svgXml = array();
-        exec('dot -Tsvg ' . $tempFileName, $svgXml);
-        unlink($tempFileName);
-
-        return is_array($svgXml) && count($svgXml) > 0 ? join('', $svgXml) : null;
     }
 
     /**

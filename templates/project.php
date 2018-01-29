@@ -756,9 +756,11 @@ $(document).ready(function () {
     // Graph modal dialog.
     $('#show_graph_modal').on('show.bs.modal', function() {
         var $this = $(this);
+        var loader = $('#visualization_loader');
+        loader.show();
         $.ajax({
             type: 'GET',
-            url: '/works/request/graph/' + $this.data('projectId'),
+            url: '/projects/request/graph/' + $this.data('projectId'),
             success: function (data) {
                 if (data.length === 0) {
                     return;
@@ -782,16 +784,19 @@ $(document).ready(function () {
 
                 var container = document.getElementById('visualization_container');
                 var network = new vis.Network(container, data, options);
-                network.once('stabilized', function() {
-                    network.moveTo({ scale : 0.25 });
-                });
 
                 $this.find('.modal-dialog').animate({
-                    width: ($(document).width() - 50)
+                    width: $(window).innerWidth() - 50
                 }, {
                     complete: function() {
                         $this.find('.modal-body').animate({
-                            height: $(document).height()-335
+                            height: $(window).innerHeight() - 170
+                        }, {
+                            complete: function() {
+                                network.fit();
+                                network.redraw();
+                                loader.hide();
+                            }
                         });
                     }
                 });
@@ -1010,10 +1015,20 @@ $(document).ready(function () {
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning hidden"></div>
+                <table id="visualization_loader">
+                    <tbody>
+                    <tr>
+                        <td class="align-middle">
+                            <div class="loader"></div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
                 <div id="visualization_container"></div>
             </div>
             <div class="modal-footer">
-                <a href="/works/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to SVG</a>
+                <a href="/projects/request/graph_png/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to PNG</a>
+                <a href="/projects/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to SVG</a>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>

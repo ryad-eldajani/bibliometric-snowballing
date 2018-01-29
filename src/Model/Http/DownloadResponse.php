@@ -13,28 +13,25 @@
 namespace BS\Model\Http;
 
 
-class SvgResponse extends Response
+class DownloadResponse extends Response
 {
     /**
-     * SvgResponse constructor.
+     * DownloadResponse constructor.
      *
      * @param mixed $content content
-     * @param string $fileName SVG filename
+     * @param string $fileName filename
+     * @param string $contentType
      * @param int $httpStatus HTTP status code
      * @param array $customParameters custom parameters
      */
     public function __construct(
         $content = null,
-        $fileName = 'file.svg',
+        $fileName = 'file.txt',
+        $contentType = Response::CONTENT_TYPE_SVG,
         $httpStatus = self::HTTP_STATUS_OK,
         array $customParameters = null
     ) {
         $customParameters['Content-Disposition'] = 'attachment; filename="' . $fileName . '"';
-        parent::__construct(
-            $content,
-            $httpStatus,
-            Response::CONTENT_TYPE_SVG,
-            $customParameters
-        );
+        parent::__construct($content, $httpStatus, $contentType, $customParameters);
     }
 }

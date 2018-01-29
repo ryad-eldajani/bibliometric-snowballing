@@ -46,6 +46,18 @@
       "controller": "Project/viewProject",
       "methods": ["get"]
     },
+    "/projects/request/graph/{projectId}": {
+      "controller": "Project/requestGraph",
+      "methods": ["get"]
+    },
+    "/projects/request/graph_svg/{projectId}": {
+      "controller": "Project/requestSvgGraph",
+      "methods": ["get"]
+    },
+    "/projects/request/graph_png/{projectId}": {
+      "controller": "Project/requestPngGraph",
+      "methods": ["get"]
+    },
     "/works/view/{workId}": {
       "controller": "Work/viewWork",
       "methods": ["get"]
@@ -65,14 +77,6 @@
     "/works/request/references": {
       "controller": "Work/requestDoiReferences",
       "methods": ["post"]
-    },
-    "/works/request/graph/{projectId}": {
-      "controller": "Work/requestGraph",
-      "methods": ["get"]
-    },
-    "/works/request/graph_svg/{projectId}": {
-      "controller": "Work/requestSvgGraph",
-      "methods": ["get"]
     },
     "/404": {
       "controller": "Index/notFound",

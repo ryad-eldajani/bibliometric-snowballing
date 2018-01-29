@@ -192,4 +192,14 @@ class Author extends Entity
 
         return $author;
     }
+
+    /**
+     * Magic toString() method.
+     *
+     * @return string author converted to string
+     */
+    public function __toString()
+    {
+        return $this->getFirstName() . ' ' . $this->getLastName();
+    }
 }

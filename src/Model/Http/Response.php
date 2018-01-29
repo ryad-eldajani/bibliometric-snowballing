@@ -24,6 +24,7 @@ class Response
     const CONTENT_TYPE_HTML = 'text/html';
     const CONTENT_TYPE_JSON = 'application/json';
     const CONTENT_TYPE_SVG = 'image/svg+xml';
+    const CONTENT_TYPE_PNG = 'image/png';
 
     /**
      * @var string $contentType HTTP content type

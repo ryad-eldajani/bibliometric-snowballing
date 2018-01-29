@@ -13,10 +13,12 @@
 namespace BS\Controller;
 
 
+use BS\Helper\GraphHelper;
 use BS\Model\Entity\Project;
 use BS\Helper\ValidatorHelper;
 use BS\Model\Http\Response;
 use BS\Model\Http\JsonResponse;
+use BS\Model\Http\DownloadResponse;
 
 class ProjectController extends AbstractController
 {
@@ -187,5 +189,85 @@ class ProjectController extends AbstractController
         $project->update();
 
         return new JsonResponse($project);
+    }
+
+    /**
+     * URL: /projects/request/graph/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return JsonResponse instance
+     */
+    public function requestGraphAction(array $params = array())
+    {
+        $project = Project::read($params['projectId']);
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        return new JsonResponse(GraphHelper::instance()->getGraph($project));
+    }
+
+    /**
+     * Renders the graph as a $graphicsType graphic.
+     *
+     * @param int $projectId project ID to render
+     * @param string $graphicsType destination graphics type
+     * @return DownloadResponse|JsonResponse response instance
+     */
+    protected function getGraphAsGraphic($projectId, $graphicsType = 'svg')
+    {
+        $project = Project::read($projectId);
+        if ($project === null) {
+            return new JsonResponse(
+                array('error' => 'Project not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        if ($graphicsType == 'svg') {
+            $svgXml = GraphHelper::instance()->getGraphAsSvg($project);
+            if ($svgXml !== '') {
+                return new DownloadResponse($svgXml, $project->getName() . '.svg');
+            }
+        } else if ($graphicsType == 'png') {
+            $pngContent = GraphHelper::instance()->getGraphAsPng($project);
+            if ($pngContent !== '') {
+                return new DownloadResponse(
+                    $pngContent,
+                    $project->getName() . '.png',
+                    Response::CONTENT_TYPE_PNG
+                );
+            }
+        }
+
+        return new JsonResponse(
+            array('error' => 'Server error while computing SVG.'),
+            Response::HTTP_STATUS_SERVER_ERROR
+        );
+    }
+
+    /**
+     * URL: /projects/request/graph_svg/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return DownloadResponse|JsonResponse instance
+     */
+    public function requestSvgGraphAction(array $params = array())
+    {
+        return $this->getGraphAsGraphic($params['projectId'], 'svg');
+    }
+
+    /**
+     * URL: /projects/request/graph_png/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return DownloadResponse|JsonResponse instance
+     */
+    public function requestPngGraphAction(array $params = array())
+    {
+        return $this->getGraphAsGraphic($params['projectId'], 'png');
     }
 }
