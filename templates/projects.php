@@ -27,32 +27,38 @@ $(document).ready(function () {
                 }
             },
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
-                exportOptions: {
-                    columns: [0, 1, 2]
-                }
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
-                exportOptions: {
-                    columns: [0, 1, 2]
-                }
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
-                exportOptions: {
-                    columns: [0, 1, 2]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
-                exportOptions: {
-                    columns: [0, 1, 2]
-                }
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
+                        exportOptions: {
+                            columns: [0, 1, 2]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
+                        exportOptions: {
+                            columns: [0, 1, 2]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
+                        exportOptions: {
+                            columns: [0, 1, 2]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
+                        exportOptions: {
+                            columns: [0, 1, 2]
+                        }
+                    }
+                ]
             },
             {
                 extend: 'colvis',
