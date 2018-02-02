@@ -192,3 +192,6 @@ ul.nav-tabs li a[href="#tab_selection"] {
     margin: auto;
     height: 100%;
 }
+a.btn img {
+    height: 18px;
+}

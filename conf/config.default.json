@@ -38,6 +38,10 @@
       "controller": "Project/deleteProject",
       "methods": ["post"]
     },
+    "/projects/work/remove": {
+      "controller": "Project/removeWorkFromProject",
+      "methods": ["post"]
+    },
     "/projects/rename": {
       "controller": "Project/renameProject",
       "methods": ["post"]

@@ -16,6 +16,7 @@ namespace BS\Controller;
 use BS\Helper\GraphHelper;
 use BS\Model\Entity\Project;
 use BS\Helper\ValidatorHelper;
+use BS\Model\Entity\Work;
 use BS\Model\Http\Response;
 use BS\Model\Http\JsonResponse;
 use BS\Model\Http\DownloadResponse;
@@ -143,6 +144,59 @@ class ProjectController extends AbstractController
 
         return new JsonResponse(
             array('project_id' => $this->http->getPostParam('project_id'))
+        );
+    }
+
+    /**
+     * URL: /projects/work/remove
+     * Methods: POST
+     * @return Response instance
+     */
+    public function removeWorkFromProjectAction()
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+        $this->wrongJsonResponseIfNotPost();
+
+        // Validate Ajax request.
+        $validationInfo = array(
+            'project_id' => array(
+                'required' => true,
+                'type' => 'int'
+            ),
+            'work_id' => array(
+                'required' => true,
+                'type' => 'int'
+            )
+        );
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            return new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        $project = Project::read($this->http->getPostParam('project_id'));
+        $work = Work::read($this->http->getPostParam('work_id'));
+
+        // Check, if current user is project owner.
+        $userId = $this->userManager->getUserParam('uid');
+        if ($project === null || $work === null || $project->getUserId() != $userId) {
+            return new JsonResponse(
+                array('error' => 'Removing denied.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        // User is project owner, remove work.
+        if (!$project->removeWork($work)) {
+            return new JsonResponse(
+                array('error' => 'Removing failed.'),
+                Response::HTTP_STATUS_NOT_FOUND
+            );
+        }
+
+        return new JsonResponse(
+            array('work_id' => $this->http->getPostParam('work_id'))
         );
     }
 

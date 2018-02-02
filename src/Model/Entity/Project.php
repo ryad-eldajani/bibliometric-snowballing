@@ -143,6 +143,35 @@ class Project extends Entity
     }
 
     /**
+     * Removes a work from this project.
+     *
+     * @param Work $work work entity
+     * @return true, if work is removed, otherwise false
+     */
+    public function removeWork(Work $work)
+    {
+        if (!$this->hasWork($work)) {
+            return false;
+        }
+
+        Database::instance()->updateOrDelete(
+            'DELETE FROM work_project WHERE id_project = ? AND id_work = ?',
+            array($this->getId(), $work->getId())
+        );
+        unset($this->workIds[$work->getId()]);
+        for ($i = 0; $i < count($this->works); $i++) {
+            /** @var Work $currentWork */
+            $currentWork = $this->works[$i];
+            if ($currentWork->getId() == $work->getId()) {
+                unset($this->works[$i]);
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Creates an entity in the database. Performs INSERT statement.
      */
     public function create()

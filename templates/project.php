@@ -34,32 +34,50 @@ $(document).ready(function () {
                 }
             },
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Copy to Clipboard',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> Export to CSV',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Export to Excel',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> Export to PDF',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-svg+xml.png" alt="SVG Export" title="SVG Export"> Export to SVG',
+                        action: function () {
+                            window.location.href='/projects/request/graph_svg/<?=$project->getId()?>';
+                        }
+                    },
+                    {
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-x-generic-2.png" alt="PNG Export" title="PNG Export"> Export to PNG',
+                        action: function () {
+                            window.location.href='/projects/request/graph_png/<?=$project->getId()?>';
+                        }
+                    }
+                ]
             },
             {
                 extend: 'colvis',
@@ -104,32 +122,38 @@ $(document).ready(function () {
                 }
             },
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
-                exportOptions: {
-                    columns: [1, 2, 3, 4]
-                }
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Copy to Clipboard',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> Export to CSV',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Export to Excel',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> Export to PDF',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4]
+                        }
+                    }
+                ]
             },
             {
                 extend: 'colvis',
@@ -146,20 +170,26 @@ $(document).ready(function () {
         order: [[0, 'asc']],
         buttons: [
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard'
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV'
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel'
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF'
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Copy to Clipboard'
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> Copy to CSV'
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Export to Excel'
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> Export to PDF'
+                    }
+                ]
             },
             {
                 extend: 'colvis',
@@ -175,32 +205,38 @@ $(document).ready(function () {
         order: [[0, 'asc']],
         buttons: [
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Copy to Clipboard',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> Export to CSV',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Export to Excel',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> Export to PDF',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    }
+                ]
             },
             {
                 extend: 'colvis',
@@ -216,32 +252,38 @@ $(document).ready(function () {
         order: [[0, 'asc']],
         buttons: [
             {
-                extend: 'copy',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Clipboard',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'csv',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> CSV',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'excel',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Excel',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> PDF',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
-                }
+                extend: 'collection',
+                text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/document-export-4.png" alt="Export" title="Export"> Export',
+                buttons: [
+                    {
+                        extend: 'copy',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/actions/edit-paste-8.png" alt="Copy to Clipboard" title="Copy to Clipboard"> Copy to Clipboard',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/text-csv.png" alt="CSV Export" title="CSV Export"> Export to CSV',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-vnd.ms-excel.png" alt="Excel Export" title="Excel Export"> Export to Excel',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/application-pdf.png" alt="PDF Export" title="PDF Export"> Export to PDF',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        }
+                    }
+                ]
             },
             {
                 extend: 'colvis',
@@ -806,6 +848,45 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Remove work modal dialog.
+    $('#delete_work_modal').on('show.bs.modal', function(e) {
+        var data = $(e.relatedTarget).data();
+        $('.modal-body', this)
+            .html('<div class="alert alert-warning hidden"></div><p class="color-danger bold">Do you really want to remove the following work from your project?</p>')
+            .append(document.createTextNode(data['workTitle']));
+        $('#btn_delete_work')
+            .data('projectId', data['projectId'])
+            .data('workId', data['workId']);
+    });
+
+    // Remove work button submit click.
+    $('#btn_delete_work').click(function (e) {
+        e.preventDefault();
+        var $this = $(this);
+        var modal = $('#delete_work_modal');
+        $this.button('loading');
+        $.ajax({
+            type: 'POST',
+            url: '/projects/work/remove',
+            data: {
+                'project_id': $(this).data('projectId'),
+                'work_id': $(this).data('workId')
+            },
+            success: function (data) {
+                $this.button('reset');
+                modal.find('.alert').addClass('hidden');
+                table.row('#tr_work_id_' + JSON.parse(data['work_id'])).remove().draw();
+                modal.modal('toggle');
+            },
+            error: function (xhr) {
+                modal.find('.alert')
+                    .text(JSON.parse(xhr.responseText).error)
+                    .removeClass('hidden');
+                $this.button('reset');
+            }
+        });
+    });
 });
 </script>
 <div id="new_work_modal" class="modal fade" role="dialog" data-project-id="<?=$project->getId()?>">
@@ -1024,9 +1105,26 @@ $(document).ready(function () {
                 <div id="visualization_container"></div>
             </div>
             <div class="modal-footer">
-                <a href="/projects/request/graph_png/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to PNG</a>
-                <a href="/projects/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button">Export to SVG</a>
+                <a href="/projects/request/graph_png/<?=$project->getId()?>" class="btn btn-primary" role="button"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-x-generic-2.png" alt="PNG Export" title="PNG Export"> Export to PNG</a>
+                <a href="/projects/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-svg+xml.png" alt="SVG Export" title="SVG Export">Export to SVG</a>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="delete_work_modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title color-danger">Remove Work</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning hidden"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" id="btn_delete_work" class="btn btn-danger" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Removing work...">Remove</button>
             </div>
         </div>
     </div>
@@ -1041,12 +1139,13 @@ $(document).ready(function () {
             <th>Journal</th>
             <th>Added</th>
             <th>DOI</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
             <?php foreach ($project->getWorks() as $work): ?>
             <?php /** @var \BS\Model\Entity\Work $work */ ?>
-                <tr>
+                <tr id="tr_work_id_<?=$work->getId()?>">
                     <td>
                         <label>
                             <input name="work_include" type="checkbox" value="<?=$work->getId()?>" checked>
@@ -1057,6 +1156,11 @@ $(document).ready(function () {
                     <td><?=$this->joinEntities($work->getJournals(), array('journalName'))?></td>
                     <td><?=$this->date($project->getWorkCreatedAt($work), 'd.m.Y / h:i')?></td>
                     <td><?=$work->getDoi()?></td>
+                    <td>
+                        <a href="#" class="btn btn-danger" data-toggle="modal" data-target="#delete_work_modal" data-project-id="<?=$project->getId()?>" data-work-id="<?=$work->getId()?>" data-work-title="<?=$work->getTitle()?>">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                    </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
