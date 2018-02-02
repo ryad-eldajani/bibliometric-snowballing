@@ -333,8 +333,8 @@ $(document).ready(function () {
 
     // Auto-fill on Enter for #input_work_doi
     $('#input_work_doi').on('keypress', function(e) {
-        e.preventDefault();
         if (e.keyCode === 13) {
+            e.preventDefault();
             $('#btn_work_doi_autofill').trigger('click');
         }
     });
