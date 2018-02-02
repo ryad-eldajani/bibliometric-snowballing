@@ -331,6 +331,14 @@ $(document).ready(function () {
             .prop('disabled', false);
     }
 
+    // Auto-fill on Enter for #input_work_doi
+    $('#input_work_doi').on('keypress', function(e) {
+        e.preventDefault();
+        if (e.keyCode === 13) {
+            $('#btn_work_doi_autofill').trigger('click');
+        }
+    });
+
     // API call for DOI.
     $('#btn_work_doi_autofill').click(function() {
         var $this = $(this);
@@ -511,7 +519,11 @@ $(document).ready(function () {
                     authors,
                     journals,
                     timestampToDate((new Date()).getTime(), true),
-                    work['doi']
+                    work['doi'],
+                    '<a href="#" class="btn btn-danger" data-toggle="modal" data-target="#delete_work_modal" data-project-id="'
+                        + modal.data('projectId') + '" data-work-id="'
+                        + work['id'] + '" data-work-title="' + work['title']
+                        + '"><span class="glyphicon glyphicon-trash"></span></a>'
                 ]).draw(false);
             },
             error: function () {
@@ -781,8 +793,12 @@ $(document).ready(function () {
                             + work['title'] + '</a>',
                             authors,
                             journals,
-                            timestampToDate(work['created_at']),
-                            work['doi']
+                            timestampToDate(work['created_at'], true),
+                            work['doi'],
+                            '<a href="#" class="btn btn-danger" data-toggle="modal" data-target="#delete_work_modal" data-project-id="'
+                                + modal.data('projectId') + '" data-work-id="'
+                                + work['id'] + '" data-work-title="' + work['title']
+                                + '"><span class="glyphicon glyphicon-trash"></span></a>'
                         ]).draw(false);
                     }
                 }
