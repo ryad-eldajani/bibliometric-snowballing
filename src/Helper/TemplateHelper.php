@@ -35,6 +35,7 @@ class TemplateHelper implements ExtensionInterface
         $engine->registerFunction('parseMarkdown', [$this, 'parseMarkdown']);
         $engine->registerFunction('postParam', [$this, 'getHttpPostParam']);
         $engine->registerFunction('userParam', [$this, 'getUserParam']);
+        $engine->registerFunction('isAdmin', [$this, 'isUserAdmin']);
     }
 
     /**
@@ -146,5 +147,16 @@ class TemplateHelper implements ExtensionInterface
     {
         $value = UserManager::instance()->getUserParam($param);
         return isset($value) ? $value : '';
+    }
+
+    /**
+     * Returns true, if user is admin.
+     *
+     * @param null|string $username user name
+     * @return bool true, if user is admin
+     */
+    public function isUserAdmin($username = null)
+    {
+        return UserManager::instance()->isAdmin($username);
     }
 }
