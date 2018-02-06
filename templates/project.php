@@ -1178,7 +1178,7 @@ $(document).ready(function () {
                         </a>
                     </td>
                 </tr>
-            <?php endforeach; ?>
+            <?php endforeach ?>
         </tbody>
     </table>
     <div class="container">

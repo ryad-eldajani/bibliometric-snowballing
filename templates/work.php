@@ -7,6 +7,37 @@
 <script type="text/javascript">
 $(function () {
     $('[data-toggle="tooltip"]').tooltip();
+
+    // Add Journal.
+    $('#btn_work_add_journal').click(function() {
+        var journalName = $('#work_add_journal_name');
+        var journalIssn = $('#work_add_journal_issn');
+        $('#select_work_journals').append($('<option>', {
+            text : journalName.val(),
+            attr: {'data-issn': journalIssn.val()}
+        }).on('dblclick', function() {
+            $(this).remove();
+        }));
+        journalName.val('');
+        journalIssn.val('');
+    });
+
+    // Add Author.
+    $('#btn_work_add_author').click(function() {
+        var authorFirstName = $('#work_add_author_first_name');
+        var authorLastName = $('#work_add_author_last_name');
+        $('#select_work_authors').append($('<option>', {
+            text : authorFirstName.val() + ' ' + authorLastName.val(),
+            attr: {
+                'data-firstname': authorFirstName.val(),
+                'data-lastname': authorLastName.val()
+            }
+        }).on('dblclick', function() {
+            $(this).remove();
+        }));
+        authorFirstName.val('');
+        authorLastName.val('');
+    });
 });
 </script>
 <form action="/works/update/<?php $work->getId() ?>" method="post">
@@ -47,7 +78,12 @@ $(function () {
 
         <div class="form-group">
             <label for="select_work_authors">Authors</label>
-            <select multiple class="form-control" id="select_work_authors"></select>
+            <select multiple class="form-control" id="select_work_authors">
+                <?php foreach ($work->getAuthors() as $author): ?>
+                    <?php /** @var \BS\Model\Entity\Author $author */ ?>
+                    <option value="<?=$author->getId()?>" data-first-name="<?=$author->getFirstName()?>" data-last-name="<?=$author->getLastName()?>"><?=$author?></option>
+                <?php endforeach ?>
+            </select>
         </div>
         <div class="form-group row">
             <div class="col-sm-4">
@@ -63,7 +99,12 @@ $(function () {
 
         <div class="form-group">
             <label for="select_work_journals">Journals</label>
-            <select multiple class="form-control" id="select_work_journals"></select>
+            <select multiple class="form-control" id="select_work_journals">
+                <?php foreach ($work->getJournals() as $journal): ?>
+                    <?php /** @var \BS\Model\Entity\Journal $journal */ ?>
+                    <option value="<?=$journal->getId()?>" data-issn="<?=$journal->getIssn()?>"><?=$journal->getJournalName()?></option>
+                <?php endforeach ?>
+            </select>
         </div>
 
         <div class="form-group row">
@@ -80,7 +121,11 @@ $(function () {
 
         <div class="form-group">
             <label for="select_work_references">Referenced DOIs</label>
-            <select multiple class="form-control" id="select_work_references"></select>
+            <select multiple class="form-control" id="select_work_references">
+                <?php foreach ($work->getWorkDois() as $referenceDoi): ?>
+                    <option value="<?=$referenceDoi?>"><?=$referenceDoi?></option>
+                <?php endforeach ?>
+            </select>
         </div>
 
         <div class="form-group row">
