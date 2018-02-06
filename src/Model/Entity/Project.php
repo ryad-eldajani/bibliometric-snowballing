@@ -105,7 +105,7 @@ class Project extends Entity
                 UNIX_TIMESTAMP(p.created_at) as created_at, p.id_user,
                  (SELECT GROUP_CONCAT(wp.id_work) FROM work_project wp
                   WHERE wp.id_project = p.id_project) AS work_ids
-                FROM project p WHERE p.id_user = ?';
+                FROM project p WHERE p.id_user = ? ORDER BY p.created_at';
         $sqlParams = array(UserManager::instance()->getUserParam('uid'));
 
         if ($id !== null) {
@@ -256,7 +256,7 @@ class Project extends Entity
                   (SELECT GROUP_CONCAT(LOWER(q.doi_work_quoted)) FROM quote q
                   WHERE q.doi_work = w.doi) AS work_dois
                 FROM work w, work_project wp
-                WHERE w.id_work = wp.id_work AND wp.id_project = ?';
+                WHERE w.id_work = wp.id_work AND wp.id_project = ? ORDER BY wp.created_at';
         $sqlParams = array($this->id);
 
         $sqlResult = Database::instance()->select($sql, $sqlParams);

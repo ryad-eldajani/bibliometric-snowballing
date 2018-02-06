@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `work` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `quote` (
-  `doi_work` INT NOT NULL,
+  `doi_work` VARCHAR(255) NOT NULL,
   `doi_work_quoted` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`doi_work`, `doi_work_quoted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

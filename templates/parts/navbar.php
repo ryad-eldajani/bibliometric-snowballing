@@ -34,21 +34,10 @@
         <?php if (isset($user)): ?>
         <ul class="nav navbar-nav navbar-right navbar-user">
             <li class="dropdown<?=$this->active('/profile', true)?>">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                    Logged in as:
-                    <?php if ($this->isAdmin()): ?>
-                        <span class="glyphicon glyphicon-star"></span>
-                    <?php else: ?>
-                        <span class="glyphicon glyphicon-user"></span>
-                    <?php endif ?>
-                    <?=$this->e($user['username'])?>
-                    <span class="caret"></span>
-                </a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Logged in as: <?=$this->e($user['username'])?> <span class="caret"></span></a>
                 <ul class="dropdown-menu">
-                    <?php if (!$this->isAdmin()): ?>
-                        <li><a href="/profile">Manage profile</a></li>
-                        <li role="separator" class="divider"></li>
-                    <?php endif ?>
+                    <li><a href="/profile">Manage profile</a></li>
+                    <li role="separator" class="divider"></li>
                     <li><a href="/logout">Logout</a></li>
                 </ul>
             </li>

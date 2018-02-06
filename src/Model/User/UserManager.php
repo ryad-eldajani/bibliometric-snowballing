@@ -66,18 +66,6 @@ class UserManager
     }
 
     /**
-     * Checks, if a user has admin privileges.
-     *
-     * @param null|string $username user name
-     * @return bool true, if user is admin
-     */
-    public function isAdmin($username = null)
-    {
-        $isAdmin = $this->getUserParam('admin', $username);
-        return $isAdmin !== null && $isAdmin === true;
-    }
-
-    /**
      * Logs in a user by username.
      *
      * @param string $username Username
@@ -96,11 +84,8 @@ class UserManager
         }
 
         // Update "last login" timestamp in relations.
-        $sqlUpdateLastLogin = sprintf(
-            'UPDATE %s SET lastlogin = ? WHERE username = ?',
-            $this->isAdmin($username) === true ? 'be_users' : 'fe_users'
-        );
-        Database::instance()->updateOrDelete($sqlUpdateLastLogin,
+        Database::instance()->updateOrDelete(
+            'UPDATE fe_users SET lastlogin = ? WHERE username = ?',
             array(time(), $username),
             Database::CONNECTION_TYPO3
         );
@@ -273,20 +258,6 @@ class UserManager
 
         // If the result count is not exactly 1, we have no valid user data.
         if (count($result) != 1) {
-
-            // Check, if we have a backend user
-            $resultAdmin = Database::instance()->select(
-                'SELECT * FROM be_users WHERE username = ?',
-                array($username),
-                Database::CONNECTION_TYPO3
-            );
-
-            if (count($resultAdmin) == 1) {
-                $this->userInformation[$username] = $resultAdmin[0];
-                $this->userInformation[$username]['admin'] = true;
-                return $this->userInformation[$username];
-            }
-
             return null;
         }
 
@@ -303,11 +274,6 @@ class UserManager
      */
     protected function setUserInformation($userId = null, $userInformation = array())
     {
-        // If user is admin, return false, as user should be edited via Typo3
-        if ($this->isAdmin()) {
-            return false;
-        }
-
         // If $userId is null, try to load from session.
         if ($userId === null) {
             $userId = $this->getUserParam('uid');
