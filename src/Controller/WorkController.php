@@ -363,4 +363,129 @@ class WorkController extends AbstractController
 
         return new JsonResponse($allReferencedWorks);
     }
+
+    /**
+     * Returns a work entity for an Ajax request.
+     *
+     * @param array $additionalValidationInfo optional additional validation information
+     * @return Work|null work entity or null
+     */
+    protected function getWorkFromAjaxRequest($additionalValidationInfo = array())
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+        $this->wrongJsonResponseIfNotPost();
+
+        // Validate Ajax request.
+        $validationInfo = array_merge(
+            array(
+                'work_id' => array(
+                    'type' => 'int',
+                    'required' => true,
+                    'min' => 1
+                )
+            ),
+            $additionalValidationInfo
+        );
+
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            (new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            ))->send();
+        }
+
+        $work = Work::read($this->http->getPostParam('work_id'));
+        if ($work === null) {
+            (new JsonResponse(
+                array('error' => 'Work not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            ))->send();
+        }
+
+        return $work;
+    }
+
+    /**
+     * URL: /works/doi/new
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function newWorkDoiAction()
+    {
+        $work = $this->getWorkFromAjaxRequest(
+            array(
+                'work_doi' => array(
+                    'type' => 'string',
+                    'required' => true,
+                    'min' => 2,
+                    'max' => 250
+                )
+            )
+        );
+        $work->addDoiReference($this->http->getPostParam('work_doi'));
+
+        return new JsonResponse(true);
+    }
+
+    /**
+     * URL: /works/doi/delete
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function deleteWorkDoiAction()
+    {
+        $work = $this->getWorkFromAjaxRequest(
+            array(
+                'work_doi' => array(
+                    'type' => 'string',
+                    'required' => true,
+                    'min' => 2,
+                    'max' => 250
+                )
+            )
+        );
+        $work->removeDoiReference($this->http->getPostParam('work_doi'));
+
+        return new JsonResponse(true);
+    }
+
+    /**
+     * URL: /works/author/new
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function newWorkAuthorAction()
+    {
+        return new JsonResponse(null);
+    }
+
+    /**
+     * URL: /works/author/delete
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function deleteWorkAuthorAction()
+    {
+        return new JsonResponse(null);
+    }
+
+    /**
+     * URL: /works/journal/new
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function newWorkJournalAction()
+    {
+        return new JsonResponse(null);
+    }
+
+    /**
+     * URL: /works/journal/delete
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function deleteWorkJournalAction()
+    {
+        return new JsonResponse(null);
+    }
 }

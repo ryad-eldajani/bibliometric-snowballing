@@ -5,7 +5,7 @@
 <?php $this->layout('layout', ['title' => 'View Work', 'subTitle' => $work->getTitle()]) ?>
 <?php endif ?>
 <script type="text/javascript">
-$(function () {
+$(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
 
     // Add Journal.
@@ -14,9 +14,13 @@ $(function () {
         var journalIssn = $('#work_add_journal_issn');
         $('#select_work_journals').append($('<option>', {
             text : journalName.val(),
-            attr: {'data-issn': journalIssn.val()}
+            class: 'confirm-delete',
+            attr: {
+                'data-issn': journalIssn.val(),
+                'data-id': 'journal_' + journalIssn.val()
+            }
         }).on('dblclick', function() {
-            $(this).remove();
+            $('#modal_delete').data('id', $(this).data('id')).modal('show');
         }));
         journalName.val('');
         journalIssn.val('');
@@ -28,18 +32,69 @@ $(function () {
         var authorLastName = $('#work_add_author_last_name');
         $('#select_work_authors').append($('<option>', {
             text : authorFirstName.val() + ' ' + authorLastName.val(),
+            class: 'confirm-delete',
             attr: {
                 'data-firstname': authorFirstName.val(),
-                'data-lastname': authorLastName.val()
+                'data-lastname': authorLastName.val(),
+                'data-id': 'author_' + authorFirstName.val() + authorLastName.val()
             }
         }).on('dblclick', function() {
-            $(this).remove();
+            $('#modal_delete').data('id', $(this).data('id')).modal('show');
         }));
         authorFirstName.val('');
         authorLastName.val('');
     });
+
+    // Add DOI.
+    $('#btn_work_add_doi_reference').click(function() {
+        var doi = $('#work_add_doi_reference');
+        $('#select_work_references').append($('<option>', {
+            text : doi.val(),
+            class: 'confirm-delete',
+            attr: {
+                'data-doi': doi.val(),
+                'data-id': 'doi_' + doi.val()
+            }
+        }).on('dblclick', function() {
+            $('#modal_delete').data('id', $(this).data('id')).modal('show');
+        }));
+        doi.val('');
+    });
+
+    // Doubleclick on option.
+    $('.confirm-delete').on('dblclick', function() {
+        $('#modal_delete').data('id', $(this).data('id')).modal('show');
+    });
+
+    // Deletion confirmed.
+    $('#btn_modal_delete_yes').click(function() {
+        var modal = $('#modal_delete');
+        var id = modal.data('id');
+        $('[data-id="' + id + '"]').remove();
+        modal.modal('hide');
+    });
 });
 </script>
+<div id="modal_delete" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form role="form" data-toggle="validator">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Delete entry</h4>
+                </div>
+                <div class="modal-body">
+                    <p>You are about to delete this entry.</p>
+                    <p>Do you want to proceed?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                    <button type="submit" id="btn_modal_delete_yes" class="btn btn-danger">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <form action="/works/update/<?php $work->getId() ?>" method="post">
     <fieldset class="landscape_nomargin">
         <legend class="legend">View and update Work</legend>
@@ -81,7 +136,7 @@ $(function () {
             <select multiple class="form-control" id="select_work_authors">
                 <?php foreach ($work->getAuthors() as $author): ?>
                     <?php /** @var \BS\Model\Entity\Author $author */ ?>
-                    <option value="<?=$author->getId()?>" data-first-name="<?=$author->getFirstName()?>" data-last-name="<?=$author->getLastName()?>"><?=$author?></option>
+                    <option value="<?=$author->getId()?>" data-first-name="<?=$author->getFirstName()?>" data-last-name="<?=$author->getLastName()?>" data-id="journal_<?=$author->getId()?>" class="confirm-delete"><?=$author?></option>
                 <?php endforeach ?>
             </select>
         </div>
@@ -102,7 +157,7 @@ $(function () {
             <select multiple class="form-control" id="select_work_journals">
                 <?php foreach ($work->getJournals() as $journal): ?>
                     <?php /** @var \BS\Model\Entity\Journal $journal */ ?>
-                    <option value="<?=$journal->getId()?>" data-issn="<?=$journal->getIssn()?>"><?=$journal->getJournalName()?></option>
+                    <option value="<?=$journal->getId()?>" data-issn="<?=$journal->getIssn()?>" data-id="journal_<?=$journal->getId()?>" class="confirm-delete"><?=$journal->getJournalName()?></option>
                 <?php endforeach ?>
             </select>
         </div>
@@ -123,7 +178,7 @@ $(function () {
             <label for="select_work_references">Referenced DOIs</label>
             <select multiple class="form-control" id="select_work_references">
                 <?php foreach ($work->getWorkDois() as $referenceDoi): ?>
-                    <option value="<?=$referenceDoi?>"><?=$referenceDoi?></option>
+                    <option value="<?=$referenceDoi?>" data-doi="<?=$referenceDoi?>" data-id="doi_<?=$referenceDoi?>" class="confirm-delete"><?=$referenceDoi?></option>
                 <?php endforeach ?>
             </select>
         </div>

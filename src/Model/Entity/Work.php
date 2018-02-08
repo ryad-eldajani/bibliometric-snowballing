@@ -239,6 +239,45 @@ class Work extends Entity
     }
 
     /**
+     * Deletes a DOI reference from the database.
+     *
+     * @param string $fromDoi source DOI
+     * @param string $toDoi target DOI
+     */
+    public static function deleteDoiReference($fromDoi, $toDoi)
+    {
+        if ((string)$fromDoi == '' || (string)$toDoi == '') {
+            return;
+        }
+
+        $sql = 'DELETE FROM quote WHERE doi_work = ? AND doi_work_quoted = ?';
+        $sqlParams = array(strtolower($fromDoi), strtolower($toDoi));
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+    }
+
+    /**
+     * Adds a DOI to this work entity.
+     *
+     * @param string $toDoi target DOI
+     */
+    public function addDoiReference($toDoi)
+    {
+        Work::insertDoiReference($this->getDoi(), $toDoi);
+        $this->workDois[] = $toDoi;
+    }
+
+    /**
+     * Removes a DOI from this work entity.
+     *
+     * @param string $toDoi target DOI
+     */
+    public function removeDoiReference($toDoi)
+    {
+        Work::deleteDoiReference($this->getDoi(), $toDoi);
+        $this->workDois[] = $toDoi;
+    }
+
+    /**
      * Updates an entity in the database. Performs UPDATE statement.
      */
     public function update()
