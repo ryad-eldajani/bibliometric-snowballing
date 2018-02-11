@@ -19,7 +19,6 @@ use BS\Model\Entity\Author;
 use BS\Model\Entity\Journal;
 use BS\Model\Entity\Project;
 use BS\Model\Entity\Work;
-use BS\Helper\ValidatorHelper;
 use BS\Model\Http\Response;
 use BS\Model\Http\JsonResponse;
 
@@ -59,23 +58,16 @@ class WorkController extends AbstractController
     {
         $this->errorJsonResponseIfNotLoggedIn();
         $this->wrongJsonResponseIfNotPost();
-
-        // Validate Ajax request.
-        $validationInfo = array(
-            'work_doi' => array(
-                'type' => 'string',
-                'required' => true,
-                'min' => 2,
-                'max' => 250
-            ),
+        $this->validateAjax(
+            array(
+                'work_doi' => array(
+                    'type' => 'string',
+                    'required' => true,
+                    'min' => 2,
+                    'max' => 250
+                ),
+            )
         );
-
-        if (!ValidatorHelper::instance()->validate($validationInfo)) {
-            return new JsonResponse(
-                array('error' => 'Form validation failed.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
 
         // Ajax request is validated, create project entity in database.
         $work = Work::readByDoi($this->http->getPostParam('work_doi'));
@@ -92,29 +84,22 @@ class WorkController extends AbstractController
     {
         $this->errorJsonResponseIfNotLoggedIn();
         $this->wrongJsonResponseIfNotPost();
-
-        // Validate Ajax request.
-        $validationInfo = array(
-            'project_id' => array(
-                'required' => true,
-                'type' => 'int'
-            ),
-            'work_ids' => array(
-                'type' => 'array',
-                'structure' => array(
-                    'work_id' => array(
-                        'type' => 'int'
-                    ),
+        $this->validateAjax(
+            array(
+                'project_id' => array(
+                    'required' => true,
+                    'type' => 'int'
+                ),
+                'work_ids' => array(
+                    'type' => 'array',
+                    'structure' => array(
+                        'work_id' => array(
+                            'type' => 'int'
+                        ),
+                    )
                 )
             )
         );
-
-        if (!ValidatorHelper::instance()->validate($validationInfo)) {
-            return new JsonResponse(
-                array('error' => 'Form validation failed.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
 
         $project = Project::read($this->http->getPostParam('project_id'));
 
@@ -155,68 +140,69 @@ class WorkController extends AbstractController
     {
         $this->errorJsonResponseIfNotLoggedIn();
         $this->wrongJsonResponseIfNotPost();
-
-        // Validate Ajax request.
-        $validationInfo = array(
-            'project_id' => array(
-                'required' => true,
-                'type' => 'int'
-            ),
-            'work_title' => array(
-                'required' => true,
-                'type' => 'string',
-                'min' => 1,
-                'max' => 250
-            ),
-            'work_subtitle' => array(
-                'type' => 'string',
-                'max' => 250
-            ),
-            'work_year' => array(
-                'type' => 'int',
-                'min' => 1500,
-                'max' => 2200
-            ),
-            'work_doi' => array(
-                'type' => 'string',
-                'max' => 250
-            ),
-            'journals' => array(
-                'type' => 'array',
-                'structure' => array(
-                    'id' => array(
-                        'type' => 'int'
-                    ),
-                    'journal_name' => array(
-                        'type' => 'string'
-                    ),
-                    'issn' => array(
-                        'type' => 'string'
+        $this->validateAjax(
+            array(
+                'project_id' => array(
+                    'required' => true,
+                    'type' => 'int'
+                ),
+                'work_title' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 250
+                ),
+                'work_subtitle' => array(
+                    'type' => 'string',
+                    'max' => 250
+                ),
+                'work_year' => array(
+                    'type' => 'int',
+                    'min' => 1500,
+                    'max' => 2200
+                ),
+                'work_doi' => array(
+                    'type' => 'string',
+                    'max' => 250
+                ),
+                'journals' => array(
+                    'type' => 'array',
+                    'structure' => array(
+                        'id' => array(
+                            'type' => 'int'
+                        ),
+                        'journal_name' => array(
+                            'type' => 'string',
+                            'min' => 1,
+                            'max' => 45
+                        ),
+                        'issn' => array(
+                            'type' => 'string',
+                            'min' => 0,
+                            'max' => 250
+                        )
                     )
-                )
-            ),
-            'authors' => array(
-                'type' => 'array',
-                'structure' => array(
-                    'id' => array(
-                        'type' => 'int'
-                    ),
-                    'first_name' => array(
-                        'type' => 'string'
-                    ),
-                    'last_name' => array(
-                        'type' => 'string'
+                ),
+                'authors' => array(
+                    'type' => 'array',
+                    'structure' => array(
+                        'id' => array(
+                            'type' => 'int'
+                        ),
+                        'first_name' => array(
+                            'type' => 'string',
+                            'min' => 1,
+                            'max' => 250
+                        ),
+                        'last_name' => array(
+                            'type' => 'string',
+                            'min' => 1,
+                            'max' => 250
+                        )
                     )
                 )
             )
         );
-        if (!ValidatorHelper::instance()->validate($validationInfo)) {
-            return new JsonResponse(
-                array('error' => 'Form validation failed.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
-
 
         $project = Project::read($this->http->getPostParam('project_id'));
         if ($project === null) {
@@ -301,25 +287,18 @@ class WorkController extends AbstractController
     {
         $this->errorJsonResponseIfNotLoggedIn();
         $this->wrongJsonResponseIfNotPost();
-
-        // Validate Ajax request.
-        $validationInfo = array(
-            'work_ids' => array(
-                'type' => 'array',
-                'structure' => array(
-                    'work_id' => array(
-                        'type' => 'int'
-                    ),
+        $this->validateAjax(
+            array(
+                'work_ids' => array(
+                    'type' => 'array',
+                    'structure' => array(
+                        'work_id' => array(
+                            'type' => 'int'
+                        ),
+                    )
                 )
             )
         );
-
-        if (!ValidatorHelper::instance()->validate($validationInfo)) {
-            return new JsonResponse(
-                array('error' => 'Form validation failed.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            );
-        }
 
         $project = Project::read($this->http->getPostParam('project_id'));
         if (!$project instanceof Project) {
@@ -343,18 +322,18 @@ class WorkController extends AbstractController
 
             if (isset($workData['reference'])) {
                 foreach ($workData['reference'] as $reference) {
-                    $referencedDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
-                    if ($referencedDoi != '') {
+                    $referenceDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
+                    if ($referenceDoi != '') {
                         // If the current project already has this work, continue.
-                        if ($project->hasWorkWithDoi($referencedDoi)) {
+                        if ($project->hasWorkWithDoi($referenceDoi)) {
                             continue;
                         }
 
-                        if (!in_array($referencedDoi, $allReferencedWorks)) {
-                            $allReferencedWorks[$referencedDoi] = 1;
-                            Work::insertDoiReference($work->getDoi(), $referencedDoi);
+                        if (!in_array($referenceDoi, $allReferencedWorks)) {
+                            $allReferencedWorks[$referenceDoi] = 1;
+                            $work->insertDoiReference($referenceDoi);
                         } else {
-                            $allReferencedWorks[$referencedDoi]++;
+                            $allReferencedWorks[$referenceDoi]++;
                         }
                     }
                 }
@@ -367,32 +346,21 @@ class WorkController extends AbstractController
     /**
      * Returns a work entity for an Ajax request.
      *
-     * @param array $additionalValidationInfo optional additional validation information
      * @return Work|null work entity or null
      */
-    protected function getWorkFromAjaxRequest($additionalValidationInfo = array())
+    protected function getWorkFromAjaxRequest()
     {
         $this->errorJsonResponseIfNotLoggedIn();
         $this->wrongJsonResponseIfNotPost();
-
-        // Validate Ajax request.
-        $validationInfo = array_merge(
+        $this->validateAjax(
             array(
                 'work_id' => array(
                     'type' => 'int',
                     'required' => true,
                     'min' => 1
                 )
-            ),
-            $additionalValidationInfo
+            )
         );
-
-        if (!ValidatorHelper::instance()->validate($validationInfo)) {
-            (new JsonResponse(
-                array('error' => 'Form validation failed.'),
-                Response::HTTP_STATUS_BAD_REQUEST
-            ))->send();
-        }
 
         $work = Work::read($this->http->getPostParam('work_id'));
         if ($work === null) {
@@ -406,13 +374,198 @@ class WorkController extends AbstractController
     }
 
     /**
-     * URL: /works/doi/new
+     * Returns an author entity for an Ajax request.
+     *
+     * @param bool $createAuthor if true, author is created if not available
+     * @return Author|null author entity or null
+     */
+    protected function getAuthorFromAjaxRequest($createAuthor = true)
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+        $this->wrongJsonResponseIfNotPost();
+        $author = null;
+
+        if ($createAuthor) {
+            // Try to load author by first-/last-name, if not available, create one.
+            $this->validateAjax(
+                array(
+                    'first_name' => array(
+                        'type' => 'string',
+                        'min' => 1,
+                        'max' => 250
+                    ),
+                    'last_name' => array(
+                        'type' => 'string',
+                        'min' => 1,
+                        'max' => 250
+                    )
+                )
+            );
+
+            $author = Author::readByFirstLastName(
+                $this->http->getPostParam('first_name'),
+                $this->http->getPostParam('last_name')
+            );
+
+            if ($author === null) {
+                $author = new Author(
+                    null,
+                    $this->http->getPostParam('first_name'),
+                    $this->http->getPostParam('last_name')
+                );
+                $author->create();
+            }
+        } else {
+            // Try to load author author_id.
+            $this->validateAjax(
+                array(
+                    'author_id' => array(
+                        'type' => 'int',
+                        'min' => 1
+                    ),
+                )
+            );
+
+            $author = Author::read($this->http->getPostParam('author_id'));
+        }
+
+        // If no author is found/created, send JsonResponse error.
+        if ($author === null) {
+            (new JsonResponse(
+                array('error' => 'Author not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            ))->send();
+        }
+
+        return $author;
+    }
+
+    /**
+     * Returns a journal entity for an Ajax request.
+     *
+     * @param bool $createJournal if true, journal is created if not available
+     * @return Journal|null journal entity or null
+     */
+    protected function getJournalFromAjaxRequest($createJournal = true)
+    {
+        $this->errorJsonResponseIfNotLoggedIn();
+        $this->wrongJsonResponseIfNotPost();
+        $journal = null;
+
+        if ($createJournal) {
+            // Try to load author by first-/last-name, if not available, create one.
+            $this->validateAjax(
+                array(
+                    'journal_name' => array(
+                        'type' => 'string',
+                        'min' => 1,
+                        'max' => 45
+                    ),
+                    'issn' => array(
+                        'type' => 'string',
+                        'min' => 0,
+                        'max' => 250
+                    )
+                )
+            );
+
+            $journal = Journal::readByIssn($this->http->getPostParam('issn'));
+
+            if ($journal === null) {
+                $journal = new Journal(
+                    null,
+                    $this->http->getPostParam('journal_name'),
+                    $this->http->getPostParam('issn')
+                );
+                $journal->create();
+            }
+        } else {
+            // Try to load author author_id.
+            $this->validateAjax(
+                array(
+                    'journal_id' => array(
+                        'type' => 'int',
+                        'min' => 1
+                    ),
+                )
+            );
+
+            $journal = Journal::read($this->http->getPostParam('journal_id'));
+        }
+
+        // If no author is found/created, send JsonResponse error.
+        if ($journal === null) {
+            (new JsonResponse(
+                array('error' => 'Journal not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            ))->send();
+        }
+
+        return $journal;
+    }
+
+    /**
+     * URL: /works/update
      * Methods: POST
      * @return JsonResponse instance
      */
-    public function newWorkDoiAction()
+    public function updateWorkAction()
     {
-        $work = $this->getWorkFromAjaxRequest(
+        $this->errorJsonResponseIfNotLoggedIn();
+        $this->wrongJsonResponseIfNotPost();
+        $this->validateAjax(
+            array(
+                'work_id' => array(
+                    'type' => 'int',
+                    'min' => 1
+                ),
+                'work_title' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'min' => 1,
+                    'max' => 250
+                ),
+                'work_subtitle' => array(
+                    'type' => 'string',
+                    'max' => 250
+                ),
+                'work_year' => array(
+                    'type' => 'int',
+                    'min' => 1500,
+                    'max' => 2200
+                ),
+                'work_doi' => array(
+                    'type' => 'string',
+                    'max' => 250
+                )
+            )
+        );
+
+        $work = Work::read($this->http->getPostParam('work_id'));
+
+        if ($work === null) {
+            return new JsonResponse(
+                array('error' => 'Work not available.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+        $work->setTitle($this->http->getPostParam('work_title'));
+        $work->setSubTitle($this->http->getPostParam('work_subtitle'));
+        $work->setWorkYear($this->http->getPostParam('work_year'));
+        $work->setDoi($this->http->getPostParam('work_doi'));
+        $work->update();
+
+        return new JsonResponse(true);
+    }
+
+    /**
+     * URL: /works/doi/add
+     * Methods: POST
+     * @return JsonResponse instance
+     */
+    public function addWorkDoiAction()
+    {
+        $this->validateAjax(
             array(
                 'work_doi' => array(
                     'type' => 'string',
@@ -422,7 +575,13 @@ class WorkController extends AbstractController
                 )
             )
         );
-        $work->addDoiReference($this->http->getPostParam('work_doi'));
+        $work = $this->getWorkFromAjaxRequest();
+        if (!$work->addDoiReference($this->http->getPostParam('work_doi'))) {
+            return new JsonResponse(
+                array('error' => 'Adding DOI failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
 
         return new JsonResponse(true);
     }
@@ -434,7 +593,7 @@ class WorkController extends AbstractController
      */
     public function deleteWorkDoiAction()
     {
-        $work = $this->getWorkFromAjaxRequest(
+        $this->validateAjax(
             array(
                 'work_doi' => array(
                     'type' => 'string',
@@ -444,19 +603,29 @@ class WorkController extends AbstractController
                 )
             )
         );
+        $work = $this->getWorkFromAjaxRequest();
         $work->removeDoiReference($this->http->getPostParam('work_doi'));
 
         return new JsonResponse(true);
     }
 
     /**
-     * URL: /works/author/new
+     * URL: /works/author/add
      * Methods: POST
      * @return JsonResponse instance
      */
-    public function newWorkAuthorAction()
+    public function addWorkAuthorAction()
     {
-        return new JsonResponse(null);
+        $author = $this->getAuthorFromAjaxRequest(true);
+        $work = $this->getWorkFromAjaxRequest();
+        if (!$work->addAuthor($author)) {
+            return new JsonResponse(
+                array('error' => 'Adding author failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        return new JsonResponse($author);
     }
 
     /**
@@ -466,17 +635,30 @@ class WorkController extends AbstractController
      */
     public function deleteWorkAuthorAction()
     {
-        return new JsonResponse(null);
+        $author = $this->getAuthorFromAjaxRequest(false);
+        $work = $this->getWorkFromAjaxRequest();
+        $work->removeAuthor($author);
+
+        return new JsonResponse(true);
     }
 
     /**
-     * URL: /works/journal/new
+     * URL: /works/journal/add
      * Methods: POST
      * @return JsonResponse instance
      */
-    public function newWorkJournalAction()
+    public function addWorkJournalAction()
     {
-        return new JsonResponse(null);
+        $journal = $this->getJournalFromAjaxRequest(true);
+        $work = $this->getWorkFromAjaxRequest();
+        if (!$work->addJournal($journal)) {
+            return new JsonResponse(
+                array('error' => 'Adding journal failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
+        return new JsonResponse($journal);
     }
 
     /**
@@ -486,6 +668,10 @@ class WorkController extends AbstractController
      */
     public function deleteWorkJournalAction()
     {
-        return new JsonResponse(null);
+        $journal = $this->getJournalFromAjaxRequest(false);
+        $work = $this->getWorkFromAjaxRequest();
+        $work->removeJournal($journal);
+
+        return new JsonResponse(true);
     }
 }

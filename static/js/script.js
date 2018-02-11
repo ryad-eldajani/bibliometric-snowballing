@@ -122,3 +122,14 @@ var handleStatistics = function(objects, sum, dataTable) {
     sortObjects(objects);
     fillDataTable(objects, sum, dataTable);
 };
+
+/**
+ * Checks, if a number is numeric and integer.
+ * See: https://stackoverflow.com/a/9716488
+ *
+ * @param n number to check
+ * @returns {boolean} true, if numeric.
+ */
+function isNumeric(n) {
+    return !isNaN(parseInt(n)) && isFinite(n);
+}

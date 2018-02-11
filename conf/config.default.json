@@ -78,24 +78,28 @@
       "controller": "Work/requestDoiWork",
       "methods": ["post"]
     },
-    "/works/doi/new": {
-      "controller": "Work/newWorkDoi",
+    "/works/doi/add": {
+      "controller": "Work/addWorkDoi",
       "methods": ["post"]
     },
     "/works/doi/delete": {
       "controller": "Work/deleteWorkDoi",
       "methods": ["post"]
     },
-    "/works/author/new": {
-      "controller": "Work/newWorkAuthor",
+    "/works/author/add": {
+      "controller": "Work/addWorkAuthor",
       "methods": ["post"]
     },
     "/works/author/delete": {
       "controller": "Work/deleteWorkAuthor",
       "methods": ["post"]
     },
-    "/works/journal/new": {
-      "controller": "Work/newWorkJournal",
+    "/works/update": {
+      "controller": "Work/updateWork",
+      "methods": ["post"]
+    },
+    "/works/journal/add": {
+      "controller": "Work/addWorkJournal",
       "methods": ["post"]
     },
     "/works/journal/delete": {

@@ -13,6 +13,7 @@
 namespace BS\Controller;
 
 
+use BS\Helper\ValidatorHelper;
 use BS\Model\App;
 use BS\Model\Db\Database;
 use BS\Model\Http\Http;
@@ -109,6 +110,21 @@ abstract class AbstractController implements IController
                 array('error' => 'Wrong request.'),
                 Response::HTTP_STATUS_BAD_REQUEST)
             )->send();
+        }
+    }
+
+    /**
+     * Sends a JsonResponse with error, if validation fails.
+     *
+     * @param $validationInfo array $validationInfo validation information
+     */
+    protected function validateAjax($validationInfo)
+    {
+        if (!ValidatorHelper::instance()->validate($validationInfo)) {
+            (new JsonResponse(
+                array('error' => 'Form validation failed.'),
+                Response::HTTP_STATUS_BAD_REQUEST
+            ))->send();
         }
     }
 }

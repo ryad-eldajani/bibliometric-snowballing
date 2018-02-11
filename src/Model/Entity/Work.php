@@ -30,6 +30,10 @@ use BS\Model\Db\Database;
  * @method int[] getAuthorIds()
  * @method int[] getJournalIds()
  * @method int[] getWorkDois()
+ * @method void setDoi(string $doi)
+ * @method void setTitle(string $title)
+ * @method void setSubTitle(string $title)
+ * @method void setWorkYear(int $year)
  */
 class Work extends Entity
 {
@@ -216,7 +220,7 @@ class Work extends Entity
         // Create work DOIs.
         if (count($this->workDois) > 0) {
             foreach ($this->workDois as $workDoi) {
-                Work::insertDoiReference($this->doi, $workDoi);
+                $this->insertDoiReference($workDoi);
             }
         }
     }
@@ -224,57 +228,45 @@ class Work extends Entity
     /**
      * Inserts a DOI reference into the database.
      *
-     * @param string $fromDoi source DOI
-     * @param string $toDoi target DOI
+     * @param string $doiReference target DOI
      */
-    public static function insertDoiReference($fromDoi, $toDoi)
+    public function insertDoiReference($doiReference)
     {
-        if ((string)$fromDoi == '' || (string)$toDoi == '') {
+        if (strtolower($this->doi) == '' || strtolower($doiReference) == '') {
             return;
         }
 
         $sql = 'INSERT IGNORE INTO quote (doi_work, doi_work_quoted) VALUES (?, ?)';
-        $sqlParams = array(strtolower($fromDoi), strtolower($toDoi));
+        $sqlParams = array(strtolower($this->doi), strtolower($doiReference));
         Database::instance()->insert($sql, $sqlParams);
     }
 
     /**
-     * Deletes a DOI reference from the database.
+     * Deletes an author from the database.
      *
-     * @param string $fromDoi source DOI
-     * @param string $toDoi target DOI
+     * @param Author $author author entity
      */
-    public static function deleteDoiReference($fromDoi, $toDoi)
+    public function deleteAuthor(Author $author)
     {
-        if ((string)$fromDoi == '' || (string)$toDoi == '') {
-            return;
-        }
-
-        $sql = 'DELETE FROM quote WHERE doi_work = ? AND doi_work_quoted = ?';
-        $sqlParams = array(strtolower($fromDoi), strtolower($toDoi));
+        $sql = 'DELETE FROM work_author WHERE id_work = ? AND id_author = ?';
+        $sqlParams = array($this->id, $author->getId());
         Database::instance()->updateOrDelete($sql, $sqlParams);
+        unset($this->authorIds[$author->getId()]);
+        unset($this->authors[(string)$author->getId()]);
     }
 
     /**
-     * Adds a DOI to this work entity.
+     * Deletes a journal from the database.
      *
-     * @param string $toDoi target DOI
+     * @param Journal $journal author entity
      */
-    public function addDoiReference($toDoi)
+    public function deleteJournal(Journal $journal)
     {
-        Work::insertDoiReference($this->getDoi(), $toDoi);
-        $this->workDois[] = $toDoi;
-    }
-
-    /**
-     * Removes a DOI from this work entity.
-     *
-     * @param string $toDoi target DOI
-     */
-    public function removeDoiReference($toDoi)
-    {
-        Work::deleteDoiReference($this->getDoi(), $toDoi);
-        $this->workDois[] = $toDoi;
+        $sql = 'DELETE FROM work_journal WHERE id_work = ? AND id_journal = ?';
+        $sqlParams = array($this->id, $journal->getId());
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+        unset($this->journalIds[$journal->getId()]);
+        unset($this->journals[(string)$journal->getId()]);
     }
 
     /**
@@ -314,7 +306,7 @@ class Work extends Entity
 
         // Update work IDs.
         foreach ($this->workDois as $workDoi) {
-            Work::insertDoiReference($this->doi, $workDoi);
+            $this->insertDoiReference($workDoi);
         }
     }
 
@@ -616,5 +608,121 @@ class Work extends Entity
             $this->journalIds[] = $journalId;
             $this->journals[(string)$journal->getId()] = $journal;
         }
+    }
+
+    /**
+     * Adds a DOI to this work entity.
+     *
+     * @param string $doiReference DOI reference to add
+     * @return bool true if successful
+     */
+    public function addDoiReference($doiReference)
+    {
+        // If the DOI reference is already given, abort.
+        if (in_array($doiReference, $this->workDois)) {
+            return false;
+        }
+
+        $this->insertDoiReference($doiReference);
+        $this->workDois[] = $doiReference;
+
+        return true;
+    }
+
+    /**
+     * Removes a DOI from this work entity.
+     *
+     * @param string $doiReference DOI reference to remove
+     */
+    public function removeDoiReference($doiReference)
+    {
+        // If the DOI reference is not given, abort.
+        if (
+            (string)$this->getDoi() == ''
+            || (string)$doiReference == ''
+            || !in_array($doiReference, $this->workDois)
+        ) {
+            return;
+        }
+
+        $sql = 'DELETE FROM quote WHERE doi_work = ? AND doi_work_quoted = ?';
+        $sqlParams = array(strtolower($this->getDoi()), strtolower($doiReference));
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+
+        unset($this->workDois[$doiReference]);
+    }
+
+    /**
+     * Adds an author to this work entity.
+     *
+     * @param Author $author author entity to add
+     * @return bool true if successful
+     */
+    public function addAuthor(Author $author)
+    {
+        // If the author is already given, abort.
+        if (in_array($author->getId(), $this->authorIds)) {
+            return false;
+        }
+
+        $sql = 'INSERT INTO work_author (id_work, id_author) VALUES (?, ?)';
+        $sqlParams = array($this->id, $author->getId());
+        Database::instance()->insert($sql, $sqlParams);
+        $this->authorIds[] = $author->getId();
+        $this->authors[(string)$author->getId()] = $author;
+
+        return true;
+    }
+
+    /**
+     * Removes an author from this work entity.
+     *
+     * @param Author $author author entity
+     */
+    public function removeAuthor(Author $author)
+    {
+        $sql = 'DELETE FROM work_author WHERE id_work = ? AND id_author = ?';
+        $sqlParams = array($this->getId(), $author->getId());
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+
+        unset($this->authorIds[(string)$author->getId()]);
+        unset($this->authors[(string)$author->getId()]);
+    }
+
+    /**
+     * Adds a journal to this work entity.
+     *
+     * @param Journal $journal journal entity to add
+     * @return bool true if successful
+     */
+    public function addJournal(Journal $journal)
+    {
+        // If the author is already given, abort.
+        if (in_array($journal->getId(), $this->journalIds)) {
+            return false;
+        }
+
+        $sql = 'INSERT INTO work_journal (id_work, id_journal) VALUES (?, ?)';
+        $sqlParams = array($this->id, $journal->getId());
+        Database::instance()->insert($sql, $sqlParams);
+        $this->journalIds[] = $journal->getId();
+        $this->journals[(string)$journal->getId()] = $journal;
+
+        return true;
+    }
+
+    /**
+     * Removes a journal from this work entity.
+     *
+     * @param Journal $journal journal entity
+     */
+    public function removeJournal(Journal $journal)
+    {
+        $sql = 'DELETE FROM work_journal WHERE id_work = ? AND id_journal = ?';
+        $sqlParams = array($this->getId(), $journal->getId());
+        Database::instance()->updateOrDelete($sql, $sqlParams);
+
+        unset($this->journalIds[(string)$journal->getId()]);
+        unset($this->journals[(string)$journal->getId()]);
     }
 }
