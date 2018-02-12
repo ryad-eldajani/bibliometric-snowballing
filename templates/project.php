@@ -390,9 +390,11 @@ $(document).ready(function () {
         });
     });
 
-    // Reset button click.
-    $('#btn_work_reset').click(function () {
+    // "Reset/Cancel" button click in "Create new work" modal.
+    $('#btn_work_reset, #btn_work_cancel').click(function () {
         $('#new_work_modal').find('input').val('');
+        $('#select_work_authors').empty();
+        $('#select_work_journals').empty();
     });
 
     // Add Journal.
@@ -968,7 +970,7 @@ $(document).ready(function () {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_work_cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button type="button" id="btn_work_reset" class="btn btn-default">Reset</button>
                     <button type="submit" id="btn_work_create" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Adding Work...">Add Work</button>
                 </div>
