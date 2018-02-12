@@ -367,6 +367,8 @@ $(document).ready(function () {
                             'data-firstname': author['firstName'],
                             'data-lastname': author['lastName']
                         }
+                    }).on('dblclick', function() {
+                        $(this).remove();
                     }));
                 });
                 $.each(work.journals, function (i, journal) {
@@ -374,6 +376,8 @@ $(document).ready(function () {
                         value: journal['id'],
                         text : journal['journalName'],
                         attr: {'data-issn': journal.issn}
+                    }).on('dblclick', function() {
+                        $(this).remove();
                     }));
                 });
                 $('form').validator('validate');
