@@ -5,6 +5,8 @@
 <?php $this->layout('layout', ['title' => $project->getName()]) ?>
 <script type="text/javascript">
 $(document).ready(function () {
+    var checkAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-153-check.png" alt="Check all" title="Check all"> Check all</span>';
+    var uncheckAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-154-unchecked.png" alt="Uncheck all" title="Uncheck all"> Uncheck all</span>';
     var table = $('#table_works').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
@@ -25,6 +27,28 @@ $(document).ready(function () {
                     modal.on('shown.bs.modal', function () {
                         $(this).find('#input_work_doi').focus();
                     });
+                }
+            },
+            {
+                text: checkAll,
+                className: 'btn btn-outline',
+                action: function (e, dt, node) {
+                    // Checks or un-checks the checkboxes in first column.
+                    var checkUncheck = function(toggle) {
+                        dt.column(0).nodes().each(function(e) {
+                            $(e).find('input').prop('checked', toggle);
+                        });
+                    };
+
+                    // If "Check" is found in text of this button node, uncheck
+                    // all checkboxes, otherwise check all checkboxes.
+                    if (node.text().indexOf('Check') !== -1) {
+                        checkUncheck(false);
+                        node.html(uncheckAll);
+                    } else {
+                        checkUncheck(true);
+                        node.html(checkAll);
+                    }
                 }
             },
             {
@@ -86,8 +110,6 @@ $(document).ready(function () {
             }
         ]
     });
-    var checkAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-153-check.png" alt="Check all" title="Check all"> Check all</span>';
-    var uncheckAll = '<span><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-154-unchecked.png" alt="Uncheck all" title="Uncheck all"> Uncheck all</span>';
     var tableAdd = $('#table_works_add').DataTable({
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
@@ -103,7 +125,7 @@ $(document).ready(function () {
                 text: checkAll,
                 className: 'btn btn-outline',
                 action: function (e, dt, node) {
-                    // Checks or unchecks the checkboxes in first column.
+                    // Checks or un-checks the checkboxes in first column.
                     var checkUncheck = function(toggle) {
                         dt.column(0).nodes().each(function(e) {
                             $(e).find('input').prop('checked', toggle);

@@ -40,8 +40,7 @@ class WorkController extends AbstractController
                 'work',
                 array(
                     'dataTable' => true,
-                    'work' => $work,
-                    'projects' => Project::read()
+                    'work' => $work
                 )
             )
         );

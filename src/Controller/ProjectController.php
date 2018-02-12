@@ -36,8 +36,7 @@ class ProjectController extends AbstractController
             $this->app->renderTemplate(
                 'projects',
                 array(
-                    'dataTable' => true,
-                    'projects' => Project::read()
+                    'dataTable' => true
                 )
             )
         );
@@ -59,8 +58,7 @@ class ProjectController extends AbstractController
                 'project',
                 array(
                     'dataTable' => true,
-                    'project' => $project,
-                    'projects' => Project::read()
+                    'project' => $project
                 )
             )
         );
