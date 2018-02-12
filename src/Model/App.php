@@ -14,6 +14,7 @@ namespace BS\Model;
 
 use BS\Helper\ArrayHelper;
 use BS\Helper\TemplateHelper;
+use BS\Model\Entity\Project;
 use BS\Model\Http\Http;
 use BS\Model\Typo3\Typo3System;
 use BS\Model\User\UserManager;
@@ -145,6 +146,7 @@ class App
         if (UserManager::instance()->isLoggedIn()) {
             $templateParameters['user'] = UserManager::instance()
                 ->getUserInformation();
+            $templateParameters['projects'] = Project::read();
         }
 
         $templateParameters['request'] = Http::instance()->getRequestInfo();
