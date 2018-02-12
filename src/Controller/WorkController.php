@@ -236,6 +236,7 @@ class WorkController extends AbstractController
             );
         }
 
+        $workUpdate = false;
         $authors = $this->http->getPostParam('authors');
         if (is_array($authors)) {
             foreach ($authors as $author) {
@@ -252,6 +253,7 @@ class WorkController extends AbstractController
                     $work->addAuthorId($newAuthor->getId());
                 }
             }
+            $workUpdate = true;
         }
 
         $journals = $this->http->getPostParam('journals');
@@ -270,8 +272,12 @@ class WorkController extends AbstractController
                     $work->addJournalId($newJournal->getId());
                 }
             }
+            $workUpdate = true;
         }
 
+        if ($workUpdate) {
+            $work->update();
+        }
         $project->addWorkId($work->getId());
         $project->update();
 

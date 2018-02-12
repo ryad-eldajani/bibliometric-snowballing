@@ -184,14 +184,22 @@ class ValidatorHelper
             if (isset($value['type'])) {
                 if ($value['type'] == 'int') {
                     if (!is_numeric($array[$key])) {
-                        return null;
+                        if (isset($value['required']) && $value['required'] === true) {
+                            return null;
+                        }
+                        unset($array[$key]);
+                    } else {
+                        $array[$key] = intval($array[$key]);
                     }
-                    $array[$key] = intval($array[$key]);
                 } elseif ($value['type'] == 'string') {
                     if (!is_string($array[$key])) {
-                        return null;
+                        if (isset($value['required']) && $value['required'] === true) {
+                            return null;
+                        }
+                        unset($array[$key]);
+                    } else {
+                        $array[$key] = trim(htmlspecialchars($array[$key]));
                     }
-                    $array[$key] = trim(htmlspecialchars($array[$key]));
                 }
             }
         }

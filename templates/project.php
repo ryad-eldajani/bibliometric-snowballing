@@ -351,9 +351,12 @@ $(document).ready(function () {
             data: {
                 'work_doi': doi.val()
             },
+            complete: function() {
+                $this.button('reset');
+            },
             success: function (data) {
+                if (data === null) return;
                 var work = JSON.parse(data);
-                if (work === null) return;
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
                 $('#input_work_title').val(work['title']);
@@ -381,7 +384,6 @@ $(document).ready(function () {
                     }));
                 });
                 $('form').validator('validate');
-                $this.button('reset');
                 modal.find('.alert').addClass('hidden');
             },
             error: function (xhr) {
@@ -517,7 +519,7 @@ $(document).ready(function () {
                     });
                 }
 
-                table.row.add([
+                var row = table.row.add([
                     '<label><input name="work_include" type="checkbox" value="'
                         + work['id'] + '" checked></label>',
                     '<a href="/works/view/' + work['id'] + '" class="work-link">'
@@ -531,6 +533,7 @@ $(document).ready(function () {
                         + work['id'] + '" data-work-title="' + work['title']
                         + '"><span class="glyphicon glyphicon-trash"></span></a>'
                 ]).draw(false);
+                $(row.node()).attr('id', 'tr_work_id_' + work['id']);
             },
             error: function () {
                 $this.button('reset');
@@ -792,7 +795,7 @@ $(document).ready(function () {
                             });
                         }
 
-                        table.row.add([
+                        var row = table.row.add([
                             '<label><input name="work_include" type="checkbox" value="'
                             + work['id'] + '" checked></label>',
                             '<a href="/works/view/' + work['id'] + '" class="work-link">'
@@ -806,6 +809,7 @@ $(document).ready(function () {
                                 + work['id'] + '" data-work-title="' + work['title']
                                 + '"><span class="glyphicon glyphicon-trash"></span></a>'
                         ]).draw(false);
+                        $(row.node()).attr('id', 'tr_work_id_' + work['id']);
                     }
                 }
             },
