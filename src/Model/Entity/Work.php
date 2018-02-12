@@ -725,4 +725,34 @@ class Work extends Entity
         unset($this->journalIds[(string)$journal->getId()]);
         unset($this->journals[(string)$journal->getId()]);
     }
+
+    /**
+     * Returns a list of DOIs, that quote this work or null.
+     *
+     * @return array|null list of DOIs
+     */
+    public function getDoisQuote()
+    {
+        if ($this->doi == '') {
+            return null;
+        }
+
+        $sql = 'SELECT doi_work FROM quote WHERE doi_work_quoted = ?';
+        $sqlParams = array($this->doi);
+
+        // Fetch result from the database.
+        $sqlResult = Database::instance()->select($sql, $sqlParams);
+
+        // If we have no result, return null.
+        if (count($sqlResult) == 0) {
+            return null;
+        }
+
+        $dois = array();
+        foreach ($sqlResult as $doi) {
+            $dois[] = $doi['doi_work'];
+        }
+
+        return $dois;
+    }
 }

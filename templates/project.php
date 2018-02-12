@@ -325,7 +325,7 @@ $(document).ready(function () {
 
     // If we have data available, enable button "Start Snowballing Analysis".
     if (table.rows().count() > 0) {
-        $('#btn_start_snowballing')
+        $('#btn_snowballing')
             .removeClass('btn-disabled disabled')
             .addClass('btn-primary')
             .prop('disabled', false);
@@ -357,6 +357,7 @@ $(document).ready(function () {
             success: function (data) {
                 if (data === null) return;
                 var work = JSON.parse(data);
+                if (work === null) return;
                 $('#select_work_authors').empty();
                 $('#select_work_journals').empty();
                 $('#input_work_title').val(work['title']);
@@ -494,7 +495,7 @@ $(document).ready(function () {
                 modal.find('.alert-warning').addClass('hidden');
 
                 // Enable button "Start Snowballing Analysis".
-                $('#btn_start_snowballing')
+                $('#btn_snowballing')
                     .addClass('btn-primary')
                     .removeClass('btn-disabled disabled')
                     .prop('disabled', false);
@@ -544,6 +545,13 @@ $(document).ready(function () {
         });
     });
 
+    // Button "Backward/Forward Search" clicked.
+    $('#btn_snowballing_backward, #btn_snowballing_forward').on('click', function() {
+        var modal = $('#snowballing_modal');
+        modal.data('type', $(this).attr('id').indexOf('backward') !== -1 ? 'backward' : 'forward');
+        modal.modal('show');
+    });
+
     // Snowballing modal dialog hide and show.
     $('#snowballing_modal')
         .on('hide.bs.modal', function() {
@@ -589,7 +597,8 @@ $(document).ready(function () {
             url: '/works/request/references',
             data: {
                 'work_ids': selectedWorkIds,
-                'project_id': modal.data('projectId')
+                'project_id': modal.data('projectId'),
+                'type': modal.data('type')
             },
             success: function (data) {
                 if (data.length === 0) {
@@ -625,73 +634,88 @@ $(document).ready(function () {
                                         'work_doi': currentDoi
                                     },
                                     complete: function(data) {
+                                        if (data === null) {
+                                            return;
+                                        }
                                         var work = JSON.parse(data['responseJSON']);
-                                        if (work === null) return;
-
-                                        var j;
-                                        var authors = '';
-                                        if (work.authors !== null && Object.keys(work.authors).length > 0) {
-                                            j = 0;
-                                            for (var authorKey in work.authors) {
-                                                if (work.authors.hasOwnProperty(authorKey)) {
-                                                    var author = work.authors[authorKey];
-                                                    var currentAuthor = author['firstName'] + ' ' + author['lastName'];
-                                                    if (j++ > 0) authors += ', ';
-                                                    authors += currentAuthor;
-
-                                                    if (stats.authors.hasOwnProperty(currentAuthor)) {
-                                                        stats.authors[currentAuthor].count++;
-                                                    } else {
-                                                        stats.authors[currentAuthor] = {
-                                                            count: 1,
-                                                            share: 0
-                                                        };
-                                                    }
-                                                    stats.sumAuthors++;
-                                                }
-                                            }
-                                        }
-
-                                        var journals = '';
-                                        if (work.journals !== null && Object.keys(work.journals).length > 0) {
-                                            j = 0;
-                                            for (var journalsKey in work.journals) {
-                                                if (work.journals.hasOwnProperty(journalsKey)) {
-                                                    var journal = work.journals[journalsKey];
-                                                    var journalName = journal['journalName'];
-                                                    if (j++ > 0) journals += ', ';
-                                                    journals += journalName;
-
-                                                    if (stats.journals.hasOwnProperty(journalName)) {
-                                                        stats.journals[journalName].count++;
-                                                    } else {
-                                                        stats.journals[journalName] = {
-                                                            count: 1,
-                                                            share: 0
-                                                        };
-                                                    }
-                                                    stats.sumJournals++;
-                                                }
-                                            }
-                                        }
-
-                                        if (stats.works.hasOwnProperty(currentDoi)) {
-                                            stats.works[work['title']].count++;
+                                        if (work === null) {
+                                            var rowNode = $(
+                                                '<tr class="warning">'
+                                                + '<td><input type="checkbox" disabled></td>'
+                                                + '<td>No information about the Work with DOI "'
+                                                + currentDoi + '" is found.</td>'
+                                                + '<td></td>'
+                                                + '<td></td>'
+                                                + '<td>' + currentDoi + '</td>'
+                                                + '</tr>'
+                                            );
+                                            tableAdd.row.add(rowNode.get(0)).draw(false);
                                         } else {
-                                            stats.works[work['title']] = {
-                                                count: 1,
-                                                share: 0
-                                            }
-                                        }
+                                            var j;
+                                            var authors = '';
+                                            if (work.authors !== null && Object.keys(work.authors).length > 0) {
+                                                j = 0;
+                                                for (var authorKey in work.authors) {
+                                                    if (work.authors.hasOwnProperty(authorKey)) {
+                                                        var author = work.authors[authorKey];
+                                                        var currentAuthor = author['firstName'] + ' ' + author['lastName'];
+                                                        if (j++ > 0) authors += ', ';
+                                                        authors += currentAuthor;
 
-                                        tableAdd.row.add([
-                                            '<label><input name="work_include" type="checkbox" value="'
-                                            + work['id'] + '" checked></label>',
-                                            work['title'],
-                                            authors,
-                                            journals,
-                                            work['doi']
-                                        ]).draw(false);
+                                                        if (stats.authors.hasOwnProperty(currentAuthor)) {
+                                                            stats.authors[currentAuthor].count++;
+                                                        } else {
+                                                            stats.authors[currentAuthor] = {
+                                                                count: 1,
+                                                                share: 0
+                                                            };
+                                                        }
+                                                        stats.sumAuthors++;
+                                                    }
+                                                }
+                                            }
+
+                                            var journals = '';
+                                            if (work.journals !== null && Object.keys(work.journals).length > 0) {
+                                                j = 0;
+                                                for (var journalsKey in work.journals) {
+                                                    if (work.journals.hasOwnProperty(journalsKey)) {
+                                                        var journal = work.journals[journalsKey];
+                                                        var journalName = journal['journalName'];
+                                                        if (j++ > 0) journals += ', ';
+                                                        journals += journalName;
+
+                                                        if (stats.journals.hasOwnProperty(journalName)) {
+                                                            stats.journals[journalName].count++;
+                                                        } else {
+                                                            stats.journals[journalName] = {
+                                                                count: 1,
+                                                                share: 0
+                                                            };
+                                                        }
+                                                        stats.sumJournals++;
+                                                    }
+                                                }
+                                            }
+
+                                            if (stats.works.hasOwnProperty(currentDoi)) {
+                                                stats.works[work['title']].count++;
+                                            } else {
+                                                stats.works[work['title']] = {
+                                                    count: 1,
+                                                    share: 0
+                                                }
+                                            }
+
+                                            tableAdd.row.add([
+                                                '<label><input name="work_include" type="checkbox" value="'
+                                                + work['id'] + '" checked></label>',
+                                                work['title'],
+                                                authors,
+                                                journals,
+                                                work['doi']
+                                            ]).draw(false);
+                                        }
 
                                         var currentAbsolute = tableAdd.rows().count();
                                         var currentPercent = Math.round(currentAbsolute / countDois * 100);
@@ -1194,7 +1218,26 @@ $(document).ready(function () {
     <div class="container">
         <div class="col-sm-3"></div>
         <div class="col-sm-6">
-            <button class="btn btn-disabled disabled" disabled id="btn_start_snowballing" data-toggle="modal" data-target="#snowballing_modal">Start Snowballing Analysis</button>
+            <div class="dropup" id="btn_snowballing_group">
+                <button disabled class="btn btn-disabled disabled dropdown-toggle" type="button" id="btn_snowballing" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Start Snowballing Analysis
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btn_snowballing">
+                    <li>
+                        <a href="#" id="btn_snowballing_backward">
+                            <span class="glyphicon glyphicon-chevron-left"></span>
+                            Backward Search
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="btn_snowballing_forward">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                            Forward Search
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="col-sm-3"></div>
     </div>

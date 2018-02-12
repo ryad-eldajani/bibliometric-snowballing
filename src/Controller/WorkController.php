@@ -13,8 +13,6 @@
 namespace BS\Controller;
 
 
-use BS\Model\Api\AbstractApi;
-use BS\Model\Api\CrossRefApi;
 use BS\Model\Entity\Author;
 use BS\Model\Entity\Journal;
 use BS\Model\Entity\Project;
@@ -88,7 +86,8 @@ class WorkController extends AbstractController
             array(
                 'project_id' => array(
                     'required' => true,
-                    'type' => 'int'
+                    'type' => 'int',
+                    'min' => 1
                 ),
                 'work_ids' => array(
                     'type' => 'array',
@@ -144,7 +143,8 @@ class WorkController extends AbstractController
             array(
                 'project_id' => array(
                     'required' => true,
-                    'type' => 'int'
+                    'type' => 'int',
+                    'min' => 1
                 ),
                 'work_title' => array(
                     'required' => true,
@@ -302,6 +302,15 @@ class WorkController extends AbstractController
                             'type' => 'int'
                         ),
                     )
+                ),
+                'project_id' => array(
+                    'required' => true,
+                    'type' => 'int',
+                    'min' => 1
+                ),
+                'type' => array(
+                    'required' => true,
+                    'type' => 'string'
                 )
             )
         );
@@ -314,33 +323,73 @@ class WorkController extends AbstractController
             );
         }
 
+        if ($this->http->getPostParam('type') == 'backward') {
+            return $this->performBackwardSearch($project);
+        } else {
+            return $this->performForwardSearch($project);
+        }
+    }
+
+    /**
+     * Performs a backward search and returns the JsonResponse instance.
+     *
+     * @param Project $project project instance
+     * @return JsonResponse instance
+     */
+    protected function performBackwardSearch(Project $project)
+    {
         $allReferencedWorks = array();
         foreach ($this->http->getPostParam('work_ids') as $workId) {
             $work = Work::read($workId['work_id']);
 
-            /** @var CrossRefApi $api */
-            $api = AbstractApi::instance('crossref');
-            $workData = $api->getDoiInformation($work->getDoi());
+            foreach ($work->getWorkDois() as $referenceDoi) {
+                if ($referenceDoi != '') {
+                    // If the current project already has this work, continue.
+                    if ($project->hasWorkWithDoi($referenceDoi)) {
+                        continue;
+                    }
 
-            if ($workData === null) {
+                    if (!in_array($referenceDoi, $allReferencedWorks)) {
+                        $allReferencedWorks[$referenceDoi] = 1;
+                        $work->insertDoiReference($referenceDoi);
+                    } else {
+                        $allReferencedWorks[$referenceDoi]++;
+                    }
+                }
+            }
+        }
+
+        return new JsonResponse($allReferencedWorks);
+    }
+
+    /**
+     * Performs a forward search and returns the JsonResponse instance.
+     *
+     * @param Project $project project instance
+     * @return JsonResponse instance
+     */
+    protected function performForwardSearch(Project $project)
+    {
+        $allReferencedWorks = array();
+        foreach ($this->http->getPostParam('work_ids') as $workId) {
+            $work = Work::read($workId['work_id']);
+
+            $doisQuote = $work->getDoisQuote();
+            if ($doisQuote === null) {
                 continue;
             }
 
-            if (isset($workData['reference'])) {
-                foreach ($workData['reference'] as $reference) {
-                    $referenceDoi = isset($reference['DOI']) ? trim($reference['DOI']) : '';
-                    if ($referenceDoi != '') {
-                        // If the current project already has this work, continue.
-                        if ($project->hasWorkWithDoi($referenceDoi)) {
-                            continue;
-                        }
+            foreach ($doisQuote as $referenceDoi) {
+                if ($referenceDoi != '') {
+                    // If the current project already has this work, continue.
+                    if ($project->hasWorkWithDoi($referenceDoi)) {
+                        continue;
+                    }
 
-                        if (!in_array($referenceDoi, $allReferencedWorks)) {
-                            $allReferencedWorks[$referenceDoi] = 1;
-                            $work->insertDoiReference($referenceDoi);
-                        } else {
-                            $allReferencedWorks[$referenceDoi]++;
-                        }
+                    if (!in_array($referenceDoi, $allReferencedWorks)) {
+                        $allReferencedWorks[$referenceDoi] = 1;
+                    } else {
+                        $allReferencedWorks[$referenceDoi]++;
                     }
                 }
             }

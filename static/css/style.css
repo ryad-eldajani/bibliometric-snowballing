@@ -103,7 +103,7 @@ legend.legend {
 #new_work_modal .row button {
     width: 100%;
 }
-#btn_start_snowballing {
+#btn_snowballing_group, #btn_snowballing, #btn_snowballing_group ul {
     width: 100%;
 }
 .modal-centered {
