@@ -50,16 +50,20 @@
       "controller": "Project/viewProject",
       "methods": ["get"]
     },
-    "/projects/request/graph/{projectId}": {
-      "controller": "Project/requestGraph",
-      "methods": ["get"]
-    },
-    "/projects/request/graph_svg/{projectId}": {
+    "/projects/request/graph/svg/{projectId}": {
       "controller": "Project/requestSvgGraph",
       "methods": ["get"]
     },
-    "/projects/request/graph_png/{projectId}": {
+    "/projects/request/graph/png/{projectId}": {
       "controller": "Project/requestPngGraph",
+      "methods": ["get"]
+    },
+    "/projects/request/graph/dot/{projectId}": {
+      "controller": "Project/requestDotGraph",
+      "methods": ["get"]
+    },
+    "/projects/request/graph/{projectId}": {
+      "controller": "Project/requestGraph",
       "methods": ["get"]
     },
     "/works/view/{workId}": {

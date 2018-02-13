@@ -92,13 +92,19 @@ $(document).ready(function () {
                     {
                         text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-svg+xml.png" alt="SVG Export" title="SVG Export"> Export to SVG',
                         action: function () {
-                            window.location.href='/projects/request/graph_svg/<?=$project->getId()?>';
+                            window.location.href='/projects/request/graph/svg/<?=$project->getId()?>';
                         }
                     },
                     {
                         text: '<img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-x-generic-2.png" alt="PNG Export" title="PNG Export"> Export to PNG',
                         action: function () {
-                            window.location.href='/projects/request/graph_png/<?=$project->getId()?>';
+                            window.location.href='/projects/request/graph/png/<?=$project->getId()?>';
+                        }
+                    },
+                    {
+                        text: '<img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-692-tree-structure.png" alt="DOT Export" title="DOT Export"> Export to DOT',
+                        action: function () {
+                            window.location.href='/projects/request/graph/dot/<?=$project->getId()?>';
                         }
                     }
                 ]
@@ -1177,9 +1183,20 @@ $(document).ready(function () {
                 <div id="visualization_container"></div>
             </div>
             <div class="modal-footer">
-                <a href="/projects/request/graph_png/<?=$project->getId()?>" class="btn btn-primary" role="button"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-x-generic-2.png" alt="PNG Export" title="PNG Export"> Export to PNG</a>
-                <a href="/projects/request/graph_svg/<?=$project->getId()?>" class="btn btn-primary" role="button"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-svg+xml.png" alt="SVG Export" title="SVG Export">Export to SVG</a>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <div class="btn-group" role="group">
+                    <div class="dropup btn-group" role="group">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="btn_graph_export" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Graph Export
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="btn_graph_export">
+                            <li><a href="/projects/request/graph/svg/<?=$project->getId()?>"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-svg+xml.png" alt="SVG Export" title="SVG Export">Export to SVG</a></li>
+                            <li><a href="/projects/request/graph/png/<?=$project->getId()?>"><img src="/static/gfx/open_icon_library/oxygen-style/mimetypes/image-x-generic-2.png" alt="PNG Export" title="PNG Export"> Export to PNG</a></li>
+                            <li><a href="/projects/request/graph/dot/<?=$project->getId()?>"><img src="/static/gfx/glyphicons/glyphicons/png/glyphicons-692-tree-structure.png" alt="DOT Export" title="DOT Export"> Export to DOT</a></li>
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

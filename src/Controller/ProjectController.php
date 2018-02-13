@@ -263,13 +263,13 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * Renders the graph as a $graphicsType graphic.
+     * Renders the graph as a $fileType file.
      *
      * @param int $projectId project ID to render
-     * @param string $graphicsType destination graphics type
+     * @param string $fileType destination file type
      * @return DownloadResponse|JsonResponse response instance
      */
-    protected function getGraphAsGraphic($projectId, $graphicsType = 'svg')
+    protected function getGraphAsFile($projectId, $fileType = 'svg')
     {
         $project = Project::read($projectId);
         if ($project === null) {
@@ -279,17 +279,26 @@ class ProjectController extends AbstractController
             );
         }
 
-        if ($graphicsType == 'svg') {
+        if ($fileType == 'svg') {
             $svgXml = GraphHelper::instance()->getGraphAsSvg($project);
             if ($svgXml !== '') {
                 return new DownloadResponse($svgXml, $project->getName() . '.svg');
             }
-        } else if ($graphicsType == 'png') {
+        } else if ($fileType == 'png') {
             $pngContent = GraphHelper::instance()->getGraphAsPng($project);
             if ($pngContent !== '') {
                 return new DownloadResponse(
                     $pngContent,
                     $project->getName() . '.png',
+                    Response::CONTENT_TYPE_PNG
+                );
+            }
+        } else if ($fileType == 'dot') {
+            $dotContent = GraphHelper::instance()->getGraphAsDot($project);
+            if ($dotContent !== '') {
+                return new DownloadResponse(
+                    $dotContent,
+                    $project->getName() . '.dot',
                     Response::CONTENT_TYPE_PNG
                 );
             }
@@ -302,24 +311,35 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * URL: /projects/request/graph_svg/{projectId}
+     * URL: /projects/request/graph/svg/{projectId}
      * Methods: GET
      * @param array $params variable URL params
      * @return DownloadResponse|JsonResponse instance
      */
     public function requestSvgGraphAction(array $params = array())
     {
-        return $this->getGraphAsGraphic($params['projectId'], 'svg');
+        return $this->getGraphAsFile($params['projectId'], 'svg');
     }
 
     /**
-     * URL: /projects/request/graph_png/{projectId}
+     * URL: /projects/request/graph/png/{projectId}
      * Methods: GET
      * @param array $params variable URL params
      * @return DownloadResponse|JsonResponse instance
      */
     public function requestPngGraphAction(array $params = array())
     {
-        return $this->getGraphAsGraphic($params['projectId'], 'png');
+        return $this->getGraphAsFile($params['projectId'], 'png');
+    }
+
+    /**
+     * URL: /projects/request/graph/dot/{projectId}
+     * Methods: GET
+     * @param array $params variable URL params
+     * @return DownloadResponse|JsonResponse instance
+     */
+    public function requestDotGraphAction(array $params = array())
+    {
+        return $this->getGraphAsFile($params['projectId'], 'dot');
     }
 }

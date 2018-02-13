@@ -153,7 +153,7 @@ class GraphHelper
      * @param Project $project project entity
      * @return string DOT content
      */
-    protected function getDot(Project $project)
+    public function getGraphAsDot(Project $project)
     {
         $graph = $this->getGraph($project);
 
@@ -225,7 +225,7 @@ class GraphHelper
     public function getGraphAsSvg(Project $project)
     {
         $tempFileName = tempnam('/tmp', uniqid());
-        file_put_contents($tempFileName, $this->getDot($project));
+        file_put_contents($tempFileName, $this->getGraphAsDot($project));
         $svgXml = `dot -Tsvg $tempFileName`;
         unlink($tempFileName);
 
@@ -241,7 +241,7 @@ class GraphHelper
     public function getGraphAsPng(Project $project)
     {
         $tempFileName = tempnam('/tmp', uniqid());
-        file_put_contents($tempFileName, $this->getDot($project));
+        file_put_contents($tempFileName, $this->getGraphAsDot($project));
         $pngData = `dot -Tpng $tempFileName`;
         unlink($tempFileName);
 
