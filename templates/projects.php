@@ -276,7 +276,7 @@ $(document).ready(function () {
         <tr id="tr_project_id_<?=$project->getId()?>">
             <td><a href="/projects/view/<?=$project->getId()?>" class="project-link"><?=$project->getName()?></a></td>
             <td><?=count($project->getWorkIds())?></td>
-            <td><?=$this->date($project->getCreatedAt())?></td>
+            <td><?=$this->date($project->getCreatedAt(), 'd.m.Y / H:i')?></td>
             <td>
                 <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle dropdown-option" type="button" data-toggle="dropdown">

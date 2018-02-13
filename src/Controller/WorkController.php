@@ -117,7 +117,7 @@ class WorkController extends AbstractController
                 && !in_array((string)$work->getId(), array_keys($allWorks))
             ) {
                 $allWorks[(string)$work->getId()] = $work->toArray();
-                $allWorks[(string)$work->getId()]['created_at'] = time();
+                $allWorks[(string)$work->getId()]['created_at'] = time() * 1000;
                 $project->addWorkId($work->getId());
             }
         }

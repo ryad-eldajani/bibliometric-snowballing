@@ -1226,7 +1226,7 @@ $(document).ready(function () {
                     <td><a href="/works/view/<?=$work->getId()?>" class="work-link"><?=$work->getTitle()?></a></td>
                     <td><?=$this->joinEntities($work->getAuthors(), array('firstName', 'lastName'))?></td>
                     <td><?=$this->joinEntities($work->getJournals(), array('journalName'))?></td>
-                    <td><?=$this->date($project->getWorkCreatedAt($work), 'd.m.Y / h:i')?></td>
+                    <td><?=$this->date($project->getWorkCreatedAt($work), 'd.m.Y / H:i')?></td>
                     <td><?=$work->getDoi()?></td>
                     <td>
                         <a href="#" class="btn btn-danger" data-toggle="modal" data-target="#delete_work_modal" data-project-id="<?=$project->getId()?>" data-work-id="<?=$work->getId()?>" data-work-title="<?=$work->getTitle()?>">
