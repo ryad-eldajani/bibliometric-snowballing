@@ -640,11 +640,11 @@ $(document).ready(function () {
                 }
                 var stats = {
                     sumWorks: 0,
-                    works: {},
+                    works: {'type': 'works'},
                     sumAuthors: 0,
-                    authors: {},
+                    authors: {'type': 'authors'},
                     sumJournals: 0,
-                    journals: {}
+                    journals: {'type': 'journals'}
                 };
                 var countDois = Object.keys(data).length;
 
@@ -692,10 +692,12 @@ $(document).ready(function () {
 
                                                         if (stats.authors.hasOwnProperty(currentAuthor)) {
                                                             stats.authors[currentAuthor].count++;
+                                                            stats.authors[currentAuthor].ids.push(work['id']);
                                                         } else {
                                                             stats.authors[currentAuthor] = {
                                                                 count: 1,
-                                                                share: 0
+                                                                share: 0,
+                                                                ids: [work['id']]
                                                             };
                                                         }
                                                         stats.sumAuthors++;
@@ -715,10 +717,12 @@ $(document).ready(function () {
 
                                                         if (stats.journals.hasOwnProperty(journalName)) {
                                                             stats.journals[journalName].count++;
+                                                            stats.journals[journalName].ids.push(work['id']);
                                                         } else {
                                                             stats.journals[journalName] = {
                                                                 count: 1,
-                                                                share: 0
+                                                                share: 0,
+                                                                ids: [work['id']]
                                                             };
                                                         }
                                                         stats.sumJournals++;
@@ -731,18 +735,23 @@ $(document).ready(function () {
                                             } else {
                                                 stats.works[work['title']] = {
                                                     count: 1,
-                                                    share: 0
+                                                    share: 0,
+                                                    ids: [work['id']]
                                                 }
                                             }
 
-                                            tableAdd.row.add([
-                                                '<label><input name="work_include" type="checkbox" value="'
-                                                + work['id'] + '" checked></label>',
+                                            var row = tableAdd.row.add([
+                                                '<label><input type="checkbox" data-work-id="' + work['id'] + '" value="'
+                                                + work['id'] + '" id="cb_work_' + work['id'] + '"></label>',
                                                 work['title'],
                                                 authors,
                                                 journals,
                                                 work['doi']
                                             ]).draw(false);
+                                            $(row.node()).data('ids', [work['id']]);
+                                            $(document).on('click', 'input#cb_work_' + work['id'], function() {
+                                                workAddCheckBoxClick($(this));
+                                            });
                                         }
 
                                         var currentAbsolute = tableAdd.rows().count();

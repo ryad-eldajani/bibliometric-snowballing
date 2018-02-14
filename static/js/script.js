@@ -62,9 +62,18 @@ var sortObjects = function(objects) {
     var sortable = [];
     for (var element in objects) {
         if (objects.hasOwnProperty(element)) {
-            var elementObject = objects[element];
+            if (element === 'type') {
+                continue;
+            }
 
-            sortable.push([element, elementObject.count, elementObject.share]);
+            var elementObject = objects[element];
+            sortable.push([
+                element,
+                elementObject.count,
+                elementObject.share,
+                elementObject.ids,
+                objects['type']
+            ]);
         }
     }
 
@@ -96,13 +105,19 @@ var fillDataTable = function(objects, sum, dataTable) {
         if (objects._sorted.hasOwnProperty(index)) {
             var element = objects._sorted[index];
             aggregated += element[2];
-            dataTable.row.add([
+            var row = dataTable.row.add([
                 parseInt(index) + 1,
                 element[0],
                 element[1],
                 Math.roundPrecision(element[2], 2).toFixed(2),
                 Math.roundPrecision(aggregated, 2).toFixed(2)
             ]).draw(false);
+            $(row.node())
+                .data('ids', element[3])
+                .data('type', element[4])
+                .on('click', function() {
+                    workAddObjectRowClick($(this));
+                });
         }
     }
 
@@ -124,12 +139,106 @@ var handleStatistics = function(objects, sum, dataTable) {
 };
 
 /**
- * Checks, if a number is numeric and integer.
- * See: https://stackoverflow.com/a/9716488
+ * Determines if an array contains one or more items from another array.
+ * See: https://stackoverflow.com/a/25926600
  *
- * @param n number to check
- * @returns {boolean} true, if numeric.
+ * @param {array} haystack the array to search.
+ * @param {array} array the array providing items to check for in the haystack.
+ * @return {boolean} true|false if haystack contains at least one item from arr.
  */
-function isNumeric(n) {
-    return !isNaN(parseInt(n)) && isFinite(n);
-}
+var hasElementOf = function (haystack, array) {
+    return array.some(function (v) {
+        return haystack.indexOf(v) >= 0;
+    });
+};
+
+/**
+ * Handles allSelectedIds when a row from add works/authors/journal statistic tables
+ * is clicked.
+ *
+ * @param {object} node jQuery node
+ */
+var allSelectedIds = [];
+var workAddObjectRowClick = function(node) {
+    var ids = node.data('ids');
+    var type = node.data('type');
+    var selected = true;
+    if (node.hasClass('selected')) {
+        node.removeClass('selected');
+        selected = false;
+    } else {
+        node.addClass('selected');
+    }
+
+    // Update allSelectedIds.
+    for (var i in ids) {
+        if (ids.hasOwnProperty(i)) {
+            var currentId = ids[i];
+            var posId = allSelectedIds.indexOf(currentId);
+            if (selected && posId === -1) {
+                allSelectedIds.push(currentId);
+            } else if (!selected && posId !== -1) {
+                allSelectedIds.splice(posId, 1);
+            }
+        }
+    }
+
+    checkWorksAddCheckBoxes();
+    selectWorksAddObjectRows(type);
+};
+
+/**
+ * Handles allSelectedIds when a checkbox from works add is clicked.
+ *
+ * @param {object} node jQuery node
+ */
+var workAddCheckBoxClick = function(node) {
+    var checkedWorkId = node.data('workId');
+    var checked = node.prop('checked');
+    var posId = allSelectedIds.indexOf(checkedWorkId);
+
+    if (checked && posId === -1) {
+        allSelectedIds.push(checkedWorkId);
+    } else if (!checked && posId !== -1) {
+        allSelectedIds.splice(posId, 1);
+    }
+
+    selectWorksAddObjectRows(null);
+};
+
+/**
+ * Checks all necessary checkboxes when row from add works/authors/journal statistic tables
+ * is clicked.
+ */
+var checkWorksAddCheckBoxes = function() {
+    $('#table_works_add').DataTable().rows().every(function() {
+        var tr = $(this.node());
+        tr.find('input').prop('checked', hasElementOf(allSelectedIds, tr.data('ids')));
+    });
+};
+
+/**
+ * Selects all (other) rows from add works/authors/journal statistic tables.
+ *
+ * @param {(string|null)} exceptTable table to ignore (as this call comes from that table anyway)
+ */
+var selectWorksAddObjectRows = function (exceptTable) {
+    var allTables = ['works', 'authors', 'journals'];
+    if (exceptTable !== null) {
+        allTables.splice(allTables.indexOf(exceptTable), 1);
+    }
+
+    for (var i in allTables) {
+        if (allTables.hasOwnProperty(i)) {
+            $('#table_works_add_' + allTables[i]).DataTable().rows().every(function() {
+                var tr = $(this.node());
+                var associatedWorkIds = tr.data('ids');
+                if (hasElementOf(allSelectedIds, associatedWorkIds)) {
+                    tr.addClass('selected');
+                } else {
+                    tr.removeClass('selected');
+                }
+            });
+        }
+    }
+};

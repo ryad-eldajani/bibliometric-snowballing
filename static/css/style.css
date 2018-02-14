@@ -195,3 +195,13 @@ ul.nav-tabs li a[href="#tab_selection"] {
 a.btn img {
     height: 18px;
 }
+#table_works_add_works tbody tr,
+#table_works_add_authors tbody tr,
+#table_works_add_journals tbody tr {
+    cursor: pointer;
+}
+tr.selected {
+    color: #fff;
+    background-color: #337ab7!important;
+    border-color: #2e6da4!important;
+}
