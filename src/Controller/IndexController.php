@@ -25,7 +25,10 @@ class IndexController extends AbstractController
      */
     public function indexAction()
     {
-        $this->redirectIfNotLoggedIn();
+        if (!$this->userManager->isLoggedIn()) {
+            return new Response($this->app->renderTemplate('index'));
+        }
+
         return new RedirectResponse('/projects');
     }
 

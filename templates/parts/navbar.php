@@ -42,6 +42,10 @@
                 </ul>
             </li>
         </ul>
+        <?php else: ?>
+            <ul class="nav navbar-nav navbar-right navbar-user">
+                <li<?=$this->active('/login')?>><a href="/login">Login</a></li>
+            </ul>
         <?php endif ?>
     </div><!-- /.navbar-collapse -->
 </nav>
