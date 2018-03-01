@@ -213,7 +213,10 @@ class WorkController extends AbstractController
 
         // Ajax request is validated, read or create project entity in database.
         $work = null;
-        if ($this->http->hasPostParam('work_doi')) {
+        if (
+            $this->http->hasPostParam('work_doi')
+            && trim($this->http->getPostParam('work_doi')) != ''
+        ) {
             $work = Work::readByDoi($this->http->getPostParam('work_doi'));
         }
 
